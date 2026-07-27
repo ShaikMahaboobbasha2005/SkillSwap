@@ -1,18 +1,28 @@
 require("dotenv").config();
 
 const express = require("express");
+const cors = require("cors");
 const connectDB = require("./config/db");
+const authRoutes = require("./routes/authRoutes");
+const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
 // Connect Database
 connectDB();
 
-// Middleware
-app.use(express.json());
+// CORS configuration
+const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+app.use(
+  cors({
+    origin: clientUrl,
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
-// Port
-const PORT = process.env.PORT || 5000;
+// Body Parser Middleware
+app.use(express.json());
 
 // Health Check Route
 app.get("/", (req, res) => {
@@ -21,6 +31,15 @@ app.get("/", (req, res) => {
     message: "SkillSwap API is running",
   });
 });
+
+// Routes
+app.use("/api/auth", authRoutes);
+
+// Shared Error Handler Middleware
+app.use(errorHandler);
+
+// Port
+const PORT = process.env.PORT || 5000;
 
 // Start Server
 app.listen(PORT, () => {

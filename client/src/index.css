@@ -1,1 +1,54 @@
 @import "tailwindcss";
+
+@theme {
+  --color-bg-light: #F7F6F2;
+  --color-surface-light: #FFFFFF;
+  --color-border-light: #E6E3DA;
+  --color-ink-light: #16160F;
+  --color-ink-muted-light: #6B6858;
+  --color-accent-pine: #1B4332;
+  --color-accent-pine-hover: #143326;
+  --color-accent-soft-light: #E4EEE8;
+  --color-gold: #B8860B;
+
+  --color-bg-dark: #0F1210;
+  --color-surface-dark: #181B18;
+  --color-border-dark: #2A2E29;
+  --color-ink-dark: #F2F1EC;
+  --color-ink-muted-dark: #9C9A8C;
+  --color-accent-dark: #3FA873;
+  --color-accent-soft-dark: #1C2E24;
+
+  --font-serif-brand: Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+:root {
+  --bg: #F7F6F2;
+  --surface: #FFFFFF;
+  --border: #E6E3DA;
+  --ink: #16160F;
+  --ink-muted: #6B6858;
+  --accent: #1B4332;
+  --accent-hover: #143326;
+  --accent-soft: #E4EEE8;
+  --gold: #B8860B;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Georgia font class for wordmark */
+.font-brand-serif {
+  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+/* Subtle transitions */
+.transition-linear {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
