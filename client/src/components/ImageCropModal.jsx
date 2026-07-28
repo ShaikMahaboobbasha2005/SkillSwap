@@ -10,7 +10,7 @@ const createImage = (url) =>
     image.src = url;
   });
 
-async function getCroppedImg(imageSrc, pixelCrop) {
+async function getCroppedImg(imageSrc, pixelCrop, aspect = 1) {
   const image = await createImage(imageSrc);
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -19,8 +19,26 @@ async function getCroppedImg(imageSrc, pixelCrop) {
     throw new Error("Could not get canvas context");
   }
 
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
+  // Client-side Resolution Optimization: Limit canvas output dimensions for optimal bandwidth
+  let targetWidth = pixelCrop.width;
+  let targetHeight = pixelCrop.height;
+
+  if (aspect > 2) {
+    // Banner (3:1 ratio) - scale output max width to 1500px
+    if (targetWidth > 1500) {
+      targetWidth = 1500;
+      targetHeight = 500;
+    }
+  } else {
+    // Avatar (1:1 ratio) - scale output max width to 600px
+    if (targetWidth > 600) {
+      targetWidth = 600;
+      targetHeight = 600;
+    }
+  }
+
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
 
   ctx.drawImage(
     image,
@@ -30,8 +48,8 @@ async function getCroppedImg(imageSrc, pixelCrop) {
     pixelCrop.height,
     0,
     0,
-    pixelCrop.width,
-    pixelCrop.height
+    targetWidth,
+    targetHeight
   );
 
   return new Promise((resolve, reject) => {
@@ -41,19 +59,27 @@ async function getCroppedImg(imageSrc, pixelCrop) {
           reject(new Error("Canvas export failed"));
           return;
         }
-        const croppedFile = new File([blob], "profile-cropped.jpg", {
+        const fileName = aspect > 2 ? "profile-banner-cropped.jpg" : "profile-avatar-cropped.jpg";
+        const croppedFile = new File([blob], fileName, {
           type: "image/jpeg",
         });
         const previewUrl = URL.createObjectURL(blob);
         resolve({ croppedFile, previewUrl });
       },
       "image/jpeg",
-      0.95
+      0.90
     );
   });
 }
 
-export default function ImageCropModal({ imageSrc, onCropComplete, onCancel }) {
+export default function ImageCropModal({
+  imageSrc,
+  aspect = 1,
+  cropShape = "round",
+  title = "Crop Image",
+  onCropComplete,
+  onCancel,
+}) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
@@ -67,7 +93,7 @@ export default function ImageCropModal({ imageSrc, onCropComplete, onCancel }) {
     if (!croppedAreaPixels || !imageSrc) return;
     setProcessing(true);
     try {
-      const { croppedFile, previewUrl } = await getCroppedImg(imageSrc, croppedAreaPixels);
+      const { croppedFile, previewUrl } = await getCroppedImg(imageSrc, croppedAreaPixels, aspect);
       onCropComplete(croppedFile, previewUrl);
     } catch (err) {
       console.error("Failed to crop image:", err);
@@ -83,10 +109,10 @@ export default function ImageCropModal({ imageSrc, onCropComplete, onCancel }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs animate-fadeIn">
-      <div className="bg-white border border-[#E6E3DA] rounded-[16px] max-w-lg w-full overflow-hidden shadow-xl animate-slideDown flex flex-col">
+      <div className="bg-white border border-[#E6E3DA] rounded-2xl max-w-xl w-full overflow-hidden shadow-2xl animate-slideDown flex flex-col">
         {/* Modal Header */}
         <div className="px-5 py-3.5 border-b border-[#E6E3DA] flex items-center justify-between bg-[#F7F6F2]">
-          <h2 className="text-sm font-bold text-[#16160F]">Crop Profile Picture</h2>
+          <h2 className="text-sm font-bold text-[#16160F]">{title}</h2>
           <button
             onClick={onCancel}
             className="text-[#6B6858] hover:text-[#16160F] text-sm font-bold transition-colors cursor-pointer"
@@ -101,9 +127,9 @@ export default function ImageCropModal({ imageSrc, onCropComplete, onCancel }) {
             image={imageSrc}
             crop={crop}
             zoom={zoom}
-            aspect={1}
-            cropShape="round"
-            showGrid={false}
+            aspect={aspect}
+            cropShape={cropShape}
+            showGrid={aspect > 1}
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onCropComplete={handleCropComplete}
@@ -130,13 +156,13 @@ export default function ImageCropModal({ imageSrc, onCropComplete, onCancel }) {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center justify-between pt-2 border-t border-[#E6E3DA]/60">
             <button
               type="button"
               onClick={handleReset}
-              className="px-3.5 py-1.5 text-xs font-semibold text-[#6B6858] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] rounded-[10px] transition-all cursor-pointer"
+              className="px-3.5 py-1.5 text-xs font-semibold text-[#6B6858] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] rounded-xl transition-all cursor-pointer"
             >
-              Reset
+              Reset Zoom
             </button>
 
             <div className="flex items-center space-x-2">
@@ -144,7 +170,7 @@ export default function ImageCropModal({ imageSrc, onCropComplete, onCancel }) {
                 type="button"
                 onClick={onCancel}
                 disabled={processing}
-                className="px-4 py-2 text-xs font-semibold text-[#6B6858] hover:text-[#16160F] bg-[#F7F6F2] border border-[#E6E3DA] rounded-[10px] transition-all cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold text-[#6B6858] hover:text-[#16160F] bg-[#F7F6F2] border border-[#E6E3DA] rounded-xl transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -153,7 +179,7 @@ export default function ImageCropModal({ imageSrc, onCropComplete, onCancel }) {
                 type="button"
                 onClick={handleSave}
                 disabled={processing}
-                className="px-5 py-2 text-xs font-semibold text-white bg-[#1B4332] hover:bg-[#143326] rounded-[10px] transition-all active:scale-[0.98] flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                className="px-5 py-2 text-xs font-semibold text-white bg-[#1B4332] hover:bg-[#143326] rounded-xl transition-all active:scale-[0.98] flex items-center gap-1.5 shadow-2xs cursor-pointer"
               >
                 {processing && (
                   <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

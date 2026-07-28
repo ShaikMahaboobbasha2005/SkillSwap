@@ -18,6 +18,7 @@ const updateOwnProfile = async (userId, updateData) => {
   const allowedFields = {};
   if (updateData.name !== undefined) allowedFields.name = updateData.name;
   if (updateData.profilePicture !== undefined) allowedFields.profilePicture = updateData.profilePicture;
+  if (updateData.profileBanner !== undefined) allowedFields.profileBanner = updateData.profileBanner;
   if (updateData.location !== undefined) allowedFields.location = updateData.location;
 
   const updatedUser = await User.findByIdAndUpdate(
@@ -43,7 +44,7 @@ const getUserPublicProfile = async (targetUserId) => {
   }
 
   const user = await User.findById(targetUserId).select(
-    "name profilePicture location avgRating completedSwaps skillsOffered skillsWanted portfolio createdAt"
+    "name profilePicture profileBanner location avgRating completedSwaps skillsOffered skillsWanted portfolio createdAt"
   );
 
   if (!user) {

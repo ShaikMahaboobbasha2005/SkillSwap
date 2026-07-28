@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getPublicProfile } from "../services/profileService";
 import logoImg from "../assets/logo.png";
+import ProfileSkeleton from "../components/ProfileSkeleton";
+import ProfileBanner from "../components/ProfileBanner";
+import AnimatedStatCard from "../components/AnimatedStatCard";
+import EmptyState from "../components/EmptyState";
 
 export default function PublicProfile() {
   const { id } = useParams();
@@ -19,7 +23,7 @@ export default function PublicProfile() {
     setError("");
     try {
       const res = await getPublicProfile(id);
-      if (res.success) {
+      if (res.success && res.data) {
         setProfile(res.data);
       }
     } catch (err) {
@@ -31,32 +35,7 @@ export default function PublicProfile() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F7F6F2] text-[#16160F] antialiased">
-        <nav className="border-b border-[#E6E3DA] bg-white sticky top-0 z-40 px-4 sm:px-8 py-3.5">
-          <div className="max-w-5xl mx-auto flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <img src={logoImg} alt="SkillSwap" className="w-9 h-9 object-contain rounded-xl border border-[#E6E3DA] p-1 bg-white" />
-              <span className="text-xl font-bold tracking-tight text-[#16160F]">
-                Skill<span className="text-[#1B4332]">Swap</span>
-              </span>
-            </div>
-          </div>
-        </nav>
-
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 animate-fadeIn">
-          <div className="bg-white rounded-[16px] border border-[#E6E3DA] p-6 animate-pulse space-y-4 shadow-sm">
-            <div className="flex items-center space-x-4">
-              <div className="w-20 h-20 rounded-full bg-[#E6E3DA]"></div>
-              <div className="space-y-2 flex-1">
-                <div className="h-6 bg-[#E6E3DA] rounded w-1/3"></div>
-                <div className="h-4 bg-[#E6E3DA] rounded w-1/4"></div>
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   if (error || !profile) {
@@ -74,17 +53,19 @@ export default function PublicProfile() {
         </nav>
 
         <main className="max-w-md mx-auto px-4 py-16 text-center flex-1">
-          <div className="bg-white rounded-[16px] border border-[#E6E3DA] p-8 shadow-sm">
-            <div className="w-12 h-12 bg-red-50 text-red-600 rounded-full mx-auto flex items-center justify-center font-bold text-xl mb-3">
+          <div className="bg-white rounded-2xl border border-[#E6E3DA] p-8 shadow-sm space-y-4">
+            <div className="w-12 h-12 bg-red-50 text-red-600 rounded-2xl mx-auto flex items-center justify-center font-bold text-xl border border-red-200 shadow-2xs">
               !
             </div>
-            <h2 className="text-base font-bold text-[#16160F]">{error || "User not found"}</h2>
-            <p className="text-xs text-[#6B6858] mt-1 mb-5">
-              The user profile you requested does not exist or may have been removed.
-            </p>
+            <div>
+              <h2 className="text-base font-bold text-[#16160F]">{error || "User not found"}</h2>
+              <p className="text-xs text-[#6B6858] mt-1">
+                The user profile you requested does not exist or may have been removed.
+              </p>
+            </div>
             <Link
               to="/"
-              className="px-4 py-2 bg-[#1B4332] text-white text-xs font-semibold rounded-[10px] hover:bg-[#143326] transition-all active:scale-[0.98]"
+              className="inline-block px-5 py-2.5 bg-[#1B4332] text-white text-xs font-semibold rounded-xl hover:bg-[#143326] transition-all active:scale-[0.98] shadow-2xs"
             >
               Return to Home
             </Link>
@@ -94,9 +75,15 @@ export default function PublicProfile() {
     );
   }
 
+  const usernameHandle = profile.email ? `@${profile.email.split("@")[0]}` : "@swapper";
+  const memberSince = profile.createdAt
+    ? new Date(profile.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+    : "Jan 2026";
+  const totalSkills = (profile.skillsOffered?.length || 0) + (profile.skillsWanted?.length || 0);
+
   return (
     <div className="min-h-screen bg-[#F7F6F2] text-[#16160F] antialiased flex flex-col animate-fadeIn">
-      {/* Top Navigation Header */}
+      {/* Navigation Header */}
       <nav className="border-b border-[#E6E3DA] bg-white sticky top-0 z-40 px-4 sm:px-8 py-3.5">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-3 hover:opacity-90 transition-opacity">
@@ -118,7 +105,7 @@ export default function PublicProfile() {
           <div className="flex items-center space-x-3">
             <Link
               to="/"
-              className="px-3.5 py-2 text-xs font-semibold text-[#16160F] hover:text-[#1B4332] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] rounded-[10px] transition-all active:scale-[0.98] inline-flex items-center gap-1.5 shadow-2xs"
+              className="h-9 px-3.5 text-xs font-semibold text-[#16160F] hover:text-[#1B4332] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] rounded-xl transition-all active:scale-[0.98] inline-flex items-center gap-1.5 shadow-2xs"
             >
               <span>←</span>
               <span>Back to Home</span>
@@ -128,148 +115,225 @@ export default function PublicProfile() {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1">
-        {/* Profile Card Header */}
-        <div className="bg-white rounded-[16px] border border-[#E6E3DA] p-5 sm:p-6 mb-6 shadow-sm hover:border-[#D8D4C8] transition-all">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
-            {/* Avatar */}
-            <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-full border-2 border-[#E6E3DA] overflow-hidden bg-[#E4EEE8] flex items-center justify-center shrink-0 shadow-xs hover:scale-[1.02] transition-transform">
-              {profile.profilePicture ? (
-                <img
-                  src={profile.profilePicture}
-                  alt={profile.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-[#1B4332] text-white flex items-center justify-center font-bold text-2xl">
-                  {profile.name ? profile.name.charAt(0).toUpperCase() : "U"}
-                </div>
-              )}
-            </div>
+      <main className="max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 space-y-6">
+        
+        {/* PROFILE HEADER CARD */}
+        <div className="bg-white rounded-2xl border border-[#E6E3DA] overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
+          
+          {/* Profile Banner */}
+          <ProfileBanner
+            bannerUrl={profile.profileBanner}
+            isOwner={false}
+            badgeText="Public Profile"
+          />
 
-            {/* User Identity Info */}
-            <div className="flex flex-col justify-center">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#16160F]">
-                {profile.name}
-              </h1>
-              <p className="text-xs text-[#6B6858] mt-1 flex items-center justify-center sm:justify-start gap-1 font-medium">
-                <svg className="w-3.5 h-3.5 text-[#6B6858]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span>{profile.location || "Location not set"}</span>
-              </p>
-              <p className="text-[11px] text-[#6B6858] mt-1">
-                Member since {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "2026"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Stat Cards Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <div className="bg-white rounded-[16px] border border-[#E6E3DA] p-5 flex items-center justify-between h-full hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
-            <div>
-              <span className="text-[11px] font-semibold text-[#6B6858] uppercase tracking-wider">Average Rating</span>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-2xl font-extrabold text-[#16160F]">
-                  {profile.avgRating ? profile.avgRating.toFixed(1) : "0.0"}
-                </span>
-                <span className="text-xs text-[#B8860B] font-semibold flex items-center gap-1">
-                  ★ <span className="text-[#6B6858] font-normal">({profile.completedSwaps || 0} reviews)</span>
-                </span>
-              </div>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-[#F7F6F2] border border-[#E6E3DA] flex items-center justify-center text-[#B8860B] text-base shrink-0">
-              ★
-            </div>
-          </div>
-
-          <div className="bg-white rounded-[16px] border border-[#E6E3DA] p-5 flex items-center justify-between h-full hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
-            <div>
-              <span className="text-[11px] font-semibold text-[#6B6858] uppercase tracking-wider">Completed Swaps</span>
-              <div className="text-2xl font-extrabold text-[#16160F] mt-1">
-                {profile.completedSwaps || 0}
-              </div>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-[#E4EEE8] border border-[#1B4332]/20 flex items-center justify-center text-[#1B4332] font-semibold text-sm shrink-0">
-              ⇄
-            </div>
-          </div>
-        </div>
-
-        {/* Read-Only Skills Offered & Skills Wanted */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          {/* Skills Offered */}
-          <div className="bg-white rounded-[16px] border border-[#E6E3DA] p-5 sm:p-6 flex flex-col justify-between hover:border-[#D8D4C8] transition-all">
-            <div>
-              <h2 className="text-sm font-bold text-[#16160F] mb-1">Skills Offered</h2>
-              <p className="text-[11px] text-[#6B6858] mb-4">Skills available to teach</p>
+          <div className="p-6 sm:p-7 pt-0 relative">
+            <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 -mt-20 sm:-mt-22 mb-4">
               
-              <div className="flex flex-wrap gap-2">
-                {profile.skillsOffered && profile.skillsOffered.length > 0 ? (
-                  profile.skillsOffered.map((skill, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3 py-1 bg-[#E4EEE8] text-[#1B4332] text-xs font-semibold rounded-full border border-[#1B4332]/20"
-                    >
-                      {typeof skill === "string" ? skill : skill.name}
-                    </span>
-                  ))
+              {/* ENLARGED HERO AVATAR */}
+              <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full border-[5px] border-white bg-[#E4EEE8] flex items-center justify-center shadow-xl shadow-black/10 overflow-hidden shrink-0 hover:scale-[1.02] transition-transform">
+                {profile.profilePicture ? (
+                  <img
+                    src={profile.profilePicture}
+                    alt={profile.name}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
-                  <div className="w-full text-center py-6 px-4 bg-[#F7F6F2] rounded-[12px] border border-dashed border-[#E6E3DA] flex flex-col items-center justify-center">
-                    <span className="text-2xl mb-1">📚</span>
-                    <p className="text-xs font-semibold text-[#16160F]">No skills added yet</p>
-                    <p className="text-[11px] text-[#6B6858] mt-0.5">Start adding skills in Phase 4.</p>
+                  <div className="w-full h-full bg-[#1B4332] text-white flex items-center justify-center font-black text-5xl">
+                    {profile.name ? profile.name.charAt(0).toUpperCase() : "U"}
                   </div>
                 )}
               </div>
+
+              {/* Request Swap CTA Button */}
+              <div className="w-full sm:w-auto flex justify-center sm:justify-end shrink-0">
+                <Link
+                  to="/"
+                  className="w-full sm:w-auto h-10 px-5 text-xs font-semibold text-white bg-[#1B4332] hover:bg-[#143326] rounded-xl transition-all active:scale-[0.98] inline-flex items-center justify-center gap-2 shadow-2xs"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                  </svg>
+                  <span>Request Skill Swap</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Profile Info Details */}
+            <div className="space-y-3 text-center sm:text-left">
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-[#16160F]">
+                  {profile.name}
+                </h1>
+                <p className="text-xs sm:text-sm font-bold text-[#1B4332] mt-0.5">
+                  {usernameHandle}
+                </p>
+              </div>
+
+              {/* Metadata Line */}
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-[#6B6858] pt-0.5">
+                <div className="flex items-center gap-1.5 font-medium">
+                  <svg className="w-4 h-4 text-[#1B4332]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>{profile.location || "Location not set"}</span>
+                </div>
+
+                <div className="flex items-center gap-1.5 font-medium">
+                  <svg className="w-4 h-4 text-[#6B6858]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span>Member since {memberSince}</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* 4 ANIMATED STAT CARDS GRID */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <AnimatedStatCard
+            label="Average Rating"
+            value={profile.avgRating || 0.0}
+            isDecimal={true}
+            badgeText="★ Reviews"
+            icon={
+              <svg className="w-5 h-5 text-[#B8860B]" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+            }
+          />
+
+          <AnimatedStatCard
+            label="Completed Swaps"
+            value={profile.completedSwaps || 0}
+            badgeText="Verified"
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+            }
+          />
+
+          <AnimatedStatCard
+            label="Total Skills"
+            value={totalSkills}
+            badgeText="Offered & Wanted"
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            }
+          />
+
+          <AnimatedStatCard
+            label="Profile Views"
+            value={0}
+            isPlaceholder={true}
+            badgeText="Analytics"
+            icon={
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+            }
+          />
+        </div>
+
+        {/* SKILLS SECTION */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Skills Offered */}
+          <div className="bg-white rounded-2xl border border-[#E6E3DA] p-5 sm:p-6 flex flex-col justify-between shadow-xs hover:shadow-md transition-all">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-sm font-bold text-[#16160F] flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#1B4332]"></span>
+                  Skills Offered
+                </h2>
+                <span className="text-[11px] font-semibold text-[#1B4332] bg-[#E4EEE8] px-2.5 py-0.5 rounded-full border border-[#1B4332]/20">
+                  {profile.skillsOffered?.length || 0} Skills
+                </span>
+              </div>
+              <p className="text-[11px] text-[#6B6858] mb-4">Skills available to teach</p>
+
+              {profile.skillsOffered && profile.skillsOffered.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {profile.skillsOffered.map((skill, idx) => (
+                    <span
+                      key={idx}
+                      className="px-3.5 py-1.5 bg-[#E4EEE8] text-[#1B4332] text-xs font-semibold rounded-full border border-[#1B4332]/20 shadow-2xs hover:scale-105 transition-transform"
+                    >
+                      {typeof skill === "string" ? skill : skill.name}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  icon="📚"
+                  title="No skills offered yet"
+                  description="This user hasn't added skills to teach yet."
+                  actionText=""
+                />
+              )}
             </div>
           </div>
 
           {/* Skills Wanted */}
-          <div className="bg-white rounded-[16px] border border-[#E6E3DA] p-5 sm:p-6 flex flex-col justify-between hover:border-[#D8D4C8] transition-all">
+          <div className="bg-white rounded-2xl border border-[#E6E3DA] p-5 sm:p-6 flex flex-col justify-between shadow-xs hover:shadow-md transition-all">
             <div>
-              <h2 className="text-sm font-bold text-[#16160F] mb-1">Skills Wanted</h2>
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-sm font-bold text-[#16160F] flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
+                  Skills Wanted
+                </h2>
+                <span className="text-[11px] font-semibold text-[#16160F] bg-[#F7F6F2] px-2.5 py-0.5 rounded-full border border-[#E6E3DA]">
+                  {profile.skillsWanted?.length || 0} Skills
+                </span>
+              </div>
               <p className="text-[11px] text-[#6B6858] mb-4">Skills looking to learn</p>
-              
-              <div className="flex flex-wrap gap-2">
-                {profile.skillsWanted && profile.skillsWanted.length > 0 ? (
-                  profile.skillsWanted.map((skill, idx) => (
+
+              {profile.skillsWanted && profile.skillsWanted.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {profile.skillsWanted.map((skill, idx) => (
                     <span
                       key={idx}
-                      className="px-3 py-1 bg-[#F7F6F2] text-[#16160F] text-xs font-semibold rounded-full border border-[#E6E3DA]"
+                      className="px-3.5 py-1.5 bg-[#F7F6F2] text-[#16160F] text-xs font-semibold rounded-full border border-[#E6E3DA] shadow-2xs hover:scale-105 transition-transform"
                     >
                       {typeof skill === "string" ? skill : skill.name}
                     </span>
-                  ))
-                ) : (
-                  <div className="w-full text-center py-6 px-4 bg-[#F7F6F2] rounded-[12px] border border-dashed border-[#E6E3DA] flex flex-col items-center justify-center">
-                    <span className="text-2xl mb-1">📚</span>
-                    <p className="text-xs font-semibold text-[#16160F]">No skills added yet</p>
-                    <p className="text-[11px] text-[#6B6858] mt-0.5">Start adding skills in Phase 4.</p>
-                  </div>
-                )}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  icon="🎯"
+                  title="No learning goals set"
+                  description="This user hasn't specified skills they want to learn."
+                  actionText=""
+                />
+              )}
             </div>
           </div>
         </div>
 
-        {/* Portfolio Section Placeholder */}
-        <div className="bg-white rounded-[16px] border border-[#E6E3DA] p-6 text-center shadow-2xs hover:border-[#D8D4C8] transition-all">
-          <div className="max-w-sm mx-auto py-3 flex flex-col items-center">
-            <div className="w-12 h-12 rounded-full bg-[#F7F6F2] border border-[#E6E3DA] flex items-center justify-center text-xl text-[#1B4332] mb-3">
+        {/* PORTFOLIO PLACEHOLDER CARD */}
+        <div className="bg-white rounded-2xl border border-[#E6E3DA] p-6 text-center shadow-xs hover:shadow-md transition-all">
+          <div className="max-w-md mx-auto py-2 flex flex-col items-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#E4EEE8] border border-[#1B4332]/20 flex items-center justify-center text-xl text-[#1B4332] mb-3 shadow-2xs">
               🎨
             </div>
             <h3 className="text-sm font-bold text-[#16160F]">Portfolio Grid</h3>
-            <p className="text-xs text-[#6B6858] mt-1 max-w-xs">
-              Showcase photos and video media proving skill expertise.
+            <p className="text-xs text-[#6B6858] mt-1 max-w-sm">
+              Showcase photos and project media proving skill expertise.
             </p>
-            <div className="mt-3 px-3.5 py-1 bg-[#F7F6F2] border border-[#E6E3DA] text-[11px] font-semibold text-[#1B4332] rounded-full tracking-wide">
-              Portfolio feature coming in Phase 10
+            <div className="mt-4 px-4 py-1.5 bg-[#F7F6F2] border border-[#E6E3DA] text-[11px] font-bold text-[#1B4332] rounded-full tracking-wide inline-flex items-center gap-1.5 shadow-2xs">
+              <span>✨</span>
+              <span>Portfolio — Feature available in Phase 10</span>
             </div>
           </div>
         </div>
+
       </main>
     </div>
   );

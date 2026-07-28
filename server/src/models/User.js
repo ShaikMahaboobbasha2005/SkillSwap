@@ -52,6 +52,10 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
+    profileBanner: {
+      type: String,
+      default: "",
+    },
     location: {
       type: String,
       default: "",

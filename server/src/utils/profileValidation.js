@@ -19,6 +19,11 @@ const updateProfileSchema = z.object({
       invalid_type_error: "Profile picture must be a string URL",
     })
     .optional(),
+  profileBanner: z
+    .string({
+      invalid_type_error: "Profile banner must be a string URL",
+    })
+    .optional(),
 });
 
 module.exports = {
