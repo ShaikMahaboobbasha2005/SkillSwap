@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import logoImg from "../assets/logo.png";
 
@@ -26,14 +27,29 @@ const Home = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-full bg-[#1B4332] text-white flex items-center justify-center font-bold text-xs">
-                {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+            <Link
+              to="/profile"
+              className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+            >
+              <div className="w-8 h-8 rounded-full bg-[#1B4332] text-white flex items-center justify-center font-bold text-xs overflow-hidden">
+                {user?.profilePicture ? (
+                  <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" />
+                ) : user?.name ? (
+                  user.name.charAt(0).toUpperCase()
+                ) : (
+                  "U"
+                )}
               </div>
               <span className="text-sm text-[#16160F] font-medium hidden sm:inline">
                 {user?.name}
               </span>
-            </div>
+            </Link>
+            <Link
+              to="/profile"
+              className="px-3.5 py-1.5 text-xs font-semibold text-[#1B4332] bg-[#E4EEE8] hover:bg-[#1B4332] hover:text-white rounded-[10px] transition-colors"
+            >
+              My Profile
+            </Link>
             <button
               onClick={logout}
               className="px-3.5 py-1.5 text-xs font-semibold text-[#16160F] hover:text-[#1B4332] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] rounded-[10px] transition-colors"
