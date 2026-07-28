@@ -30,13 +30,15 @@ SkillSwap is a full-stack MERN web application that enables users to exchange sk
 
 ---
 
-## 📂 Project Structure
+## 📂 Repository Structure
+
+This repo is organized to separate frontend and backend code and to keep documentation in the root.
 
 ```
 SkillSwap/
 │
-├── client/          # React Frontend
-├── server/          # Express Backend
+├── client/          # React frontend (Vite)
+├── server/          # Express backend
 ├── API.md
 ├── Architecture.md
 ├── Database.md
@@ -47,9 +49,11 @@ SkillSwap/
 └── README.md
 ```
 
+If you open the `client` and `server` folders you'll find their respective package.json files, source code, and README for local setup details.
+
 ---
 
-## ✨ Features (Planned)
+## ✨ Planned Features
 
 - User Authentication
 - User Profiles
@@ -67,26 +71,27 @@ SkillSwap/
 ## 📌 Current Status
 
 ✅ Phase 1 Completed
-- Project Setup
-- React + Vite Setup
-- Express Server Setup
-- MongoDB Atlas Integration
-- Environment Configuration
+- Project setup
+- React + Vite scaffold
+- Express server scaffold
+- MongoDB Atlas integration (wiring)
+- Environment configuration
 
 🚧 Phase 2 In Progress
 - JWT Authentication
 
 ---
 
-## ⚙️ Installation
+## ⚙️ Installation (Local Development)
 
-### Clone the repository
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+git clone https://github.com/ShaikMahaboobbasha2005/SkillSwap.git
+cd SkillSwap
 ```
 
-### Install dependencies
+### 2. Install dependencies
 
 Frontend
 
@@ -102,28 +107,37 @@ cd server
 npm install
 ```
 
-### Create Environment Variables
+> Tip: Keep two terminals (one for client, one for server) while developing.
 
-Create a `.env` file inside the `server` folder.
+### 3. Create environment variables
+
+Create a `.env` file inside the `server` folder with at least the following variables:
 
 ```env
 PORT=5000
-MONGODB_URI=YOUR_MONGODB_CONNECTION_STRING
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
 ```
 
-### Run the project
+If your frontend needs environment variables (for example, Vite), create a `.env` or `.env.local` inside `client` following Vite's conventions (prefixed with VITE_).
 
-Backend
+### 4. Run the project
+
+Start the backend (from `server`):
 
 ```bash
+# from SkillSwap/server
 npm run dev
 ```
 
-Frontend
+Start the frontend (from `client`):
 
 ```bash
+# from SkillSwap/client
 npm run dev
 ```
+
+Open the app in your browser at the address printed by Vite (usually http://localhost:5173) and ensure the backend is reachable at its configured port (default 5000).
 
 ---
 
