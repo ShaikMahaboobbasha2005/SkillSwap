@@ -1,162 +1,232 @@
-# SkillSwap
+# 🚀 SkillSwap
 
-SkillSwap is a full-stack MERN web application that enables users to exchange skills, collaborate, and learn from one another through a community-driven platform.
+SkillSwap is a full-stack MERN web application that enables users to exchange skills by connecting people who can teach with those who want to learn.
 
-> 🚧 This project is currently under active development.
+The platform allows users to build professional profiles, showcase their expertise, discover learning opportunities, and collaborate through skill sharing.
+
+> **Status:** 🚧 In Development (Phase 4 Completed)
 
 ---
 
-## 🚀 Tech Stack
+## ✨ Features
+
+### 🔐 Authentication
+- User Registration
+- Secure Login
+- JWT Authentication
+- Protected Routes
+- Persistent Sessions
+
+### 👤 User Profiles
+- Edit Profile
+- Public Profile
+- Avatar Upload
+- Banner Upload
+- Cloudinary Integration
+- Image Cropping
+- Bio & Location
+- Responsive Profile UI
+
+### 🧠 Skills Management
+- Add Skills Offered
+- Add Skills Wanted
+- Edit Skills
+- Delete Skills
+- Years of Experience
+- Skill Categories
+- Skill Levels
+- Visibility Settings
+- Duplicate Skill Prevention
+- Responsive Skill Cards
+
+---
+
+## 🛠 Tech Stack
 
 ### Frontend
 - React
 - Vite
-- CSS
+- Tailwind CSS
+- React Router
+- Axios
 
 ### Backend
 - Node.js
 - Express.js
-
-### Database
 - MongoDB Atlas
 - Mongoose
+- JWT Authentication
+- Multer
+- Cloudinary
 
-### Authentication
-- JWT (Coming Soon)
-
-### Other Tools
+### Tools
 - Git & GitHub
 - Postman
+- Antigravity IDE
 
 ---
 
-## 📂 Repository Structure (current)
-
-The repository is organized to separate frontend and backend code and keep documentation in the root.
+## 📁 Project Structure
 
 ```
-SkillSwap/
+SkillSwap
 │
-├── client/          # React frontend (Vite) — see client/README for setup
-├── server/          # Express backend — see server/README for setup
-├── .gitignore
-├── API.md
-├── Architecture.md
-├── Database.md
-├── Design.md
-├── Phases.md
-├── PRD.md
-├── Rules.md
+├── client
+│   ├── src
+│   ├── public
+│   └── ...
+│
+├── server
+│   ├── src
+│   │   ├── controllers
+│   │   ├── models
+│   │   ├── routes
+│   │   ├── services
+│   │   ├── middleware
+│   │   └── utils
+│   └── ...
+│
 └── README.md
 ```
 
-Notes:
-- Each of `client/` and `server/` contains its own package.json and local setup instructions (see their README files).
-- Documentation and planning files are kept at the repository root for easy access.
+---
+
+## 🚀 Completed Phases
+
+- ✅ Phase 1 – Project Setup
+- ✅ Phase 2 – JWT Authentication
+- ✅ Phase 3 – User Profiles
+- ✅ Phase 4 – Skills Management
 
 ---
 
-## ✨ Planned Features
+## 📅 Upcoming Features
 
-- User Authentication
-- User Profiles
-- Skill Listings
-- Skill Search & Filters
-- Skill Requests
-- Real-time Chat
-- Video Sessions
-- Notifications
-- Image Uploads
-- Responsive UI
+- 🔍 Skill Discovery & Search
+- 🤝 Swap Requests
+- 💬 Real-time Chat
+- 🎥 Video Sessions
+- ⭐ Ratings & Reviews
+- 📂 Portfolio Showcase
+- 🤖 AI Skill Recommendations
+- 🚀 Deployment
 
 ---
 
-## 📌 Current Status
+## ⚙️ Installation
 
-✅ Phase 1 Completed
-- Project setup
-- React + Vite scaffold
-- Express server scaffold
-- MongoDB Atlas integration (wiring)
-- Environment configuration
-
-🚧 Phase 2 In Progress
-- JWT Authentication
-
----
-
-## ⚙️ Installation (Local Development)
-
-### 1. Clone the repository
+### Clone the repository
 
 ```bash
-git clone https://github.com/ShaikMahaboobbasha2005/SkillSwap.git
+git clone https://github.com/<your-username>/SkillSwap.git
+```
+
+### Navigate into the project
+
+```bash
 cd SkillSwap
 ```
 
-### 2. Install dependencies
+### Install dependencies
 
-Frontend
+#### Client
 
 ```bash
 cd client
 npm install
 ```
 
-Backend
+#### Server
 
 ```bash
-cd server
+cd ../server
 npm install
 ```
 
-> Tip: Keep two terminals (one for client, one for server) while developing.
+---
 
-### 3. Create environment variables
+## 🔑 Environment Variables
 
-Create a `.env` file inside the `server` folder with at least the following variables:
+Create a `.env` file inside the `server` directory.
+
+Example:
 
 ```env
 PORT=5000
+
 MONGODB_URI=your_mongodb_connection_string
+
 JWT_SECRET=your_jwt_secret
+
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
-
-If your frontend needs environment variables (for example, Vite), create a `.env` or `.env.local` inside `client` following Vite's conventions (prefixed with VITE_).
-
-### 4. Run the project
-
-Start the backend (from `server`):
-
-```bash
-# from SkillSwap/server
-npm run dev
-```
-
-Start the frontend (from `client`):
-
-```bash
-# from SkillSwap/client
-npm run dev
-```
-
-Open the app in your browser at the address printed by Vite (usually http://localhost:5173) and ensure the backend is reachable at its configured port (default 5000).
 
 ---
 
-## 📅 Development Progress
+## ▶️ Run the Project
 
-- ✅ Phase 1 – Project Setup
-- ⏳ Phase 2 – Authentication
-- ⏳ Phase 3 – User Profiles
-- ⏳ Phase 4 – Skills Module
-- ⏳ Phase 5 – Requests & Chat
-- ⏳ Phase 6 – Deployment
+### Backend
+
+```bash
+cd server
+npm run dev
+```
+
+### Frontend
+
+```bash
+cd client
+npm run dev
+```
 
 ---
 
-## 👨‍💻 Author
+## 📸 Screenshots
+
+> Screenshots will be added as development progresses.
+
+---
+
+## 📌 Current Status
+
+SkillSwap is currently under active development.
+
+The application now supports:
+
+- Secure Authentication
+- User Profiles
+- Avatar & Banner Uploads
+- Skills Management
+- Responsive Design
+- Production-ready CRUD Operations
+
+The next milestone is **Skill Discovery & Search**, enabling users to find others based on the skills they offer or want to learn.
+
+---
+
+## 🤝 Contributing
+
+Contributions, suggestions, and feedback are welcome.
+
+Feel free to fork the repository and submit a pull request.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 👨‍💻 Developer
 
 **Shaikh Mahaboob Basha**
 
-B.Tech CSE Student | MERN Stack Developer
+B.Tech Computer Science Engineering
+
+Passionate about Full-Stack Development, UI/UX, and building impactful web applications.
+
+⭐ If you like this project, consider giving it a star!
+
