@@ -30,15 +30,16 @@ SkillSwap is a full-stack MERN web application that enables users to exchange sk
 
 ---
 
-## 📂 Repository Structure
+## 📂 Repository Structure (current)
 
-This repo is organized to separate frontend and backend code and to keep documentation in the root.
+The repository is organized to separate frontend and backend code and keep documentation in the root.
 
 ```
 SkillSwap/
 │
-├── client/          # React frontend (Vite)
-├── server/          # Express backend
+├── client/          # React frontend (Vite) — see client/README for setup
+├── server/          # Express backend — see server/README for setup
+├── .gitignore
 ├── API.md
 ├── Architecture.md
 ├── Database.md
@@ -49,7 +50,9 @@ SkillSwap/
 └── README.md
 ```
 
-If you open the `client` and `server` folders you'll find their respective package.json files, source code, and README for local setup details.
+Notes:
+- Each of `client/` and `server/` contains its own package.json and local setup instructions (see their README files).
+- Documentation and planning files are kept at the repository root for easy access.
 
 ---
 
