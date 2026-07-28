@@ -44,7 +44,7 @@ const getUserPublicProfile = async (targetUserId) => {
   }
 
   const user = await User.findById(targetUserId).select(
-    "name profilePicture profileBanner location avgRating completedSwaps skillsOffered skillsWanted portfolio createdAt"
+    "name email profilePicture profileBanner location avgRating completedSwaps portfolio createdAt"
   );
 
   if (!user) {

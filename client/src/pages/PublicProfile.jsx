@@ -5,7 +5,7 @@ import logoImg from "../assets/logo.png";
 import ProfileSkeleton from "../components/ProfileSkeleton";
 import ProfileBanner from "../components/ProfileBanner";
 import AnimatedStatCard from "../components/AnimatedStatCard";
-import EmptyState from "../components/EmptyState";
+import SkillsSection from "../components/skills/SkillsSection";
 
 export default function PublicProfile() {
   const { id } = useParams();
@@ -13,6 +13,7 @@ export default function PublicProfile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [totalSkills, setTotalSkills] = useState(0);
 
   useEffect(() => {
     fetchUserProfile();
@@ -79,7 +80,6 @@ export default function PublicProfile() {
   const memberSince = profile.createdAt
     ? new Date(profile.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })
     : "Jan 2026";
-  const totalSkills = (profile.skillsOffered?.length || 0) + (profile.skillsWanted?.length || 0);
 
   return (
     <div className="min-h-screen bg-[#F7F6F2] text-[#16160F] antialiased flex flex-col animate-fadeIn">
@@ -242,80 +242,12 @@ export default function PublicProfile() {
           />
         </div>
 
-        {/* SKILLS SECTION */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Skills Offered */}
-          <div className="bg-white rounded-2xl border border-[#E6E3DA] p-5 sm:p-6 flex flex-col justify-between shadow-xs hover:shadow-md transition-all">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-sm font-bold text-[#16160F] flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#1B4332]"></span>
-                  Skills Offered
-                </h2>
-                <span className="text-[11px] font-semibold text-[#1B4332] bg-[#E4EEE8] px-2.5 py-0.5 rounded-full border border-[#1B4332]/20">
-                  {profile.skillsOffered?.length || 0} Skills
-                </span>
-              </div>
-              <p className="text-[11px] text-[#6B6858] mb-4">Skills available to teach</p>
-
-              {profile.skillsOffered && profile.skillsOffered.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {profile.skillsOffered.map((skill, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3.5 py-1.5 bg-[#E4EEE8] text-[#1B4332] text-xs font-semibold rounded-full border border-[#1B4332]/20 shadow-2xs hover:scale-105 transition-transform"
-                    >
-                      {typeof skill === "string" ? skill : skill.name}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  icon="📚"
-                  title="No skills offered yet"
-                  description="This user hasn't added skills to teach yet."
-                  actionText=""
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Skills Wanted */}
-          <div className="bg-white rounded-2xl border border-[#E6E3DA] p-5 sm:p-6 flex flex-col justify-between shadow-xs hover:shadow-md transition-all">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-sm font-bold text-[#16160F] flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
-                  Skills Wanted
-                </h2>
-                <span className="text-[11px] font-semibold text-[#16160F] bg-[#F7F6F2] px-2.5 py-0.5 rounded-full border border-[#E6E3DA]">
-                  {profile.skillsWanted?.length || 0} Skills
-                </span>
-              </div>
-              <p className="text-[11px] text-[#6B6858] mb-4">Skills looking to learn</p>
-
-              {profile.skillsWanted && profile.skillsWanted.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {profile.skillsWanted.map((skill, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3.5 py-1.5 bg-[#F7F6F2] text-[#16160F] text-xs font-semibold rounded-full border border-[#E6E3DA] shadow-2xs hover:scale-105 transition-transform"
-                    >
-                      {typeof skill === "string" ? skill : skill.name}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  icon="🎯"
-                  title="No learning goals set"
-                  description="This user hasn't specified skills they want to learn."
-                  actionText=""
-                />
-              )}
-            </div>
-          </div>
-        </div>
+        {/* PHASE 4: READ-ONLY PUBLIC SKILLS SECTION */}
+        <SkillsSection
+          userId={profile._id}
+          isOwner={false}
+          onSkillsCountChanged={(count) => setTotalSkills(count)}
+        />
 
         {/* PORTFOLIO PLACEHOLDER CARD */}
         <div className="bg-white rounded-2xl border border-[#E6E3DA] p-6 text-center shadow-xs hover:shadow-md transition-all">

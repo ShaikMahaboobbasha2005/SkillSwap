@@ -66,20 +66,6 @@ const userSchema = new Schema(
       enum: ["user", "admin"],
       default: "user",
     },
-    skillsOffered: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Skill",
-        index: true,
-      },
-    ],
-    skillsWanted: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Skill",
-        index: true,
-      },
-    ],
     portfolio: [portfolioItemSchema],
     avgRating: {
       type: Number,

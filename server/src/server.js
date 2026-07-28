@@ -6,6 +6,7 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const userRoutes = require("./routes/userRoutes");
+const skillRoutes = require("./routes/skillRoutes");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
@@ -39,6 +40,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/skills", skillRoutes);
 
 // Shared Error Handler Middleware
 app.use(errorHandler);

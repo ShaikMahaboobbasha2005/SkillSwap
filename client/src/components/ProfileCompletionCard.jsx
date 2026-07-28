@@ -1,4 +1,4 @@
-export default function ProfileCompletionCard({ profile, bio }) {
+export default function ProfileCompletionCard({ profile, bio, skillsCount = { offered: 0, wanted: 0 } }) {
   if (!profile) return null;
 
   const items = [
@@ -20,12 +20,12 @@ export default function ProfileCompletionCard({ profile, bio }) {
     {
       id: "offerSkills",
       label: "Offer Skills",
-      completed: Boolean(profile.skillsOffered && profile.skillsOffered.length > 0),
+      completed: Boolean(skillsCount.offered > 0),
     },
     {
       id: "learnSkills",
       label: "Learn Skills",
-      completed: Boolean(profile.skillsWanted && profile.skillsWanted.length > 0),
+      completed: Boolean(skillsCount.wanted > 0),
     },
   ];
 
@@ -61,7 +61,7 @@ export default function ProfileCompletionCard({ profile, bio }) {
       <p className="text-[11px] font-medium text-[#6B6858] mb-3">
         {percentage === 100
           ? "✓ Profile 100% complete! Ready for top quality skill swap matches."
-          : "Complete your skills to unlock better matches."}
+          : "Complete your skills to improve matching."}
       </p>
 
       {/* Checklist */}

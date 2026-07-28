@@ -9,8 +9,8 @@ import ToastNotification from "../components/ToastNotification";
 import ProfileSkeleton from "../components/ProfileSkeleton";
 import AnimatedStatCard from "../components/AnimatedStatCard";
 import ProfileCompletionCard from "../components/ProfileCompletionCard";
-import EmptyState from "../components/EmptyState";
 import ConfirmModal from "../components/ConfirmModal";
+import SkillsSection from "../components/skills/SkillsSection";
 
 export default function OwnProfile() {
   const { user: authUser, updateUser } = useContext(AuthContext);
@@ -22,6 +22,9 @@ export default function OwnProfile() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [error, setError] = useState("");
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+
+  // Skills Count tracking state for Stat cards & Completion card
+  const [skillsMeta, setSkillsMeta] = useState({ total: 0, offered: 0, wanted: 0 });
 
   // Edit Mode state & Unsaved modal state
   const [isEditing, setIsEditing] = useState(false);
@@ -264,7 +267,6 @@ export default function OwnProfile() {
   const memberSince = profile?.createdAt
     ? new Date(profile.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })
     : "Jan 2026";
-  const totalSkills = (profile?.skillsOffered?.length || 0) + (profile?.skillsWanted?.length || 0);
 
   return (
     <div className="min-h-screen bg-[#F7F6F2] text-[#16160F] antialiased flex flex-col animate-fadeIn">
@@ -350,7 +352,7 @@ export default function OwnProfile() {
         {/* PROFILE HEADER CARD WITH BANNER & HERO AVATAR */}
         <div className="bg-white rounded-2xl border border-[#E6E3DA] overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
           
-          {/* Profile Banner (Height h-36 sm:h-44 lg:h-48 - Reduced visual dominance) */}
+          {/* Profile Banner */}
           <ProfileBanner
             bannerUrl={profile?.profileBanner}
             isOwner={true}
@@ -364,7 +366,7 @@ export default function OwnProfile() {
             {/* Avatar & Header Action Controls Bar */}
             <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 -mt-20 sm:-mt-22 mb-4">
               
-              {/* ENLARGED HERO AVATAR (Main visual anchor of the page: w-32 h-32 sm:w-36 sm:h-36) */}
+              {/* ENLARGED HERO AVATAR */}
               <div className="relative group shrink-0">
                 <div
                   onClick={handleAvatarClick}
@@ -425,7 +427,7 @@ export default function OwnProfile() {
                 className="hidden"
               />
 
-              {/* Edit Profile Action Button (Positioned closely alongside user section) */}
+              {/* Edit Profile Action Button */}
               <div className="w-full sm:w-auto flex justify-center sm:justify-end shrink-0">
                 {!isEditing ? (
                   <button
@@ -452,11 +454,9 @@ export default function OwnProfile() {
             {/* STRONGER PROFILE IDENTITY (ALWAYS VISIBLE AT TOP) */}
             <div className="space-y-3 text-center sm:text-left">
               <div>
-                {/* 1. Name - Prominent Hero Heading */}
                 <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-[#16160F]">
                   {profile?.name}
                 </h1>
-                {/* 2. Username Handle */}
                 <p className="text-xs sm:text-sm font-bold text-[#1B4332] mt-0.5">
                   {usernameHandle}
                 </p>
@@ -480,7 +480,7 @@ export default function OwnProfile() {
                 </div>
               </div>
 
-              {/* 3. Read-Only Bio Presentation (outside edit mode) */}
+              {/* Read-Only Bio Presentation */}
               {!isEditing && (
                 <div className="pt-2">
                   <p className="text-xs sm:text-sm text-[#16160F]/95 leading-relaxed font-normal max-w-2xl">
@@ -540,7 +540,7 @@ export default function OwnProfile() {
                   </div>
                 </div>
 
-                {/* Bio Textarea with Live Character Counter */}
+                {/* Bio Textarea */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-bold text-[#16160F]">Short Bio</label>
@@ -566,7 +566,7 @@ export default function OwnProfile() {
                   />
                 </div>
 
-                {/* Profile Photo Upload Dropzone Box */}
+                {/* Profile Photo Upload Dropzone */}
                 <div
                   onDragOver={(e) => {
                     e.preventDefault();
@@ -607,7 +607,7 @@ export default function OwnProfile() {
                   </button>
                 </div>
 
-                {/* Edit Form Grouped Action Buttons */}
+                {/* Action Buttons */}
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-end gap-2.5">
                   <button
                     type="button"
@@ -640,7 +640,11 @@ export default function OwnProfile() {
         </div>
 
         {/* PROFILE COMPLETION CARD */}
-        <ProfileCompletionCard profile={profile} bio={formData.bio} />
+        <ProfileCompletionCard
+          profile={profile}
+          bio={formData.bio}
+          skillsCount={{ offered: skillsMeta.offered, wanted: skillsMeta.wanted }}
+        />
 
         {/* 4 ANIMATED STAT CARDS GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -669,7 +673,7 @@ export default function OwnProfile() {
 
           <AnimatedStatCard
             label="Total Skills"
-            value={totalSkills}
+            value={skillsMeta.total}
             badgeText="Offered & Wanted"
             icon={
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -692,84 +696,16 @@ export default function OwnProfile() {
           />
         </div>
 
-        {/* SKILLS SECTION */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          {/* Skills Offered Card */}
-          <div className="bg-white rounded-2xl border border-[#E6E3DA] p-5 sm:p-6 flex flex-col justify-between shadow-xs hover:shadow-md transition-all">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-sm font-bold text-[#16160F] flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#1B4332]"></span>
-                  Skills Offered
-                </h2>
-                <span className="text-[11px] font-semibold text-[#1B4332] bg-[#E4EEE8] px-2.5 py-0.5 rounded-full border border-[#1B4332]/20">
-                  {profile?.skillsOffered?.length || 0} Skills
-                </span>
-              </div>
-              <p className="text-[11px] text-[#6B6858] mb-4">Skills available to teach other members</p>
-
-              {profile?.skillsOffered && profile.skillsOffered.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {profile.skillsOffered.map((skill, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3.5 py-1.5 bg-[#E4EEE8] text-[#1B4332] text-xs font-semibold rounded-full border border-[#1B4332]/20 shadow-2xs hover:scale-105 transition-transform"
-                    >
-                      {typeof skill === "string" ? skill : skill.name}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  icon="📚"
-                  title="No skills added yet"
-                  description="Show everyone what you're good at."
-                  actionText="Add Your First Skill"
-                  onAction={() => showToast("Skill management will be unlocked in Phase 4!", "info")}
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Skills Wanted Card */}
-          <div className="bg-white rounded-2xl border border-[#E6E3DA] p-5 sm:p-6 flex flex-col justify-between shadow-xs hover:shadow-md transition-all">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-sm font-bold text-[#16160F] flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
-                  Skills Wanted
-                </h2>
-                <span className="text-[11px] font-semibold text-[#16160F] bg-[#F7F6F2] px-2.5 py-0.5 rounded-full border border-[#E6E3DA]">
-                  {profile?.skillsWanted?.length || 0} Skills
-                </span>
-              </div>
-              <p className="text-[11px] text-[#6B6858] mb-4">Skills looking to learn from community mentors</p>
-
-              {profile?.skillsWanted && profile.skillsWanted.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {profile.skillsWanted.map((skill, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3.5 py-1.5 bg-[#F7F6F2] text-[#16160F] text-xs font-semibold rounded-full border border-[#E6E3DA] shadow-2xs hover:scale-105 transition-transform"
-                    >
-                      {typeof skill === "string" ? skill : skill.name}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  icon="🎯"
-                  title="No learning goals set"
-                  description="Specify what skills you wish to learn to get matched with top teachers."
-                  actionText="Add Your First Skill"
-                  onAction={() => showToast("Skill management will be unlocked in Phase 4!", "info")}
-                />
-              )}
-            </div>
-          </div>
-
-        </div>
+        {/* PHASE 4: DEDICATED SKILLS MANAGEMENT SECTION */}
+        <SkillsSection
+          userId={profile?._id}
+          isOwner={true}
+          showToast={showToast}
+          onSkillsCountChanged={(total) => {
+            // Count offered & wanted skills dynamically
+            setSkillsMeta((prev) => ({ ...prev, total }));
+          }}
+        />
 
         {/* PORTFOLIO PLACEHOLDER CARD */}
         <div className="bg-white rounded-2xl border border-[#E6E3DA] p-6 text-center shadow-xs hover:shadow-md transition-all">
