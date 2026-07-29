@@ -33,7 +33,7 @@ const getOwnSkills = async (req, res, next) => {
   }
 };
 
-const getUserPublicSkills = async (req, res, next) => {
+const getUserActiveSkills = async (req, res, next) => {
   try {
     const requestingUserId = req.user ? req.user.id : null;
     const result = await skillService.getSkills(
@@ -87,7 +87,8 @@ const deleteSkill = async (req, res, next) => {
 module.exports = {
   createSkill,
   getOwnSkills,
-  getUserPublicSkills,
+  getUserActiveSkills,
+  getUserPublicSkills: getUserActiveSkills,
   updateSkill,
   deleteSkill,
 };

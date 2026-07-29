@@ -5,7 +5,7 @@ import DeleteSkillDialog from "./DeleteSkillDialog";
 import EmptyState from "../EmptyState";
 import {
   getOwnSkills,
-  getUserPublicSkills,
+  getUserActiveSkills,
   createSkill,
   updateSkill,
   deleteSkill,
@@ -43,7 +43,7 @@ export default function SkillsSection({
       if (isOwner) {
         res = await getOwnSkills();
       } else if (userId) {
-        res = await getUserPublicSkills(userId);
+        res = await getUserActiveSkills(userId);
       }
 
       if (res && res.success && Array.isArray(res.data)) {

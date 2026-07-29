@@ -25,4 +25,4 @@ export const SKILL_LEVELS = ["Beginner", "Intermediate", "Advanced", "Expert"];
 
 export const SKILL_TYPES = ["Offer", "Learn"];
 
-export const SKILL_VISIBILITY = ["Public", "Private"];
+export const SKILL_STATUS = ["Active", "Inactive"];

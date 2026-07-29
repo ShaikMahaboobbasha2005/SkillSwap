@@ -41,7 +41,7 @@ const getSkills = async (queryParams = {}, requestingUserId = null) => {
     type,
     category,
     level,
-    visibility,
+    status,
     search,
     sort = "displayOrder createdAt",
     page = 1,
@@ -66,14 +66,14 @@ const getSkills = async (queryParams = {}, requestingUserId = null) => {
     filter.level = level;
   }
 
-  // Enforce Visibility Rules: Only profile owner can see Private skills
+  // Enforce Availability Rules: Only profile owner can see Inactive skills
   const isOwnerRequesting =
     requestingUserId && owner && String(requestingUserId) === String(owner);
 
   if (!isOwnerRequesting) {
-    filter.visibility = "Public";
-  } else if (visibility) {
-    filter.visibility = visibility;
+    filter.status = "Active";
+  } else if (status) {
+    filter.status = status;
   }
 
   if (search) {
@@ -151,7 +151,7 @@ const updateSkill = async (userId, skillId, updateData) => {
   if (updateData.type !== undefined) skill.type = updateData.type;
   if (updateData.description !== undefined) skill.description = updateData.description;
   if (updateData.yearsOfExperience !== undefined) skill.yearsOfExperience = updateData.yearsOfExperience;
-  if (updateData.visibility !== undefined) skill.visibility = updateData.visibility;
+  if (updateData.status !== undefined) skill.status = updateData.status;
   if (updateData.displayOrder !== undefined) skill.displayOrder = updateData.displayOrder;
 
   await skill.save();

@@ -4,7 +4,7 @@ const {
   SKILL_CATEGORIES,
   SKILL_LEVELS,
   SKILL_TYPES,
-  SKILL_VISIBILITY,
+  SKILL_STATUS,
 } = require("../constants/skillConstants");
 
 const skillSchema = new Schema(
@@ -56,10 +56,10 @@ const skillSchema = new Schema(
       max: 50,
       default: null,
     },
-    visibility: {
+    status: {
       type: String,
-      enum: SKILL_VISIBILITY,
-      default: "Public",
+      enum: SKILL_STATUS,
+      default: "Active",
       index: true,
     },
     displayOrder: {
@@ -74,5 +74,8 @@ const skillSchema = new Schema(
 
 // Compound Unique Index: Prevents duplicate skills of the same type for the same user (case-insensitive name)
 skillSchema.index({ owner: 1, type: 1, normalizedName: 1 }, { unique: true });
+
+// Discovery Query Index: Optimizes discovery queries filtered by status, category, type, level, and sorted by createdAt
+skillSchema.index({ status: 1, category: 1, type: 1, level: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Skill", skillSchema);

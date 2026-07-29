@@ -10,10 +10,12 @@ export const getOwnSkills = async (params = {}) => {
   return response.data;
 };
 
-export const getUserPublicSkills = async (userId, params = {}) => {
+export const getUserActiveSkills = async (userId, params = {}) => {
   const response = await api.get(`/skills/user/${userId}`, { params });
   return response.data;
 };
+
+export const getUserPublicSkills = getUserActiveSkills;
 
 export const updateSkill = async (skillId, skillData) => {
   const response = await api.put(`/skills/${skillId}`, skillData);

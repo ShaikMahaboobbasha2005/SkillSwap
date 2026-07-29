@@ -18,8 +18,8 @@ router.post(
 
 router.get("/me", authMiddleware, skillController.getOwnSkills);
 
-// Public skills of a user
-router.get("/user/:userId", skillController.getUserPublicSkills);
+// Active skills of a user
+router.get("/user/:userId", skillController.getUserActiveSkills);
 
 // Skill modification routes (owner protected)
 router.put(

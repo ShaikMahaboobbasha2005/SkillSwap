@@ -25,11 +25,11 @@ const SKILL_LEVELS = ["Beginner", "Intermediate", "Advanced", "Expert"];
 
 const SKILL_TYPES = ["Offer", "Learn"];
 
-const SKILL_VISIBILITY = ["Public", "Private"];
+const SKILL_STATUS = ["Active", "Inactive"];
 
 module.exports = {
   SKILL_CATEGORIES,
   SKILL_LEVELS,
   SKILL_TYPES,
-  SKILL_VISIBILITY,
+  SKILL_STATUS,
 };

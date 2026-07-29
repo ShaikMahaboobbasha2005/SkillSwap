@@ -1,23 +1,47 @@
+import { CheckCircle2, EyeOff } from "lucide-react";
 import CategoryBadge from "./CategoryBadge";
 import LevelBadge from "./LevelBadge";
 
 export default function SkillCard({ skill, isOwner = false, onEdit, onDelete }) {
   if (!skill) return null;
 
+  const isInactive = skill.status === "Inactive";
+
   return (
-    <div className="bg-white rounded-2xl border border-[#E6E3DA] p-5 flex flex-col justify-between shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-200 group relative">
+    <div
+      className={`rounded-2xl border p-5 flex flex-col justify-between shadow-xs transition-all duration-200 group relative ${
+        isInactive && isOwner
+          ? "bg-[#F7F6F2]/60 border-[#E6E3DA] opacity-85 hover:opacity-100 hover:border-[#6B6858]/40"
+          : "bg-white border-[#E6E3DA] hover:shadow-md hover:-translate-y-0.5 hover:border-[#1B4332]/30"
+      }`}
+    >
       <div>
-        {/* Header: Title & Owner Actions */}
+        {/* Header: Title & Owner Actions / Badges */}
         <div className="flex items-start justify-between gap-3 mb-2">
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center flex-wrap gap-2 min-w-0">
             <h3 className="text-sm font-extrabold text-[#16160F] truncate tracking-tight">
               {skill.name}
             </h3>
-            {isOwner && skill.visibility === "Private" && (
-              <span className="shrink-0 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 flex items-center gap-1" title="Private skill (visible only to you)">
-                <span>🔒</span>
-                <span>Private</span>
-              </span>
+
+            {/* Status Badge for Owner */}
+            {isOwner && (
+              isInactive ? (
+                <span
+                  className="shrink-0 text-[10px] font-semibold text-[#6B6858] bg-[#F7F6F2] px-2 py-0.5 rounded-full border border-[#E6E3DA] flex items-center gap-1"
+                  title="Inactive skill (hidden from community)"
+                >
+                  <EyeOff className="w-3 h-3 text-[#6B6858]" />
+                  <span>Inactive • Hidden from community</span>
+                </span>
+              ) : (
+                <span
+                  className="shrink-0 text-[10px] font-semibold text-[#1B4332] bg-[#E4EEE8] px-2 py-0.5 rounded-full border border-[#1B4332]/20 flex items-center gap-1"
+                  title="Active skill (available to community)"
+                >
+                  <CheckCircle2 className="w-3 h-3 text-[#1B4332]" />
+                  <span>Active</span>
+                </span>
+              )
             )}
           </div>
 

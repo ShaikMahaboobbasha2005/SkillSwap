@@ -2,7 +2,7 @@ import { useState, useEffect, useContext, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { getOwnProfile, updateOwnProfile, uploadProfilePicture } from "../services/profileService";
-import logoImg from "../assets/logo.png";
+import Navbar from "../components/Navbar";
 import ImageCropModal from "../components/ImageCropModal";
 import ProfileBanner from "../components/ProfileBanner";
 import ToastNotification from "../components/ToastNotification";
@@ -303,35 +303,7 @@ export default function OwnProfile() {
       )}
 
       {/* Top Navigation */}
-      <nav className="border-b border-[#E6E3DA] bg-white sticky top-0 z-40 px-4 sm:px-8 py-3.5">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-3 hover:opacity-90 transition-opacity">
-            <img
-              src={logoImg}
-              alt="SkillSwap Logo"
-              className="w-9 h-9 object-contain rounded-xl border border-[#E6E3DA] p-1 bg-white"
-            />
-            <div className="flex flex-col">
-              <span className="text-xl font-bold tracking-tight text-[#16160F]">
-                Skill<span className="text-[#1B4332]">Swap</span>
-              </span>
-              <span className="font-brand-serif italic text-[10px] tracking-wider uppercase text-[#6B6858] font-medium -mt-1 hidden sm:inline">
-                Swap Skills. Grow Together.
-              </span>
-            </div>
-          </Link>
-
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={handleBackToHome}
-              className="h-9 px-3.5 text-xs font-semibold text-[#16160F] hover:text-[#1B4332] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] rounded-xl transition-all active:scale-[0.98] inline-flex items-center gap-1.5 shadow-2xs cursor-pointer"
-            >
-              <span>←</span>
-              <span>Back to Home</span>
-            </button>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Main Content Area */}
       <main className="max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 space-y-6">

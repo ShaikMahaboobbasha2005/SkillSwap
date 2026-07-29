@@ -3,7 +3,7 @@ const {
   SKILL_CATEGORIES,
   SKILL_LEVELS,
   SKILL_TYPES,
-  SKILL_VISIBILITY,
+  SKILL_STATUS,
 } = require("../constants/skillConstants");
 
 const createSkillSchema = z.object({
@@ -35,12 +35,12 @@ const createSkillSchema = z.object({
     .nullable()
     .optional()
     .default(null),
-  visibility: z
-    .enum(SKILL_VISIBILITY, {
-      errorMap: () => ({ message: "Visibility must be 'Public' or 'Private'" }),
+  status: z
+    .enum(SKILL_STATUS, {
+      errorMap: () => ({ message: "Status must be either Active or Inactive." }),
     })
     .optional()
-    .default("Public"),
+    .default("Active"),
   displayOrder: z.number().optional().default(0),
 });
 
