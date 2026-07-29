@@ -1,9 +1,9 @@
-export default function DeleteSkillDialog({ isOpen, skill, isDeleting, onConfirm, onCancel }) {
-  if (!isOpen || !skill) return null;
+import Modal from "../Modal";
 
+export default function DeleteSkillDialog({ isOpen, skill, isDeleting, onConfirm, onCancel }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
-      <div className="bg-white border border-[#E6E3DA] rounded-2xl max-w-sm w-full p-6 shadow-xl animate-slideDown flex flex-col space-y-4">
+    <Modal isOpen={isOpen && Boolean(skill)} onClose={onCancel} maxWidth="max-w-sm">
+      <div className="p-6 flex flex-col space-y-4">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 border border-red-200 flex items-center justify-center font-bold text-lg shrink-0">
             🗑️
@@ -11,7 +11,7 @@ export default function DeleteSkillDialog({ isOpen, skill, isDeleting, onConfirm
           <div>
             <h3 className="text-sm font-bold text-[#16160F]">Delete Skill?</h3>
             <p className="text-xs text-[#6B6858] mt-0.5">
-              Are you sure you want to delete <span className="font-bold text-[#16160F]">"{skill.name}"</span>? This action cannot be undone.
+              Are you sure you want to delete <span className="font-bold text-[#16160F]">"{skill?.name}"</span>? This action cannot be undone.
             </p>
           </div>
         </div>
@@ -39,6 +39,6 @@ export default function DeleteSkillDialog({ isOpen, skill, isDeleting, onConfirm
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

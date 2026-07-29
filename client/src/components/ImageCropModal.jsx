@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
+import Modal from "./Modal";
 
 const createImage = (url) =>
   new Promise((resolve, reject) => {
@@ -108,88 +109,81 @@ export default function ImageCropModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs animate-fadeIn">
-      <div className="bg-white border border-[#E6E3DA] rounded-2xl max-w-xl w-full overflow-hidden shadow-2xl animate-slideDown flex flex-col">
-        {/* Modal Header */}
-        <div className="px-5 py-3.5 border-b border-[#E6E3DA] flex items-center justify-between bg-[#F7F6F2]">
-          <h2 className="text-sm font-bold text-[#16160F]">{title}</h2>
-          <button
-            onClick={onCancel}
-            className="text-[#6B6858] hover:text-[#16160F] text-sm font-bold transition-colors cursor-pointer"
-          >
-            ✕
-          </button>
-        </div>
+    <Modal
+      isOpen={Boolean(imageSrc)}
+      onClose={onCancel}
+      maxWidth="max-w-xl"
+      title={title}
+      showCloseButton={true}
+    >
+      {/* Cropper Container */}
+      <div className="relative w-full h-72 sm:h-80 bg-[#0F1210]">
+        <Cropper
+          image={imageSrc}
+          crop={crop}
+          zoom={zoom}
+          aspect={aspect}
+          cropShape={cropShape}
+          showGrid={aspect > 1}
+          onCropChange={setCrop}
+          onZoomChange={setZoom}
+          onCropComplete={handleCropComplete}
+        />
+      </div>
 
-        {/* Cropper Container */}
-        <div className="relative w-full h-72 sm:h-80 bg-[#0F1210]">
-          <Cropper
-            image={imageSrc}
-            crop={crop}
-            zoom={zoom}
-            aspect={aspect}
-            cropShape={cropShape}
-            showGrid={aspect > 1}
-            onCropChange={setCrop}
-            onZoomChange={setZoom}
-            onCropComplete={handleCropComplete}
+      {/* Controls & Sliders */}
+      <div className="p-5 space-y-4 bg-white">
+        {/* Zoom Slider */}
+        <div className="flex items-center space-x-3">
+          <span className="text-xs font-semibold text-[#6B6858]">Zoom</span>
+          <input
+            type="range"
+            min={1}
+            max={3}
+            step={0.05}
+            value={zoom}
+            onChange={(e) => setZoom(Number(e.target.value))}
+            className="flex-1 accent-[#1B4332] h-1.5 bg-[#E6E3DA] rounded-lg cursor-pointer"
           />
+          <span className="text-xs font-semibold text-[#16160F] w-8 text-right">
+            {Math.round(zoom * 100)}%
+          </span>
         </div>
 
-        {/* Controls & Sliders */}
-        <div className="p-5 space-y-4 bg-white">
-          {/* Zoom Slider */}
-          <div className="flex items-center space-x-3">
-            <span className="text-xs font-semibold text-[#6B6858]">Zoom</span>
-            <input
-              type="range"
-              min={1}
-              max={3}
-              step={0.05}
-              value={zoom}
-              onChange={(e) => setZoom(Number(e.target.value))}
-              className="flex-1 accent-[#1B4332] h-1.5 bg-[#E6E3DA] rounded-lg cursor-pointer"
-            />
-            <span className="text-xs font-semibold text-[#16160F] w-8 text-right">
-              {Math.round(zoom * 100)}%
-            </span>
-          </div>
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between pt-2 border-t border-[#E6E3DA]/60">
+          <button
+            type="button"
+            onClick={handleReset}
+            className="px-3.5 py-1.5 text-xs font-semibold text-[#6B6858] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] rounded-xl transition-all cursor-pointer"
+          >
+            Reset Zoom
+          </button>
 
-          {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-2 border-t border-[#E6E3DA]/60">
+          <div className="flex items-center space-x-2">
             <button
               type="button"
-              onClick={handleReset}
-              className="px-3.5 py-1.5 text-xs font-semibold text-[#6B6858] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] rounded-xl transition-all cursor-pointer"
+              onClick={onCancel}
+              disabled={processing}
+              className="px-4 py-2 text-xs font-semibold text-[#6B6858] hover:text-[#16160F] bg-[#F7F6F2] border border-[#E6E3DA] rounded-xl transition-all cursor-pointer"
             >
-              Reset Zoom
+              Cancel
             </button>
 
-            <div className="flex items-center space-x-2">
-              <button
-                type="button"
-                onClick={onCancel}
-                disabled={processing}
-                className="px-4 py-2 text-xs font-semibold text-[#6B6858] hover:text-[#16160F] bg-[#F7F6F2] border border-[#E6E3DA] rounded-xl transition-all cursor-pointer"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={processing}
-                className="px-5 py-2 text-xs font-semibold text-white bg-[#1B4332] hover:bg-[#143326] rounded-xl transition-all active:scale-[0.98] flex items-center gap-1.5 shadow-2xs cursor-pointer"
-              >
-                {processing && (
-                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                )}
-                <span>Save Crop</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={processing}
+              className="px-5 py-2 text-xs font-semibold text-white bg-[#1B4332] hover:bg-[#143326] rounded-xl transition-all active:scale-[0.98] flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            >
+              {processing && (
+                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              )}
+              <span>Save Crop</span>
+            </button>
           </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
