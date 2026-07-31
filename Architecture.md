@@ -35,11 +35,13 @@ Single-page app, deployed as a static build on Vercel.
 
 ```
 src/
-├── pages/          # route-level views (Login, Signup, Profile, Search, Chat, etc.)
-├── components/     # reusable UI (SkillCard, MatchCard, SwapRequestModal, PortfolioGrid, RatingStars)
-├── context/         # AuthContext, SocketContext
-├── hooks/           # useAuth, useSocket, useMatches
-├── services/        # API call wrappers (axios instances per resource)
+├── pages/          # route-level views (Login, Signup, Home, DiscoverPage, OwnProfile, PublicProfile, SwapRequestsPage)
+├── components/     # reusable UI
+│   ├── swaps/      # SwapRequestModal, SwapRequestCard, IncomingRequests, OutgoingRequests, StatusBadge, EmptySwapState, SwapRequestSkeleton
+│   └── ...         # Navbar, Modal, ConfirmModal, ToastNotification, SkillsSection, etc.
+├── context/         # AuthContext
+├── hooks/           # useAuth, useDiscover
+├── services/        # API call wrappers (authService, skillService, discoverService, profileService, swapService)
 ├── utils/           # validation helpers, formatters
 └── App.jsx
 ```

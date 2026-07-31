@@ -4,6 +4,7 @@ import ToastNotification from "../ToastNotification";
 import { getOwnSkills, getUserActiveSkills } from "../../services/skillService";
 import swapService from "../../services/swapService";
 import useAuth from "../../hooks/useAuth";
+import { useSwap } from "../../context/SwapContext";
 import { Sparkles, GraduationCap, ArrowRight, UserCheck, AlertCircle } from "lucide-react";
 
 /**
@@ -28,6 +29,7 @@ export default function SwapRequestModal({
   onSuccess,
 }) {
   const { user: currentUser } = useAuth();
+  const { refreshStats } = useSwap();
 
   const [ownSkills, setOwnSkills] = useState([]);
   const [loadingSkills, setLoadingSkills] = useState(false);
@@ -191,9 +193,11 @@ export default function SwapRequestModal({
 
       setToast({
         show: true,
-        type: "success",
+        type: "sent",
         message: "Swap request sent successfully!",
       });
+
+      refreshStats();
 
       if (onSuccess) {
         onSuccess(res.data);
@@ -212,10 +216,11 @@ export default function SwapRequestModal({
       if (
         status === 409 ||
         rawMsg.toLowerCase().includes("already exists") ||
-        rawMsg.toLowerCase().includes("active or pending") ||
+        rawMsg.toLowerCase().includes("active") ||
+        rawMsg.toLowerCase().includes("pending") ||
         rawMsg.toLowerCase().includes("duplicate")
       ) {
-        userFriendlyMsg = "You already have a pending swap request with this user.";
+        userFriendlyMsg = rawMsg || "You already have an active or pending swap request for these skills.";
       } else if (
         status === 400 &&
         (rawMsg.toLowerCase().includes("yourself") || rawMsg.toLowerCase().includes("self"))

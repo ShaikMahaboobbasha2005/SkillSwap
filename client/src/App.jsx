@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { SwapProvider } from "./context/SwapContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ScrollToTop from "./components/ScrollToTop";
 import Login from "./pages/Login";
@@ -8,28 +9,32 @@ import Home from "./pages/Home";
 import DiscoverPage from "./pages/DiscoverPage";
 import OwnProfile from "./pages/OwnProfile";
 import PublicProfile from "./pages/PublicProfile";
+import SwapRequestsPage from "./pages/SwapRequestsPage";
 
 function App() {
   return (
     <Router>
       <ScrollToTop />
       <AuthProvider>
-        <Routes>
-          {/* Public Auth Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/users/:id" element={<PublicProfile />} />
+        <SwapProvider>
+          <Routes>
+            {/* Public Auth Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/users/:id" element={<PublicProfile />} />
 
-          {/* Protected Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/discover" element={<DiscoverPage />} />
-            <Route path="/profile" element={<OwnProfile />} />
-          </Route>
+            {/* Protected Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/discover" element={<DiscoverPage />} />
+              <Route path="/swaps" element={<SwapRequestsPage />} />
+              <Route path="/profile" element={<OwnProfile />} />
+            </Route>
 
-          {/* Fallback route */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* Fallback route */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </SwapProvider>
       </AuthProvider>
     </Router>
   );

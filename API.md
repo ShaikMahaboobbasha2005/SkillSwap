@@ -71,7 +71,9 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 | GET | `/api/notifications` | Protected | Get current user's notifications. Supports optional `?page=&limit=` (e.g. `?page=1&limit=20`) |
 | PATCH | `/api/notifications/:id/read` | Protected | Mark a notification as read |
 
-**Ownership rule:** for `PATCH /api/swaps/:id/accept`, `/reject`, and `/complete` — only the appropriate participant on that specific swap request may perform the action (e.g. only the recipient can accept/reject; either participant can mark complete). The backend must verify the authenticated user is a valid participant on the swap before applying the state change, returning `403 Forbidden` otherwise.
+**Ownership & Validation Rules:**
+- `POST /api/swaps`: Enforces self-request prevention (400), target/skill existence and active status (400/404), ownership (400), and bidirectional duplicate active/pending swap prevention (409 Conflict). Returns error if an active (`accepted`) or `pending` swap already exists for the same skill pair between the two users regardless of request direction.
+- `PATCH /api/swaps/:id/accept`, `/reject`, and `/complete`: Only the appropriate participant on that specific swap request may perform the action (e.g. only the recipient can accept/reject; either participant can mark complete). Returns `403 Forbidden` otherwise.
 
 ## Standard Response Shape
 ```json
@@ -92,5 +94,5 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 | 401 | Missing or invalid JWT |
 | 403 | Authenticated but not allowed (e.g. ownership rule violation) |
 | 404 | Resource not found |
-| 409 | Conflict (e.g. duplicate email on signup, duplicate pending swap request) |
+| 409 | Conflict (e.g. duplicate email on signup, active or pending swap request for same skill pair) |
 | 500 | Internal server error |

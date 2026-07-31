@@ -64,18 +64,31 @@ const createSwapRequest = async (fromUserId, data) => {
     throw error;
   }
 
-  // 6. Skill-pair duplicate request prevention (pending or accepted)
+  // 6. Skill-pair duplicate request prevention (pending or accepted, in either direction)
   const existingRequest = await SwapRequest.findOne({
-    fromUser: fromUserId,
-    toUser: toUserId,
-    offeredSkill: offeredSkillId,
-    wantedSkill: wantedSkillId,
+    $or: [
+      {
+        fromUser: fromUserId,
+        toUser: toUserId,
+        offeredSkill: offeredSkillId,
+        wantedSkill: wantedSkillId,
+      },
+      {
+        fromUser: toUserId,
+        toUser: fromUserId,
+        offeredSkill: wantedSkillId,
+        wantedSkill: offeredSkillId,
+      },
+    ],
     status: { $in: ["pending", "accepted"] },
   });
 
   if (existingRequest) {
+    const isAccepted = existingRequest.status === "accepted";
     const error = new Error(
-      "An active or pending swap request for this exact skill exchange already exists."
+      isAccepted
+        ? "You already have an active swap for these skills."
+        : "You already have a pending swap request for these skills."
     );
     error.statusCode = 409;
     throw error;
@@ -290,29 +303,30 @@ const getSwapStats = async (userId) => {
   const [
     pendingIncoming,
     pendingOutgoing,
-    accepted,
-    rejected,
-    cancelled,
+    acceptedIncoming,
+    acceptedOutgoing,
+    rejectedIncoming,
+    rejectedOutgoing,
+    cancelledIncoming,
+    cancelledOutgoing,
     totalIncoming,
     totalOutgoing,
   ] = await Promise.all([
     SwapRequest.countDocuments({ toUser: userId, status: "pending" }),
     SwapRequest.countDocuments({ fromUser: userId, status: "pending" }),
-    SwapRequest.countDocuments({
-      $or: [{ fromUser: userId }, { toUser: userId }],
-      status: "accepted",
-    }),
-    SwapRequest.countDocuments({
-      $or: [{ fromUser: userId }, { toUser: userId }],
-      status: "rejected",
-    }),
-    SwapRequest.countDocuments({
-      $or: [{ fromUser: userId }, { toUser: userId }],
-      status: "cancelled",
-    }),
+    SwapRequest.countDocuments({ toUser: userId, status: "accepted" }),
+    SwapRequest.countDocuments({ fromUser: userId, status: "accepted" }),
+    SwapRequest.countDocuments({ toUser: userId, status: "rejected" }),
+    SwapRequest.countDocuments({ fromUser: userId, status: "rejected" }),
+    SwapRequest.countDocuments({ toUser: userId, status: "cancelled" }),
+    SwapRequest.countDocuments({ fromUser: userId, status: "cancelled" }),
     SwapRequest.countDocuments({ toUser: userId }),
     SwapRequest.countDocuments({ fromUser: userId }),
   ]);
+
+  const accepted = acceptedIncoming + acceptedOutgoing;
+  const rejected = rejectedIncoming + rejectedOutgoing;
+  const cancelled = cancelledIncoming + cancelledOutgoing;
 
   return {
     pendingIncoming,
@@ -322,6 +336,22 @@ const getSwapStats = async (userId) => {
     cancelled,
     totalIncoming,
     totalOutgoing,
+
+    // Tab-contextual breakdowns
+    incoming: {
+      pending: pendingIncoming,
+      accepted: acceptedIncoming,
+      rejected: rejectedIncoming,
+      cancelled: cancelledIncoming,
+      total: totalIncoming,
+    },
+    outgoing: {
+      pending: pendingOutgoing,
+      accepted: acceptedOutgoing,
+      rejected: rejectedOutgoing,
+      cancelled: cancelledOutgoing,
+      total: totalOutgoing,
+    },
   };
 };
 

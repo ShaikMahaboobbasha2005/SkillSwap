@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
+import { useSwap } from "../context/SwapContext";
+import NotificationBadge from "./NotificationBadge";
 import logoImg from "../assets/logo.png";
 import {
   Compass,
@@ -11,10 +13,12 @@ import {
   Menu,
   X,
   Home as HomeIcon,
+  Handshake,
 } from "lucide-react";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { pendingIncomingCount } = useSwap();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -79,6 +83,11 @@ export default function Navbar() {
             <Compass className="w-3.5 h-3.5" />
             <span>Discover Skills</span>
           </Link>
+          <Link to="/swaps" className={linkClasses("/swaps")}>
+            <Handshake className="w-3.5 h-3.5" />
+            <span>Swap Requests</span>
+            <NotificationBadge count={pendingIncomingCount} variant="inline" />
+          </Link>
         </div>
 
         {/* Desktop Profile Dropdown Navigation */}
@@ -91,18 +100,21 @@ export default function Navbar() {
               aria-label="Open user profile menu"
               aria-expanded={dropdownOpen}
             >
-              <div className="w-8 h-8 rounded-full bg-[#1B4332] text-white flex items-center justify-center font-bold text-xs overflow-hidden border border-[#E6E3DA] shrink-0">
-                {user?.profilePicture ? (
-                  <img
-                    src={user.profilePicture}
-                    alt={user.name || "User Avatar"}
-                    className="w-full h-full object-cover"
-                  />
-                ) : user?.name ? (
-                  user.name.charAt(0).toUpperCase()
-                ) : (
-                  "U"
-                )}
+              <div className="relative">
+                <div className="w-8 h-8 rounded-full bg-[#1B4332] text-white flex items-center justify-center font-bold text-xs overflow-hidden border border-[#E6E3DA] shrink-0">
+                  {user?.profilePicture ? (
+                    <img
+                      src={user.profilePicture}
+                      alt={user.name || "User Avatar"}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : user?.name ? (
+                    user.name.charAt(0).toUpperCase()
+                  ) : (
+                    "U"
+                  )}
+                </div>
+                <NotificationBadge count={pendingIncomingCount} variant="floating" />
               </div>
               <span className="text-xs font-semibold text-[#16160F]">
                 {user?.name}
@@ -129,6 +141,18 @@ export default function Navbar() {
                 >
                   <User className="w-4 h-4 text-[#6B6858]" />
                   <span>My Profile</span>
+                </Link>
+
+                <Link
+                  to="/swaps"
+                  onClick={() => setDropdownOpen(false)}
+                  className="flex items-center justify-between px-4 py-2 text-xs font-semibold text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332] transition-colors"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Handshake className="w-4 h-4 text-[#6B6858]" />
+                    <span>Swap Requests</span>
+                  </div>
+                  <NotificationBadge count={pendingIncomingCount} variant="inline" />
                 </Link>
 
                 <div className="flex items-center justify-between px-4 py-2 text-xs font-semibold text-[#6B6858] opacity-60 cursor-not-allowed">
@@ -191,6 +215,19 @@ export default function Navbar() {
           >
             <Compass className="w-3.5 h-3.5 inline mr-2" />
             Discover Skills
+          </Link>
+          <Link
+            to="/swaps"
+            onClick={() => setMobileMenuOpen(false)}
+            className={`block ${linkClasses("/swaps")}`}
+          >
+            <div className="flex items-center justify-between w-full">
+              <div>
+                <Handshake className="w-3.5 h-3.5 inline mr-2" />
+                <span>Swap Requests</span>
+              </div>
+              <NotificationBadge count={pendingIncomingCount} variant="inline" />
+            </div>
           </Link>
           <Link
             to="/profile"
