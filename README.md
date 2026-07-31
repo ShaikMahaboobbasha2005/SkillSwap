@@ -1,232 +1,263 @@
 # 🚀 SkillSwap
 
-SkillSwap is a full-stack MERN web application that enables users to exchange skills by connecting people who can teach with those who want to learn.
+A modern full-stack skill exchange platform where users can teach what they know and learn from others through structured skill swap requests.
 
-The platform allows users to build professional profiles, showcase their expertise, discover learning opportunities, and collaborate through skill sharing.
+## Overview
 
-> **Status:** 🚧 In Development (Phase 4 Completed)
-
----
-
-## ✨ Features
-
-### 🔐 Authentication
-- User Registration
-- Secure Login
-- JWT Authentication
-- Protected Routes
-- Persistent Sessions
-
-### 👤 User Profiles
-- Edit Profile
-- Public Profile
-- Avatar Upload
-- Banner Upload
-- Cloudinary Integration
-- Image Cropping
-- Bio & Location
-- Responsive Profile UI
-
-### 🧠 Skills Management
-- Add Skills Offered
-- Add Skills Wanted
-- Edit Skills
-- Delete Skills
-- Years of Experience
-- Skill Categories
-- Skill Levels
-- Visibility Settings
-- Duplicate Skill Prevention
-- Responsive Skill Cards
+SkillSwap connects people who want to exchange skills instead of paying for courses. Users can showcase their skills, discover other members, send swap requests, manage ongoing exchanges, and build a learning community. 🤝✨
 
 ---
 
-## 🛠 Tech Stack
+## Features ✨
 
-### Frontend
+### User Authentication 🔐
+- JWT Authentication 🛡️
+- Secure Login & Registration 🔑
+- Protected Routes 🚧
+- User Profiles 👥
+
+### Profile Management 👤
+- Edit Profile ✍️
+- Profile Photo 📸
+- Banner Image 🖼️
+- Bio & Location 📍
+- Skills Summary 🧾
+- Profile Statistics 📊
+
+### Skills 🧠
+- Add Skills Offered ➕
+- Add Skills Wanted 🔎
+- Skill Categories 🗂️
+- Experience Levels 📈
+- Active / Inactive Skills ⚪⚫
+- Duplicate Skill Prevention 🚫
+
+### Discover 🔍
+- Search Users 🔎
+- Filter Skills 🧰
+- Public Profiles 🌐
+- Request Skill Swap 🔁
+
+### Skill Swap Workflow 🔄
+- Send Swap Requests ✉️
+- Incoming Requests 📥
+- Outgoing Requests 📤
+- Accept Requests ✅
+- Reject Requests ❌
+- Cancel Requests 🛑
+- Dashboard Statistics 📈
+- Duplicate Swap Prevention ⚠️
+- Notification Badges 🔔
+
+---
+
+## Tech Stack 🛠️
+
+### Frontend ⚛️
 - React
 - Vite
 - Tailwind CSS
-- React Router
 - Axios
+- React Router
 
-### Backend
+### Backend 🧩
 - Node.js
 - Express.js
-- MongoDB Atlas
+- MongoDB
 - Mongoose
-- JWT Authentication
-- Multer
-- Cloudinary
-
-### Tools
-- Git & GitHub
-- Postman
-- Antigravity IDE
+- JWT
+- Zod Validation
 
 ---
 
-## 📁 Project Structure
+## Project Structure 📁
 
 ```
-SkillSwap
+SkillSwap/
 │
-├── client
-│   ├── src
-│   ├── public
-│   └── ...
+├── client/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   ├── hooks/
+│   │   └── utils/
 │
-├── server
-│   ├── src
-│   │   ├── controllers
-│   │   ├── models
-│   │   ├── routes
-│   │   ├── services
-│   │   ├── middleware
-│   │   └── utils
-│   └── ...
+├── server/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── services/
+│   ├── validations/
+│   └── utils/
 │
-└── README.md
+├── README.md
+└── package.json
 ```
 
 ---
 
-## 🚀 Completed Phases
+## Installation 🧭
 
-- ✅ Phase 1 – Project Setup
-- ✅ Phase 2 – JWT Authentication
-- ✅ Phase 3 – User Profiles
-- ✅ Phase 4 – Skills Management
-
----
-
-## 📅 Upcoming Features
-
-- 🔍 Skill Discovery & Search
-- 🤝 Swap Requests
-- 💬 Real-time Chat
-- 🎥 Video Sessions
-- ⭐ Ratings & Reviews
-- 📂 Portfolio Showcase
-- 🤖 AI Skill Recommendations
-- 🚀 Deployment
-
----
-
-## ⚙️ Installation
-
-### Clone the repository
+### Clone Repository
 
 ```bash
 git clone https://github.com/<your-username>/SkillSwap.git
 ```
 
-### Navigate into the project
+### Navigate
 
 ```bash
 cd SkillSwap
 ```
 
-### Install dependencies
+### Install Dependencies
 
-#### Client
+Backend
 
 ```bash
-cd client
+cd server
 npm install
 ```
 
-#### Server
+Frontend
 
 ```bash
-cd ../server
+cd ../client
 npm install
 ```
 
 ---
 
-## 🔑 Environment Variables
+## Environment Variables 🔑
 
-Create a `.env` file inside the `server` directory.
-
-Example:
+### Server (.env)
 
 ```env
 PORT=5000
 
-MONGODB_URI=your_mongodb_connection_string
+MONGO_URI=your_mongodb_connection
 
-JWT_SECRET=your_jwt_secret
+JWT_SECRET=your_secret_key
 
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+CLIENT_URL=http://localhost:5173
+```
+
+### Client (.env)
+
+```env
+VITE_API_URL=http://localhost:5000/api
 ```
 
 ---
 
-## ▶️ Run the Project
+## Running the Project ▶️
 
-### Backend
+Backend
 
 ```bash
 cd server
 npm run dev
 ```
 
-### Frontend
+Frontend
 
 ```bash
 cd client
 npm run dev
 ```
 
----
+Open
 
-## 📸 Screenshots
-
-> Screenshots will be added as development progresses.
-
----
-
-## 📌 Current Status
-
-SkillSwap is currently under active development.
-
-The application now supports:
-
-- Secure Authentication
-- User Profiles
-- Avatar & Banner Uploads
-- Skills Management
-- Responsive Design
-- Production-ready CRUD Operations
-
-The next milestone is **Skill Discovery & Search**, enabling users to find others based on the skills they offer or want to learn.
+```
+http://localhost:5173
+```
 
 ---
 
-## 🤝 Contributing
+## Current Development Status 📅
 
-Contributions, suggestions, and feedback are welcome.
+### Completed ✅
 
-Feel free to fork the repository and submit a pull request.
+- User Authentication 🔐
+- Profile Management 👤
+- Skills Management 🧠
+- Discover Page 🔍
+- Public Profiles 🌐
+- Skill Swap Request Creation ✉️
+- Skill Swap Dashboard 📊
+- Swap Request Management 🔁
+- Profile UI Refinements 🎨
+
+### Upcoming ⏳
+
+- Portfolio 🗂️
+- Ratings & Reviews ⭐
+- Chat System 💬
+- Notifications 🔔
+- Admin Panel 🛠️
 
 ---
 
-## 📄 License
+## API Highlights 🔌
+
+### Authentication
+
+- Login
+- Register
+- Get Current User
+
+### Skills
+
+- Create Skill
+- Update Skill
+- Delete Skill
+- Search Skills
+
+### Swaps
+
+- Create Swap
+- Incoming Requests
+- Outgoing Requests
+- Accept Request
+- Reject Request
+- Cancel Request
+- Dashboard Statistics
+
+---
+
+## Security 🔒
+
+- JWT Authentication 🛡️
+- Protected Routes 🚧
+- Request Validation using Zod ✅
+- Ownership Verification 👤
+- Duplicate Skill Prevention 🚫
+- Duplicate Swap Prevention ⚠️
+- Input Sanitization 🧹
+
+---
+
+## Future Enhancements 🚀
+
+- Real-time Chat 💬
+- Portfolio Showcase 🖼️
+- Reviews & Ratings ⭐
+- Email Notifications 📧
+- Skill Recommendations 🤖
+- Admin Dashboard 🧑‍💼
+
+---
+
+## License 📄
 
 This project is licensed under the MIT License.
 
 ---
 
-## 👨‍💻 Developer
+## Author 🧑‍💻
 
 **Shaikh Mahaboob Basha**
 
-B.Tech Computer Science Engineering
-
-Passionate about Full-Stack Development, UI/UX, and building impactful web applications.
-
-⭐ If you like this project, consider giving it a star!
-
+GitHub: https://github.com/<your-username>
