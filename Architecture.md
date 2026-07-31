@@ -37,8 +37,9 @@ Single-page app, deployed as a static build on Vercel.
 src/
 ├── pages/          # route-level views (Login, Signup, Home, DiscoverPage, OwnProfile, PublicProfile, SwapRequestsPage)
 ├── components/     # reusable UI
+│   ├── profile/    # CompactProfileStats, AvatarLightboxModal
 │   ├── swaps/      # SwapRequestModal, SwapRequestCard, IncomingRequests, OutgoingRequests, StatusBadge, EmptySwapState, SwapRequestSkeleton
-│   └── ...         # Navbar, Modal, ConfirmModal, ToastNotification, SkillsSection, etc.
+│   └── ...         # Navbar, ProfileBanner, Modal, ConfirmModal, ToastNotification, SkillsSection, etc.
 ├── context/         # AuthContext
 ├── hooks/           # useAuth, useDiscover
 ├── services/        # API call wrappers (authService, skillService, discoverService, profileService, swapService)

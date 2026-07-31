@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getPublicProfile } from "../services/profileService";
 import Navbar from "../components/Navbar";
 import ProfileSkeleton from "../components/ProfileSkeleton";
 import ProfileBanner from "../components/ProfileBanner";
-import AnimatedStatCard from "../components/AnimatedStatCard";
+import CompactProfileStats from "../components/profile/CompactProfileStats";
+import AvatarLightboxModal from "../components/profile/AvatarLightboxModal";
 import SkillsSection from "../components/skills/SkillsSection";
 import SwapRequestModal from "../components/swaps/SwapRequestModal";
 import useAuth from "../hooks/useAuth";
+import { Eye, MapPin, Calendar } from "lucide-react";
 
 export default function PublicProfile() {
   const { id } = useParams();
@@ -18,6 +20,36 @@ export default function PublicProfile() {
   const [error, setError] = useState("");
   const [totalSkills, setTotalSkills] = useState(0);
   const [swapModalOpen, setSwapModalOpen] = useState(false);
+
+  // Avatar contextual dropdown & Lightbox state
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const [showAvatarLightbox, setShowAvatarLightbox] = useState(false);
+  const avatarMenuRef = useRef(null);
+
+  // Handle Click Outside & Escape key for Avatar Contextual Menu
+  useEffect(() => {
+    if (!avatarMenuOpen) return;
+
+    const handleClickOutside = (e) => {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target)) {
+        setAvatarMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setAvatarMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [avatarMenuOpen]);
 
   useEffect(() => {
     fetchUserProfile();
@@ -80,6 +112,13 @@ export default function PublicProfile() {
   const profileUserId = profile?._id || profile?.id || id;
   const isSelf = Boolean(currentUserId && profileUserId && String(currentUserId) === String(profileUserId));
 
+  const currentPicture =
+    profile?.profilePicture ||
+    profile?.avatar ||
+    profile?.profilePhoto ||
+    profile?.avatarUrl ||
+    "";
+
   return (
     <div className="min-h-screen bg-[#F7F6F2] text-[#16160F] antialiased flex flex-col animate-fadeIn">
       {/* Navigation Header */}
@@ -101,17 +140,44 @@ export default function PublicProfile() {
           <div className="p-6 sm:p-7 pt-0 relative">
             <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 -mt-20 sm:-mt-22 mb-4">
               
-              {/* ENLARGED HERO AVATAR */}
-              <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full border-[5px] border-white bg-[#E4EEE8] flex items-center justify-center shadow-xl shadow-black/10 overflow-hidden shrink-0 hover:scale-[1.02] transition-transform">
-                {profile.profilePicture ? (
-                  <img
-                    src={profile.profilePicture}
-                    alt={profile.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-[#1B4332] text-white flex items-center justify-center font-black text-5xl">
-                    {profile.name ? profile.name.charAt(0).toUpperCase() : "U"}
+              {/* HERO AVATAR WITH CONTEXTUAL DROPDOWN / LIGHTBOX */}
+              <div className="relative shrink-0 z-20" ref={avatarMenuRef}>
+                <div
+                  onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
+                  className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full border-[5px] border-white bg-[#E4EEE8] flex items-center justify-center shadow-xl shadow-black/10 overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-2xl hover:scale-[1.02]"
+                  title="Click to view profile photo"
+                  role="button"
+                  aria-haspopup="true"
+                  aria-expanded={avatarMenuOpen}
+                >
+                  {currentPicture ? (
+                    <img
+                      src={currentPicture}
+                      alt={profile.name}
+                      className="w-full h-full object-cover select-none"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-[#1B4332] text-white flex items-center justify-center font-black text-5xl select-none">
+                      {profile.name ? profile.name.charAt(0).toUpperCase() : "U"}
+                    </div>
+                  )}
+                </div>
+
+                {/* Contextual Dropdown Menu for Avatar */}
+                {avatarMenuOpen && (
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-white border border-[#E6E3DA] rounded-xl shadow-xl py-1.5 z-40 animate-fadeIn">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAvatarMenuOpen(false);
+                        console.log("[PublicProfile] Opening AvatarLightboxModal with imageSrc:", currentPicture);
+                        setShowAvatarLightbox(true);
+                      }}
+                      className="w-full px-3.5 py-2 text-xs font-semibold text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332] transition-colors flex items-center gap-2 cursor-pointer text-left"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-[#1B4332]" />
+                      <span>View Profile Picture</span>
+                    </button>
                   </div>
                 )}
               </div>
@@ -147,80 +213,36 @@ export default function PublicProfile() {
               {/* Metadata Line */}
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-[#6B6858] pt-0.5">
                 <div className="flex items-center gap-1.5 font-medium">
-                  <svg className="w-4 h-4 text-[#1B4332]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+                  <MapPin className="w-4 h-4 text-[#1B4332]" />
                   <span>{profile.location || "Location not set"}</span>
                 </div>
 
                 <div className="flex items-center gap-1.5 font-medium">
-                  <svg className="w-4 h-4 text-[#6B6858]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+                  <Calendar className="w-4 h-4 text-[#6B6858]" />
                   <span>Member since {memberSince}</span>
                 </div>
               </div>
+
+              {/* INTEGRATED COMPACT STATISTICS SUMMARY BAR */}
+              <CompactProfileStats
+                rating={profile.avgRating || 0.0}
+                completedSwaps={profile.completedSwaps || 0}
+                totalSkills={totalSkills}
+                portfolioCount="0 items"
+                className="mt-4"
+              />
             </div>
 
           </div>
-        </div>
-
-        {/* 4 ANIMATED STAT CARDS GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <AnimatedStatCard
-            label="Average Rating"
-            value={profile.avgRating || 0.0}
-            isDecimal={true}
-            badgeText="★ Reviews"
-            icon={
-              <svg className="w-5 h-5 text-[#B8860B]" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-            }
-          />
-
-          <AnimatedStatCard
-            label="Completed Swaps"
-            value={profile.completedSwaps || 0}
-            badgeText="Verified"
-            icon={
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-              </svg>
-            }
-          />
-
-          <AnimatedStatCard
-            label="Total Skills"
-            value={totalSkills}
-            badgeText="Offered & Wanted"
-            icon={
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-            }
-          />
-
-          <AnimatedStatCard
-            label="Profile Views"
-            value={0}
-            isPlaceholder={true}
-            badgeText="Analytics"
-            icon={
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-            }
-          />
         </div>
 
         {/* ACTIVE SKILLS SECTION */}
         <SkillsSection
           userId={profile._id}
           isOwner={false}
-          onSkillsCountChanged={(count) => setTotalSkills(count)}
+          onSkillsLoaded={(skills) => {
+            setTotalSkills(skills.length);
+          }}
         />
 
         {/* PORTFOLIO PLACEHOLDER CARD */}
@@ -231,25 +253,33 @@ export default function PublicProfile() {
             </div>
             <h3 className="text-sm font-bold text-[#16160F]">Portfolio Grid</h3>
             <p className="text-xs text-[#6B6858] mt-1 max-w-sm">
-              Showcase photos and project media proving skill expertise.
+              Showcase photos, project media, and proof of work demonstrating your skill expertise.
             </p>
             <div className="mt-4 px-4 py-1.5 bg-[#F7F6F2] border border-[#E6E3DA] text-[11px] font-bold text-[#1B4332] rounded-full tracking-wide inline-flex items-center gap-1.5 shadow-2xs">
               <span>✨</span>
-              <span>Portfolio — Feature available in Phase 10</span>
+              <span>Portfolio Grid — Coming Soon</span>
             </div>
           </div>
         </div>
 
       </main>
 
-      {/* Swap Request Modal */}
-      {profile && (
+      {/* SWAP REQUEST MODAL */}
+      {swapModalOpen && (
         <SwapRequestModal
+          targetUser={profile}
           isOpen={swapModalOpen}
           onClose={() => setSwapModalOpen(false)}
-          targetUser={profile}
         />
       )}
+
+      {/* Profile Photo Lightbox Viewer Modal */}
+      <AvatarLightboxModal
+        isOpen={showAvatarLightbox}
+        onClose={() => setShowAvatarLightbox(false)}
+        imageSrc={currentPicture}
+        userName={profile?.name || "User"}
+      />
     </div>
   );
 }

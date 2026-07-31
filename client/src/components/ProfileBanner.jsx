@@ -1,6 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import ImageCropModal from "./ImageCropModal";
 import { uploadProfilePicture, updateOwnProfile } from "../services/profileService";
+import { Camera, Image as ImageIcon, Trash2, ChevronDown } from "lucide-react";
 
 export default function ProfileBanner({
   bannerUrl,
@@ -12,7 +13,34 @@ export default function ProfileBanner({
   const [uploading, setUploading] = useState(false);
   const [rawImageSrc, setRawImageSrc] = useState(null);
   const [showCropModal, setShowCropModal] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const fileInputRef = useRef(null);
+  const menuRef = useRef(null);
+
+  // Handle Click Outside & Escape key for Banner Contextual Menu
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [menuOpen]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -64,6 +92,7 @@ export default function ProfileBanner({
   const handleRemoveBanner = async () => {
     if (!bannerUrl) return;
     setUploading(true);
+    setMenuOpen(false);
     try {
       const updateRes = await updateOwnProfile({ profileBanner: "" });
       if (updateRes.success) {
@@ -106,7 +135,7 @@ export default function ProfileBanner({
         />
       )}
 
-      {/* Banner Image with Vignette Overlay */}
+      {/* Banner Image with Vignette Overlay (Stays behind avatar) */}
       {bannerUrl ? (
         <div
           className="w-full h-full bg-cover bg-center transition-all duration-500 ease-out relative"
@@ -130,36 +159,51 @@ export default function ProfileBanner({
       )}
 
       {/* Badge Indicator */}
-      <div className="absolute top-3 right-4 z-10 bg-white/80 backdrop-blur-xs px-3 py-1 rounded-full border border-[#E6E3DA] text-[10px] font-bold text-[#1B4332] tracking-wider uppercase shadow-2xs">
+      <div className="absolute top-3 left-4 sm:left-6 z-10 bg-white/85 backdrop-blur-xs px-3 py-1 rounded-full border border-[#E6E3DA] text-[10px] font-bold text-[#1B4332] tracking-wider uppercase shadow-2xs">
         {badgeText}
       </div>
 
-      {/* Owner Banner Hover Action Overlay */}
+      {/* Single Clean "Edit Banner" Trigger & Dropdown Menu */}
       {isOwner && !uploading && (
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3 z-10 p-4 backdrop-blur-2xs">
+        <div className="absolute bottom-3 right-4 z-10" ref={menuRef}>
           <button
             type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="h-9 px-4 text-xs font-semibold text-white bg-[#1B4332] hover:bg-[#143326] rounded-xl border border-white/20 transition-all shadow-md active:scale-[0.98] cursor-pointer inline-flex items-center gap-2"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-expanded={menuOpen}
+            aria-label="Edit banner options"
+            className="h-8 px-3 text-xs font-bold text-[#16160F] bg-white/90 hover:bg-white backdrop-blur-md border border-[#E6E3DA] rounded-xl transition-all shadow-sm active:scale-[0.98] cursor-pointer inline-flex items-center gap-1.5"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span>Change Banner</span>
+            <Camera className="w-3.5 h-3.5 text-[#1B4332]" />
+            <span>Edit Banner</span>
+            <ChevronDown className={`w-3 h-3 text-[#6B6858] transition-transform ${menuOpen ? "rotate-180" : ""}`} />
           </button>
 
-          {bannerUrl && (
-            <button
-              type="button"
-              onClick={handleRemoveBanner}
-              className="h-9 px-3.5 text-xs font-semibold text-white bg-red-600/90 hover:bg-red-700 rounded-xl border border-white/20 transition-all shadow-md active:scale-[0.98] cursor-pointer inline-flex items-center gap-1.5"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              <span>Remove</span>
-            </button>
+          {/* Contextual Dropdown Menu */}
+          {menuOpen && (
+            <div className="absolute right-0 bottom-10 w-44 bg-white border border-[#E6E3DA] rounded-xl shadow-xl py-1.5 z-30 animate-fadeIn space-y-0.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  fileInputRef.current?.click();
+                }}
+                className="w-full px-3.5 py-2 text-xs font-semibold text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332] transition-colors flex items-center gap-2 cursor-pointer text-left"
+              >
+                <ImageIcon className="w-3.5 h-3.5 text-[#1B4332]" />
+                <span>Change Banner</span>
+              </button>
+
+              {bannerUrl && (
+                <button
+                  type="button"
+                  onClick={handleRemoveBanner}
+                  className="w-full px-3.5 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2 cursor-pointer text-left"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                  <span>Remove Banner</span>
+                </button>
+              )}
+            </div>
           )}
         </div>
       )}

@@ -7,10 +7,12 @@ import ImageCropModal from "../components/ImageCropModal";
 import ProfileBanner from "../components/ProfileBanner";
 import ToastNotification from "../components/ToastNotification";
 import ProfileSkeleton from "../components/ProfileSkeleton";
-import AnimatedStatCard from "../components/AnimatedStatCard";
+import CompactProfileStats from "../components/profile/CompactProfileStats";
+import AvatarLightboxModal from "../components/profile/AvatarLightboxModal";
 import ProfileCompletionCard from "../components/ProfileCompletionCard";
 import ConfirmModal from "../components/ConfirmModal";
 import SkillsSection from "../components/skills/SkillsSection";
+import { Eye, Camera, Edit3, MapPin, Calendar } from "lucide-react";
 
 export default function OwnProfile() {
   const { user: authUser, updateUser } = useContext(AuthContext);
@@ -22,6 +24,36 @@ export default function OwnProfile() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [error, setError] = useState("");
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+
+  // Avatar contextual dropdown & Lightbox state
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
+  const [showAvatarLightbox, setShowAvatarLightbox] = useState(false);
+  const avatarMenuRef = useRef(null);
+
+  // Handle Click Outside & Escape key for Avatar Contextual Menu
+  useEffect(() => {
+    if (!avatarMenuOpen) return;
+
+    const handleClickOutside = (e) => {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target)) {
+        setAvatarMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setAvatarMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [avatarMenuOpen]);
 
   // Skills Count tracking state for Stat cards & Completion card
   const [skillsMeta, setSkillsMeta] = useState({ total: 0, offered: 0, wanted: 0 });
@@ -262,7 +294,15 @@ export default function OwnProfile() {
     return <ProfileSkeleton />;
   }
 
-  const currentPicture = avatarPreviewUrl || profile?.profilePicture;
+  const currentPicture =
+    avatarPreviewUrl ||
+    profile?.profilePicture ||
+    profile?.avatar ||
+    profile?.profilePhoto ||
+    profile?.avatarUrl ||
+    authUser?.profilePicture ||
+    authUser?.avatar ||
+    "";
   const usernameHandle = profile?.email ? `@${profile.email.split("@")[0]}` : "@swapper";
   const memberSince = profile?.createdAt
     ? new Date(profile.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })
@@ -338,21 +378,24 @@ export default function OwnProfile() {
             {/* Avatar & Header Action Controls Bar */}
             <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 -mt-20 sm:-mt-22 mb-4">
               
-              {/* ENLARGED HERO AVATAR */}
-              <div className="relative group shrink-0">
+              {/* HERO AVATAR WITH CONTEXTUAL DROPDOWN */}
+              <div className="relative shrink-0 z-20" ref={avatarMenuRef}>
                 <div
-                  onClick={handleAvatarClick}
-                  className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full border-[5px] border-white bg-[#E4EEE8] flex items-center justify-center shadow-xl shadow-black/10 overflow-hidden transition-all duration-300 cursor-pointer group-hover:shadow-2xl group-hover:shadow-[#1B4332]/35 group-hover:scale-[1.02]"
-                  title="Click to change profile photo"
+                  onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
+                  className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full border-[5px] border-white bg-[#E4EEE8] flex items-center justify-center shadow-xl shadow-black/10 overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-2xl hover:scale-[1.02]"
+                  title="Click for profile photo options"
+                  role="button"
+                  aria-haspopup="true"
+                  aria-expanded={avatarMenuOpen}
                 >
                   {currentPicture ? (
                     <img
                       src={currentPicture}
                       alt={profile?.name}
-                      className="w-full h-full object-cover transition-opacity duration-300"
+                      className="w-full h-full object-cover transition-opacity duration-300 select-none"
                     />
                   ) : (
-                    <div className="w-full h-full bg-[#1B4332] text-white flex items-center justify-center font-black text-5xl">
+                    <div className="w-full h-full bg-[#1B4332] text-white flex items-center justify-center font-black text-5xl select-none">
                       {profile?.name ? profile.name.charAt(0).toUpperCase() : "U"}
                     </div>
                   )}
@@ -364,51 +407,47 @@ export default function OwnProfile() {
                       <span className="text-[9px] font-semibold mt-1.5">Uploading...</span>
                     </div>
                   )}
-
-                  {/* Camera Icon Overlay on Hover */}
-                  {!uploadingAvatar && (
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white text-[10px] font-semibold">
-                      <svg className="w-6 h-6 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <span>Change Photo</span>
-                    </div>
-                  )}
                 </div>
 
-                {/* Camera Badge Button */}
-                <button
-                  type="button"
-                  onClick={handleAvatarClick}
-                  aria-label="Upload new profile photo"
-                  className="absolute bottom-1.5 right-1.5 w-9 h-9 rounded-full bg-[#1B4332] text-white border-2 border-white flex items-center justify-center shadow-md hover:bg-[#143326] transition-transform hover:scale-110 cursor-pointer z-10"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                  </svg>
-                </button>
+                {/* Contextual Dropdown Menu for Avatar */}
+                {avatarMenuOpen && !uploadingAvatar && (
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-white border border-[#E6E3DA] rounded-xl shadow-xl py-1.5 z-40 animate-fadeIn space-y-0.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAvatarMenuOpen(false);
+                        console.log("[OwnProfile] Opening AvatarLightboxModal with imageSrc:", currentPicture);
+                        setShowAvatarLightbox(true);
+                      }}
+                      className="w-full px-3.5 py-2 text-xs font-semibold text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332] transition-colors flex items-center gap-2 cursor-pointer text-left"
+                    >
+                      <Eye className="w-3.5 h-3.5 text-[#1B4332]" />
+                      <span>View Profile Picture</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAvatarMenuOpen(false);
+                        avatarFileInputRef.current?.click();
+                      }}
+                      className="w-full px-3.5 py-2 text-xs font-semibold text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332] transition-colors flex items-center gap-2 cursor-pointer text-left"
+                    >
+                      <Camera className="w-3.5 h-3.5 text-[#1B4332]" />
+                      <span>Change Profile Picture</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* Hidden File Input for Avatar */}
-              <input
-                type="file"
-                ref={avatarFileInputRef}
-                onChange={handleAvatarFileChange}
-                accept="image/jpeg,image/jpg,image/png,image/webp"
-                className="hidden"
-              />
-
-              {/* Edit Profile Action Button */}
+              {/* EDIT PROFILE CTA BUTTON (ALIGNED ACROSS FROM HERO AVATAR) */}
               <div className="w-full sm:w-auto flex justify-center sm:justify-end shrink-0">
                 {!isEditing ? (
                   <button
                     onClick={handleEditToggle}
-                    className="w-full sm:w-auto h-10 px-5 text-xs font-semibold text-[#16160F] hover:text-[#1B4332] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] hover:border-[#1B4332]/40 rounded-xl transition-all active:scale-[0.98] inline-flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
+                    className="w-full sm:w-auto h-10 px-5 text-xs font-bold text-[#16160F] hover:text-[#1B4332] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] hover:border-[#1B4332]/40 rounded-xl transition-all active:scale-[0.98] inline-flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
                   >
-                    <svg className="w-4 h-4 text-[#1B4332]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
+                    <Edit3 className="w-4 h-4 text-[#1B4332]" />
                     <span>Edit Profile</span>
                   </button>
                 ) : (
@@ -423,13 +462,24 @@ export default function OwnProfile() {
               </div>
             </div>
 
-            {/* STRONGER PROFILE IDENTITY (ALWAYS VISIBLE AT TOP) */}
+            {/* Hidden File Input for Avatar */}
+            <input
+              type="file"
+              ref={avatarFileInputRef}
+              onChange={handleAvatarFileChange}
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              className="hidden"
+            />
+
+            {/* PROFILE IDENTITY HEADER */}
             <div className="space-y-3 text-center sm:text-left">
-              <div>
+              
+              {/* Standalone Full Name & Handle */}
+              <div className="space-y-0.5">
                 <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-[#16160F]">
                   {profile?.name}
                 </h1>
-                <p className="text-xs sm:text-sm font-bold text-[#1B4332] mt-0.5">
+                <p className="text-xs sm:text-sm font-bold text-[#1B4332]">
                   {usernameHandle}
                 </p>
               </div>
@@ -437,20 +487,24 @@ export default function OwnProfile() {
               {/* Metadata Line */}
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-[#6B6858] pt-0.5">
                 <div className="flex items-center gap-1.5 font-medium">
-                  <svg className="w-4 h-4 text-[#1B4332]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+                  <MapPin className="w-4 h-4 text-[#1B4332]" />
                   <span>{profile?.location || "Location not set"}</span>
                 </div>
 
                 <div className="flex items-center gap-1.5 font-medium">
-                  <svg className="w-4 h-4 text-[#6B6858]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+                  <Calendar className="w-4 h-4 text-[#6B6858]" />
                   <span>Member since {memberSince}</span>
                 </div>
               </div>
+
+              {/* INTEGRATED COMPACT STATISTICS SUMMARY BAR */}
+              <CompactProfileStats
+                rating={profile?.avgRating || 0.0}
+                completedSwaps={profile?.completedSwaps || 0}
+                totalSkills={skillsMeta.total}
+                portfolioCount="0 items"
+                className="mt-4"
+              />
 
               {/* Read-Only Bio Presentation */}
               {!isEditing && (
@@ -618,56 +672,6 @@ export default function OwnProfile() {
           skillsCount={{ offered: skillsMeta.offered, wanted: skillsMeta.wanted }}
         />
 
-        {/* 4 ANIMATED STAT CARDS GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <AnimatedStatCard
-            label="Average Rating"
-            value={profile?.avgRating || 0.0}
-            isDecimal={true}
-            badgeText="★ Reviews"
-            icon={
-              <svg className="w-5 h-5 text-[#B8860B]" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-            }
-          />
-
-          <AnimatedStatCard
-            label="Completed Swaps"
-            value={profile?.completedSwaps || 0}
-            badgeText="Verified"
-            icon={
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-              </svg>
-            }
-          />
-
-          <AnimatedStatCard
-            label="Total Skills"
-            value={skillsMeta.total}
-            badgeText="Offered & Wanted"
-            icon={
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-            }
-          />
-
-          <AnimatedStatCard
-            label="Profile Views"
-            value={0}
-            isPlaceholder={true}
-            badgeText="Analytics"
-            icon={
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-            }
-          />
-        </div>
-
         {/* PHASE 4: DEDICATED SKILLS MANAGEMENT SECTION */}
         <SkillsSection
           userId={profile?._id}
@@ -691,12 +695,20 @@ export default function OwnProfile() {
             </p>
             <div className="mt-4 px-4 py-1.5 bg-[#F7F6F2] border border-[#E6E3DA] text-[11px] font-bold text-[#1B4332] rounded-full tracking-wide inline-flex items-center gap-1.5 shadow-2xs">
               <span>✨</span>
-              <span>Portfolio — Feature available in Phase 10</span>
+              <span>Portfolio Grid — Coming Soon</span>
             </div>
           </div>
         </div>
 
       </main>
+
+      {/* Profile Photo Lightbox Viewer Modal */}
+      <AvatarLightboxModal
+        isOpen={showAvatarLightbox}
+        onClose={() => setShowAvatarLightbox(false)}
+        imageSrc={currentPicture || profile?.profilePicture || ""}
+        userName={profile?.name || "User"}
+      />
     </div>
   );
 }
