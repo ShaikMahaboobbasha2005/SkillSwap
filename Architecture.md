@@ -36,7 +36,7 @@ Single-page app, deployed as a static build on Vercel.
 ```
 src/
 ├── pages/          # route-level views (Login, Signup, Profile, Search, Chat, etc.)
-├── components/     # reusable UI (SkillCard, MatchCard, PortfolioGrid, RatingStars)
+├── components/     # reusable UI (SkillCard, MatchCard, SwapRequestModal, PortfolioGrid, RatingStars)
 ├── context/         # AuthContext, SocketContext
 ├── hooks/           # useAuth, useSocket, useMatches
 ├── services/        # API call wrappers (axios instances per resource)

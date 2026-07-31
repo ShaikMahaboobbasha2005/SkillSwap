@@ -42,10 +42,13 @@ Follow Architecture.md's structure exactly — don't introduce new top-level fol
 - Don't let the AI tool introduce new npm packages outside the agreed tech stack without a deliberate decision
 - Don't let the AI tool invent new API routes or DB fields not already documented — update the relevant doc first, then build
 
-## 9. Testing Rules
-- Every new API endpoint should be tested with Postman before the phase is marked complete
+## 9. Testing & Temporary Data
+- Every new API endpoint should be tested before the phase is marked complete
 - Frontend forms must be tested for both success and validation errors
 - No feature is considered complete until both happy-path and common error cases work
+- Never create demo users, mock users, seeded accounts, placeholder skills, or temporary database records unless explicitly requested.
+- Use real application accounts for development and testing.
+- Any temporary scripts, test data, or debugging utilities created during development must be removed before marking a task complete.
 
 ## 10. Consistency Checks
 Before marking a phase complete, verify:

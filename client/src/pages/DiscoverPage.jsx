@@ -9,6 +9,7 @@ import LoadingSkeleton from "../components/discover/LoadingSkeleton";
 import EmptyState from "../components/discover/EmptyState";
 import ErrorState from "../components/discover/ErrorState";
 import Pagination from "../components/discover/Pagination";
+import SwapRequestModal from "../components/swaps/SwapRequestModal";
 import useDiscover from "../hooks/useDiscover";
 
 export default function DiscoverPage() {
@@ -34,7 +35,23 @@ export default function DiscoverPage() {
   } = useDiscover();
 
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [swapModalOpen, setSwapModalOpen] = useState(false);
+  const [selectedSwapUser, setSelectedSwapUser] = useState(null);
+  const [selectedSwapSkill, setSelectedSwapSkill] = useState(null);
+
   const resultsTopRef = useRef(null);
+
+  const handleOpenSwapModal = (user, skill = null) => {
+    setSelectedSwapUser(user);
+    setSelectedSwapSkill(skill);
+    setSwapModalOpen(true);
+  };
+
+  const handleCloseSwapModal = () => {
+    setSwapModalOpen(false);
+    setSelectedSwapUser(null);
+    setSelectedSwapSkill(null);
+  };
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
@@ -141,7 +158,7 @@ export default function DiscoverPage() {
             <EmptyState onClearFilters={hasActiveFilters ? clearFilters : null} />
           ) : (
             <>
-              <DiscoverGrid users={users} />
+              <DiscoverGrid users={users} onRequestSwap={handleOpenSwapModal} />
               <Pagination
                 currentPage={pagination.currentPage}
                 totalPages={pagination.totalPages}
@@ -154,6 +171,16 @@ export default function DiscoverPage() {
           )}
         </section>
       </main>
+
+      {/* Swap Request Modal */}
+      {selectedSwapUser && (
+        <SwapRequestModal
+          isOpen={swapModalOpen}
+          onClose={handleCloseSwapModal}
+          targetUser={selectedSwapUser}
+          targetSkill={selectedSwapSkill}
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,20 @@
 import { useEffect } from "react";
+import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
 
-export default function ToastNotification({ toast, onClose }) {
+export default function ToastNotification({
+  toast,
+  onClose,
+  showCloseButton = true,
+  autoHideDuration = 4000,
+}) {
+  useEffect(() => {
+    if (!toast || !toast.show) return;
+    const timer = setTimeout(() => {
+      onClose?.();
+    }, autoHideDuration);
+    return () => clearTimeout(timer);
+  }, [toast, onClose, autoHideDuration]);
+
   if (!toast || !toast.show) return null;
 
   const isSuccess = toast.type === "success";
@@ -21,49 +35,45 @@ export default function ToastNotification({ toast, onClose }) {
             : "bg-[#16160F] text-white border-[#16160F]"
         }`}
       >
-        {/* Icon */}
-        <div className="shrink-0 mt-0.5">
+        {/* Left Status Icon (Purely Decorative & Non-Clickable) */}
+        <div className="shrink-0 mt-0.5 pointer-events-none select-none" aria-hidden="true">
           {isSuccess ? (
             <div className="w-6 h-6 rounded-full bg-emerald-400/20 flex items-center justify-center text-emerald-300">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
-              </svg>
+              <CheckCircle2 className="w-4 h-4" />
             </div>
           ) : isError ? (
             <div className="w-6 h-6 rounded-full bg-red-400/20 flex items-center justify-center text-red-200">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <AlertCircle className="w-4 h-4" />
             </div>
           ) : (
             <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <Info className="w-4 h-4" />
             </div>
           )}
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-w-0 pr-2">
+        <div className="flex-1 min-w-0 pr-1">
           <p className="text-xs font-semibold tracking-wide leading-snug">
             {toast.message}
           </p>
         </div>
 
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          aria-label="Close notification"
-          className="shrink-0 text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+        {/* Right Dismiss Button (Dismisses Alert Only) */}
+        {showCloseButton && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Dismiss notification"
+            title="Dismiss notification"
+            className="shrink-0 text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
 
         {/* Auto Progress Bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 pointer-events-none">
           <div
             className="h-full bg-white/60 transition-all duration-[4000ms] linear"
             style={{ width: "100%" }}

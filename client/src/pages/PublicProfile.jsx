@@ -6,14 +6,18 @@ import ProfileSkeleton from "../components/ProfileSkeleton";
 import ProfileBanner from "../components/ProfileBanner";
 import AnimatedStatCard from "../components/AnimatedStatCard";
 import SkillsSection from "../components/skills/SkillsSection";
+import SwapRequestModal from "../components/swaps/SwapRequestModal";
+import useAuth from "../hooks/useAuth";
 
 export default function PublicProfile() {
   const { id } = useParams();
+  const { user: currentUser } = useAuth();
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [totalSkills, setTotalSkills] = useState(0);
+  const [swapModalOpen, setSwapModalOpen] = useState(false);
 
   useEffect(() => {
     fetchUserProfile();
@@ -72,6 +76,10 @@ export default function PublicProfile() {
     ? new Date(profile.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })
     : "Jan 2026";
 
+  const currentUserId = currentUser?._id || currentUser?.id;
+  const profileUserId = profile?._id || profile?.id || id;
+  const isSelf = Boolean(currentUserId && profileUserId && String(currentUserId) === String(profileUserId));
+
   return (
     <div className="min-h-screen bg-[#F7F6F2] text-[#16160F] antialiased flex flex-col animate-fadeIn">
       {/* Navigation Header */}
@@ -112,9 +120,10 @@ export default function PublicProfile() {
               <div className="w-full sm:w-auto flex justify-center sm:justify-end shrink-0">
                 <button
                   type="button"
-                  disabled
-                  className="w-full sm:w-auto h-10 px-5 text-xs font-semibold text-white bg-[#1B4332] hover:bg-[#143326] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all active:scale-[0.98] inline-flex items-center justify-center gap-2 shadow-2xs"
-                  title="Request Skill Swap"
+                  onClick={() => setSwapModalOpen(true)}
+                  disabled={isSelf}
+                  className="w-full sm:w-auto h-10 px-5 text-xs font-semibold text-white bg-[#1B4332] hover:bg-[#143326] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all active:scale-[0.98] inline-flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
+                  title={isSelf ? "You cannot request a swap with yourself" : "Request Skill Swap"}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
@@ -232,6 +241,15 @@ export default function PublicProfile() {
         </div>
 
       </main>
+
+      {/* Swap Request Modal */}
+      {profile && (
+        <SwapRequestModal
+          isOpen={swapModalOpen}
+          onClose={() => setSwapModalOpen(false)}
+          targetUser={profile}
+        />
+      )}
     </div>
   );
 }

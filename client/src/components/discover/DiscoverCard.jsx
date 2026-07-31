@@ -8,8 +8,10 @@ import {
   Sparkles,
   UserCheck,
 } from "lucide-react";
+import useAuth from "../../hooks/useAuth";
 
 export default function DiscoverCard({ user, onRequestSwap }) {
+  const { user: currentUser } = useAuth();
   const {
     userId,
     name,
@@ -21,6 +23,10 @@ export default function DiscoverCard({ user, onRequestSwap }) {
     offeringSkills = [],
     learningSkills = [],
   } = user;
+
+  const targetId = userId || user._id;
+  const currentUserId = currentUser?._id || currentUser?.id;
+  const isSelfCard = Boolean(currentUserId && targetId && String(currentUserId) === String(targetId));
 
   // Format Rating per Design.md rules (Gold color #B8860B strictly for ratings only)
   const renderRating = () => {
@@ -171,10 +177,16 @@ export default function DiscoverCard({ user, onRequestSwap }) {
 
           <button
             type="button"
-            onClick={onRequestSwap ? () => onRequestSwap(user) : undefined}
-            disabled={!onRequestSwap}
+            onClick={onRequestSwap && !isSelfCard ? () => onRequestSwap(user) : undefined}
+            disabled={!onRequestSwap || isSelfCard}
             className="h-9 px-3.5 text-xs font-semibold text-white bg-[#1B4332] hover:bg-[#143326] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98] shadow-2xs shrink-0"
-            title={onRequestSwap ? "Request a skill swap" : "Skill swap request integration point"}
+            title={
+              isSelfCard
+                ? "You cannot request a swap with yourself"
+                : onRequestSwap
+                ? "Request a skill swap"
+                : "Skill swap request integration point"
+            }
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Request Swap</span>
