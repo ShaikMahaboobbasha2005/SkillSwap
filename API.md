@@ -38,10 +38,15 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
 | POST | `/api/swaps` | Protected | Send a swap request to another user |
-| GET | `/api/swaps` | Protected | List current user's swap requests (sent + received) |
-| PATCH | `/api/swaps/:id/accept` | Protected | Accept a pending swap request |
-| PATCH | `/api/swaps/:id/reject` | Protected | Reject a pending swap request |
-| PATCH | `/api/swaps/:id/complete` | Protected | Mark an accepted swap as completed |
+| GET | `/api/swaps` | Protected | List current user's swap requests (supports `?page=`, `?limit=`, `?type=incoming|outgoing|all`, `?status=pending|accepted|rejected|cancelled`) |
+| GET | `/api/swaps/incoming` | Protected | Get incoming swap requests for logged-in user |
+| GET | `/api/swaps/outgoing` | Protected | Get outgoing swap requests for logged-in user |
+| GET | `/api/swaps/stats` | Protected | Get lightweight dashboard swap statistics (counts for pending, accepted, rejected, cancelled) |
+| GET | `/api/swaps/:id` | Protected | Get swap request details (must be a participant) |
+| PATCH | `/api/swaps/:id/accept` | Protected | Accept a pending swap request (Receiver only) |
+| PATCH | `/api/swaps/:id/reject` | Protected | Reject a pending swap request (Receiver only) |
+| PATCH | `/api/swaps/:id/cancel` | Protected | Soft-cancel a pending swap request (Sender only) |
+| PATCH | `/api/swaps/:id/complete` | Protected | Mark an accepted swap as completed (Phase 8) |
 
 ## Chat
 | Method | Endpoint | Auth | Description |

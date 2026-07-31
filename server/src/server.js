@@ -8,6 +8,7 @@ const profileRoutes = require("./routes/profileRoutes");
 const userRoutes = require("./routes/userRoutes");
 const skillRoutes = require("./routes/skillRoutes");
 const discoverRoutes = require("./routes/discoverRoutes");
+const swapRoutes = require("./routes/swapRoutes");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
@@ -43,6 +44,7 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/skills", skillRoutes);
 app.use("/api/discover", discoverRoutes);
+app.use("/api/swaps", swapRoutes);
 
 // Shared Error Handler Middleware
 app.use(errorHandler);

@@ -110,15 +110,17 @@ export default function PublicProfile() {
 
               {/* Request Swap CTA Button */}
               <div className="w-full sm:w-auto flex justify-center sm:justify-end shrink-0">
-                <Link
-                  to="/"
-                  className="w-full sm:w-auto h-10 px-5 text-xs font-semibold text-white bg-[#1B4332] hover:bg-[#143326] rounded-xl transition-all active:scale-[0.98] inline-flex items-center justify-center gap-2 shadow-2xs"
+                <button
+                  type="button"
+                  disabled
+                  className="w-full sm:w-auto h-10 px-5 text-xs font-semibold text-white bg-[#1B4332] hover:bg-[#143326] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all active:scale-[0.98] inline-flex items-center justify-center gap-2 shadow-2xs"
+                  title="Request Skill Swap"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                   </svg>
                   <span>Request Skill Swap</span>
-                </Link>
+                </button>
               </div>
             </div>
 

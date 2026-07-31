@@ -52,3 +52,21 @@ Before marking a phase complete, verify:
 - New code follows the naming/folder conventions above
 - New routes match API.md exactly (or API.md was updated first)
 - New UI uses Design.md tokens (colors, spacing, radius) — no off-palette colors or arbitrary spacing
+
+## 11. Documentation-First Workflow & Maintenance
+- **Documentation is Code**: Treat project documentation as a direct part of the codebase. It must always remain synchronized with implementation.
+- **Documentation-First Workflow**: Before starting ANY task, determine the type of work and read ONLY the relevant documentation (refer to the Documentation Map below). Read source code only after understanding the documentation.
+- **Documentation Map**:
+  - `README.md`: Project overview, setup, starting work.
+  - `PRD.md`: Business requirements, feature behaviour.
+  - `Architecture.md`: Backend, system design, refactoring, auth, performance, security.
+  - `Database.md`: Models, schemas, collections, relationships, migrations.
+  - `API.md`: Endpoints, request/response formats, validation, controllers, services.
+  - `Design.md`: UI components, styling, responsive design, design system tokens.
+  - `Phases.md`: Current/completed/upcoming phases.
+  - `Rules.md`: Mandatory development standards (read for every task).
+- **Documentation Maintenance**: Whenever implementation changes, immediately update every affected doc (`API.md`, `Database.md`, `Architecture.md`, `Design.md`, `PRD.md`, `Phases.md`, `Rules.md`, `README.md`).
+- **Remove Obsolete Information**: Immediately remove outdated architecture, endpoints, schema fields, or workflows.
+- **Phase & Arch Controls**: Verify phase alignment in `Phases.md` before implementation. Never redesign architecture without explicit instruction.
+- **Final Verification**: A task is complete ONLY when implementation is done, docs are updated, no obsolete info remains, and code & docs are fully synchronized.
+

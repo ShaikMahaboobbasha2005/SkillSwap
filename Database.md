@@ -49,12 +49,13 @@ A shared lookup collection — users reference `Skill._id` in `skillsOffered`/`s
   toUser: ObjectId,        // ref: User
   offeredSkill: ObjectId,  // ref: Skill
   wantedSkill: ObjectId,   // ref: Skill
-  status: String,          // "pending" | "accepted" | "rejected" | "completed"
+  message: String,         // optional request message (max 500 chars)
+  status: String,          // "pending" | "accepted" | "rejected" | "cancelled" ("completed" added in Phase 8)
   createdAt: Date,
   updatedAt: Date
 }
 ```
-**Indexes:** `fromUser`, `toUser`, `status` — for fast lookup of a user's pending/active requests.
+**Indexes:** `fromUser`, `toUser`, `status` — plus compound index `{ fromUser: 1, toUser: 1, offeredSkill: 1, wantedSkill: 1, status: 1 }` for exact duplicate request detection and fast query lookups.
 
 ## 4. ChatRoom
 ```js
