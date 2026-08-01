@@ -51,13 +51,24 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 ## Chat
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/api/chat/:swapId` | Protected | Get message history for a swap's chat room. Supports optional `?page=&limit=` (e.g. `?page=1&limit=50`) for older messages as history grows |
-| POST | `/api/chat/:swapId` | Protected | Send a message (also emitted live via Socket.io) |
+| GET | `/api/chat/:swapId/messages` | Protected | Get message history for an accepted swap. Default `page=1, limit=50` retrieves the 50 most recent messages, returned in chronological order (`createdAt: 1`) for natural rendering. Populates sender details (`name profilePicture`) |
 
-**Socket.io events:**
-- `join_room` (client → server): join a chat room by swapId
-- `send_message` (client → server): send a message
-- `new_message` (server → client): broadcast a new message to room participants
+**Chat Authorization Rules:**
+- Requires valid JWT authentication token.
+- `swapId` must be a valid 24-character hexadecimal MongoDB ObjectId (returns `400 Bad Request` / `INVALID_SWAP_ID` otherwise).
+- SwapRequest must exist (`404 Not Found` / `SWAP_NOT_FOUND`).
+- SwapRequest status must be `"accepted"` (`403 Forbidden` / `SWAP_NOT_ACCEPTED`).
+- Logged-in user must be either `fromUser` or `toUser` on the SwapRequest (`403 Forbidden` / `FORBIDDEN`).
+
+**Socket.io real-time layer:**
+- Connection handshake requires JWT token in `auth.token` or `Authorization: Bearer <token>` header.
+- Per-swap socket room format: `swap:<swapId>`.
+- Client events:
+  - `join_swap_chat` (`{ swapId }`, `callback`): Verifies JWT & swap authorization, then joins room `swap:<swapId>`. Returns `{ success: true, message: "Joined chat room successfully" }` or error `{ success: false, message, code }`.
+  - `send_message` (`{ swapId, content }`, `callback`): Validates `swapId` format, verifies room membership (`socket.rooms.has("swap:<swapId>")`), validates content (non-empty string, max 2000 chars), persists message to MongoDB, broadcasts `new_message` to room `swap:<swapId>`, and responds via callback `{ success: true, data: savedMessage }`.
+- Server events:
+  - `new_message` (server → room): Emits `{ success: true, data: savedMessage }` to all clients in room `swap:<swapId>`.
+- Frontend deduplication guideline: Frontend should track message `_id` to prevent duplicate renders when receiving both acknowledgement and broadcast event.
 
 ## Ratings & Reviews
 | Method | Endpoint | Auth | Description |
