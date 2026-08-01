@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { SocketProvider } from "./context/SocketContext";
 import { SwapProvider } from "./context/SwapContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ScrollToTop from "./components/ScrollToTop";
@@ -16,25 +17,27 @@ function App() {
     <Router>
       <ScrollToTop />
       <AuthProvider>
-        <SwapProvider>
-          <Routes>
-            {/* Public Auth Routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/users/:id" element={<PublicProfile />} />
+        <SocketProvider>
+          <SwapProvider>
+            <Routes>
+              {/* Public Auth Routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/users/:id" element={<PublicProfile />} />
 
-            {/* Protected Routes */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/discover" element={<DiscoverPage />} />
-              <Route path="/swaps" element={<SwapRequestsPage />} />
-              <Route path="/profile" element={<OwnProfile />} />
-            </Route>
+              {/* Protected Routes */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/" element={<Home />} />
+                <Route path="/discover" element={<DiscoverPage />} />
+                <Route path="/swaps" element={<SwapRequestsPage />} />
+                <Route path="/profile" element={<OwnProfile />} />
+              </Route>
 
-            {/* Fallback route */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </SwapProvider>
+              {/* Fallback route */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </SwapProvider>
+        </SocketProvider>
       </AuthProvider>
     </Router>
   );

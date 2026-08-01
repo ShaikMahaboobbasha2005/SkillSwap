@@ -40,8 +40,8 @@ src/
 │   ├── profile/    # CompactProfileStats, AvatarLightboxModal
 │   ├── swaps/      # SwapRequestModal, SwapRequestCard, IncomingRequests, OutgoingRequests, StatusBadge, EmptySwapState, SwapRequestSkeleton
 │   └── ...         # Navbar, ProfileBanner, Modal, ConfirmModal, ToastNotification, SkillsSection, etc.
-├── context/         # AuthContext
-├── hooks/           # useAuth, useDiscover
+├── context/         # AuthContext, SwapContext, SocketContext
+├── hooks/           # useAuth, useDiscover, useSocket
 ├── services/        # API call wrappers (authService, skillService, discoverService, profileService, swapService)
 ├── utils/           # validation helpers, formatters
 └── App.jsx
@@ -49,8 +49,7 @@ src/
 
 - Responsive layout via CSS breakpoints (mobile-first), matching the fixed color palette
 - AuthContext holds JWT + current user, persisted in memory + a single refresh check on load
-- **Open decision, to be finalized at implementation time**: exact JWT storage mechanism — `localStorage` (simplest, but vulnerable to XSS), `sessionStorage` (cleared per tab, same XSS caveat), or an httpOnly secure cookie (safest against XSS, but needs CSRF handling and cross-origin cookie config since frontend and backend are on separate domains). Default recommendation for this project's timeline: httpOnly cookie if time allows, `localStorage` as the fallback if it doesn't — but this must be decided and documented before Phase 2 (Auth) starts, not left ambiguous
-- SocketContext establishes one Socket.io connection per session, shared across chat components
+- SocketContext establishes ONE authenticated Socket.io connection per session (using the restored JWT token). Derived socket URL resolves from `VITE_SOCKET_URL` or `VITE_API_URL` origin. Keeps the raw socket internal, exposing clean states (`isConnected`, `connectionError`) and helper operations (`joinSwapChat`, `sendMessage`, `subscribeToMessages`, `unsubscribeFromMessages`) with duplicate-listener protection and message deduplication handling.
 
 ## 4. Backend (Express.js — Monolith)
 
