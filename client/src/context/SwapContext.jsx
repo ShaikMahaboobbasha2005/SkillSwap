@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import swapService from "../services/swapService";
 import useAuth from "../hooks/useAuth";
+import useSocket from "../hooks/useSocket";
 
 export const SwapContext = createContext(null);
 
@@ -12,6 +13,7 @@ export const SwapContext = createContext(null);
  */
 export const SwapProvider = ({ children }) => {
   const { isAuthenticated } = useAuth();
+  const { subscribeToSwapRequests, unsubscribeFromSwapRequests } = useSocket();
   const [stats, setStats] = useState({
     pendingIncoming: 0,
     pendingOutgoing: 0,
@@ -49,6 +51,18 @@ export const SwapProvider = ({ children }) => {
   useEffect(() => {
     refreshStats();
   }, [refreshStats]);
+
+  // Subscribe to real-time swap request creation and status updates
+  const handleSwapRequestEvent = useCallback(() => {
+    refreshStats();
+  }, [refreshStats]);
+
+  useEffect(() => {
+    subscribeToSwapRequests(handleSwapRequestEvent);
+    return () => {
+      unsubscribeFromSwapRequests(handleSwapRequestEvent);
+    };
+  }, [subscribeToSwapRequests, unsubscribeFromSwapRequests, handleSwapRequestEvent]);
 
   const value = {
     stats,

@@ -11,6 +11,7 @@ import DiscoverPage from "./pages/DiscoverPage";
 import OwnProfile from "./pages/OwnProfile";
 import PublicProfile from "./pages/PublicProfile";
 import SwapRequestsPage from "./pages/SwapRequestsPage";
+import ChatsPage from "./pages/ChatsPage";
 
 function App() {
   return (
@@ -30,6 +31,8 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/discover" element={<DiscoverPage />} />
                 <Route path="/swaps" element={<SwapRequestsPage />} />
+                <Route path="/chats" element={<ChatsPage />} />
+                <Route path="/swaps/:swapId/chat" element={<ChatsPage />} />
                 <Route path="/profile" element={<OwnProfile />} />
               </Route>
 

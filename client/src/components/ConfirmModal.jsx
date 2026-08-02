@@ -8,7 +8,15 @@ export default function ConfirmModal({
   cancelText = "Keep Editing",
   onConfirm,
   onCancel,
+  isDestructive = false,
+  variant = "primary",
 }) {
+  const isDanger = isDestructive || variant === "destructive" || variant === "danger";
+
+  const confirmBtnStyles = isDanger
+    ? "bg-red-600 hover:bg-red-700 text-white"
+    : "bg-[#1B4332] hover:bg-[#143326] text-white";
+
   return (
     <Modal isOpen={isOpen} onClose={onCancel} maxWidth="max-w-sm">
       <div className="p-6 flex flex-col space-y-4">
@@ -34,7 +42,7 @@ export default function ConfirmModal({
           <button
             type="button"
             onClick={onConfirm}
-            className="px-4 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-all active:scale-[0.98] shadow-2xs cursor-pointer"
+            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all active:scale-[0.98] shadow-2xs cursor-pointer ${confirmBtnStyles}`}
           >
             {confirmText}
           </button>

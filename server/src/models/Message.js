@@ -21,14 +21,27 @@ const messageSchema = new Schema(
       trim: true,
       maxlength: 2000,
     },
+    status: {
+      type: String,
+      enum: ["sent", "delivered", "read"],
+      default: "sent",
+      index: true,
+    },
+    deliveredAt: {
+      type: Date,
+    },
+    readAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// Compound indexes for efficient message history retrieval per swap
+// Compound indexes for efficient message history & unread count queries
 messageSchema.index({ swapRequest: 1, createdAt: -1 });
 messageSchema.index({ swapRequest: 1, createdAt: 1 });
+messageSchema.index({ swapRequest: 1, sender: 1, status: 1 });
 
 module.exports = mongoose.model("Message", messageSchema);

@@ -4,6 +4,7 @@ import IncomingRequests from "../components/swaps/IncomingRequests";
 import OutgoingRequests from "../components/swaps/OutgoingRequests";
 import swapService from "../services/swapService";
 import { useSwap } from "../context/SwapContext";
+import useSocket from "../hooks/useSocket";
 import {
   Inbox,
   Send,
@@ -16,6 +17,7 @@ import {
 
 export default function SwapRequestsPage() {
   const { stats, refreshStats } = useSwap();
+  const { subscribeToSwapRequests, unsubscribeFromSwapRequests } = useSocket();
   const [activeTab, setActiveTab] = useState("incoming"); // "incoming" | "outgoing"
   const [statusFilter, setStatusFilter] = useState(""); // "" | "pending" | "accepted" | "rejected" | "cancelled"
 
@@ -66,6 +68,14 @@ export default function SwapRequestsPage() {
     refreshStats();
     fetchRequests();
   }, [refreshStats, fetchRequests]);
+
+  // Subscribe to real-time swap request creation and status updates
+  useEffect(() => {
+    subscribeToSwapRequests(handleActionComplete);
+    return () => {
+      unsubscribeFromSwapRequests(handleActionComplete);
+    };
+  }, [subscribeToSwapRequests, unsubscribeFromSwapRequests, handleActionComplete]);
 
   const statusOptions = [
     { label: "All", value: "" },

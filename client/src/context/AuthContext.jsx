@@ -3,8 +3,38 @@ import api from "../services/api";
 
 export const AuthContext = createContext(null);
 
+/**
+ * Helper to safely decode JWT payload on client side without external dependencies
+ */
+const decodeJwtToken = (token) => {
+  if (!token) return null;
+  try {
+    const base64Url = token.split(".")[1];
+    if (!base64Url) return null;
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    const parsed = JSON.parse(jsonPayload);
+    if (!parsed || !parsed.id) return null;
+    return {
+      _id: parsed.id,
+      id: parsed.id,
+      role: parsed.role,
+    };
+  } catch (err) {
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const initialToken = localStorage.getItem("token");
+    return decodeJwtToken(initialToken);
+  });
   const [token, setToken] = useState(() => localStorage.getItem("token") || null);
   const [loading, setLoading] = useState(true);
 
@@ -12,6 +42,20 @@ export const AuthProvider = ({ children }) => {
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem("token");
       if (storedToken) {
+        const decodedUser = decodeJwtToken(storedToken);
+        
+        // If stored token is structurally invalid, clear it
+        if (!decodedUser) {
+          localStorage.removeItem("token");
+          setToken(null);
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
+        setUser((prev) => prev || decodedUser);
+        setToken(storedToken);
+
         try {
           const response = await api.get("/auth/me");
           if (response.data && response.data.success) {
@@ -23,10 +67,22 @@ export const AuthProvider = ({ children }) => {
             setUser(null);
           }
         } catch (error) {
-          console.error("Failed to restore auth session:", error);
-          localStorage.removeItem("token");
-          setToken(null);
-          setUser(null);
+          const isAuthError =
+            error.response &&
+            (error.response.status === 401 || error.response.status === 403);
+
+          if (isAuthError) {
+            // AUTH FAILURE: Backend explicitly confirmed invalid/expired JWT (401/403)
+            console.warn("Backend explicitly rejected token (401/403). Clearing auth session.");
+            localStorage.removeItem("token");
+            setToken(null);
+            setUser(null);
+          } else {
+            // NETWORK / SERVER FAILURE: Backend offline, connection refused, 5xx error, or timeout
+            console.warn("Backend server unavailable or network error. Preserving stored auth session.");
+            setToken(storedToken);
+            setUser((prev) => prev || decodedUser);
+          }
         }
       } else {
         setToken(null);

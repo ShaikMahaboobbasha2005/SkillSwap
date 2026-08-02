@@ -22,10 +22,13 @@ const server = http.createServer(app);
 connectDB();
 
 // CORS configuration
-const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+const allowedOrigins = process.env.CLIENT_URL
+  ? [process.env.CLIENT_URL]
+  : ["http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:5173", "http://127.0.0.1:5174"];
+
 app.use(
   cors({
-    origin: clientUrl,
+    origin: allowedOrigins,
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -34,11 +37,13 @@ app.use(
 // Socket.io setup attached to HTTP server
 const io = new Server(server, {
   cors: {
-    origin: clientUrl,
+    origin: allowedOrigins,
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
   },
 });
+
+app.set("io", io);
 
 // Body Parser Middleware
 app.use(express.json({ limit: "10mb" }));

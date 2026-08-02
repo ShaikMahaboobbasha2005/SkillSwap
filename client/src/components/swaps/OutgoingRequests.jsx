@@ -129,6 +129,7 @@ export default function OutgoingRequests({
         }? This action cannot be undone.`}
         confirmText="Cancel Swap Request"
         cancelText="Keep Request"
+        isDestructive={true}
         onConfirm={handleConfirmCancel}
         onCancel={handleCloseCancelConfirm}
       />

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
+import useSocket from "../hooks/useSocket";
 import { useSwap } from "../context/SwapContext";
 import NotificationBadge from "./NotificationBadge";
 import logoImg from "../assets/logo.png";
@@ -14,10 +15,12 @@ import {
   X,
   Home as HomeIcon,
   Handshake,
+  MessageSquare,
 } from "lucide-react";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { totalUnreadCount } = useSocket();
   const { pendingIncomingCount } = useSwap();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -26,6 +29,12 @@ export default function Navbar() {
 
   const isActive = (path) => {
     if (path === "/") return location.pathname === "/";
+    if (path === "/chats") {
+      return location.pathname.startsWith("/chats") || location.pathname.includes("/chat");
+    }
+    if (path === "/swaps") {
+      return location.pathname.startsWith("/swaps") && !location.pathname.includes("/chat");
+    }
     return location.pathname.startsWith(path);
   };
 
@@ -88,6 +97,11 @@ export default function Navbar() {
             <span>Swap Requests</span>
             <NotificationBadge count={pendingIncomingCount} variant="inline" />
           </Link>
+          <Link to="/chats" className={linkClasses("/chats")}>
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>Chats</span>
+            <NotificationBadge count={totalUnreadCount} variant="inline" />
+          </Link>
         </div>
 
         {/* Desktop Profile Dropdown Navigation */}
@@ -114,7 +128,7 @@ export default function Navbar() {
                     "U"
                   )}
                 </div>
-                <NotificationBadge count={pendingIncomingCount} variant="floating" />
+                <NotificationBadge count={pendingIncomingCount + totalUnreadCount} variant="floating" />
               </div>
               <span className="text-xs font-semibold text-[#16160F]">
                 {user?.name}
@@ -141,6 +155,18 @@ export default function Navbar() {
                 >
                   <User className="w-4 h-4 text-[#6B6858]" />
                   <span>My Profile</span>
+                </Link>
+
+                <Link
+                  to="/chats"
+                  onClick={() => setDropdownOpen(false)}
+                  className="flex items-center justify-between px-4 py-2 text-xs font-semibold text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332] transition-colors"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <MessageSquare className="w-4 h-4 text-[#6B6858]" />
+                    <span>Chats</span>
+                  </div>
+                  <NotificationBadge count={totalUnreadCount} variant="inline" />
                 </Link>
 
                 <Link
@@ -199,53 +225,92 @@ export default function Navbar() {
 
       {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden mt-3 pt-3 border-t border-[#E6E3DA] space-y-2 animate-fadeIn">
+        <div className="md:hidden mt-3 pt-3 border-t border-[#E6E3DA] space-y-1 animate-fadeIn">
           <Link
             to="/"
             onClick={() => setMobileMenuOpen(false)}
-            className={`block ${linkClasses("/")}`}
+            className={`flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl transition-all ${
+              isActive("/")
+                ? "bg-[#E4EEE8] text-[#1B4332]"
+                : "text-[#16160F] hover:text-[#1B4332] hover:bg-[#F7F6F2]"
+            }`}
           >
-            <HomeIcon className="w-3.5 h-3.5 inline mr-2" />
-            Home
+            <div className="flex items-center gap-2.5">
+              <HomeIcon className="w-4 h-4 text-[#6B6858]" />
+              <span>Home</span>
+            </div>
           </Link>
+
           <Link
             to="/discover"
             onClick={() => setMobileMenuOpen(false)}
-            className={`block ${linkClasses("/discover")}`}
+            className={`flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl transition-all ${
+              isActive("/discover")
+                ? "bg-[#E4EEE8] text-[#1B4332]"
+                : "text-[#16160F] hover:text-[#1B4332] hover:bg-[#F7F6F2]"
+            }`}
           >
-            <Compass className="w-3.5 h-3.5 inline mr-2" />
-            Discover Skills
+            <div className="flex items-center gap-2.5">
+              <Compass className="w-4 h-4 text-[#6B6858]" />
+              <span>Discover Skills</span>
+            </div>
           </Link>
+
           <Link
             to="/swaps"
             onClick={() => setMobileMenuOpen(false)}
-            className={`block ${linkClasses("/swaps")}`}
+            className={`flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl transition-all ${
+              isActive("/swaps")
+                ? "bg-[#E4EEE8] text-[#1B4332]"
+                : "text-[#16160F] hover:text-[#1B4332] hover:bg-[#F7F6F2]"
+            }`}
           >
-            <div className="flex items-center justify-between w-full">
-              <div>
-                <Handshake className="w-3.5 h-3.5 inline mr-2" />
-                <span>Swap Requests</span>
-              </div>
-              <NotificationBadge count={pendingIncomingCount} variant="inline" />
+            <div className="flex items-center gap-2.5">
+              <Handshake className="w-4 h-4 text-[#6B6858]" />
+              <span>Swap Requests</span>
             </div>
+            <NotificationBadge count={pendingIncomingCount} variant="inline" />
           </Link>
+
+          <Link
+            to="/chats"
+            onClick={() => setMobileMenuOpen(false)}
+            className={`flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl transition-all ${
+              isActive("/chats")
+                ? "bg-[#E4EEE8] text-[#1B4332]"
+                : "text-[#16160F] hover:text-[#1B4332] hover:bg-[#F7F6F2]"
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <MessageSquare className="w-4 h-4 text-[#6B6858]" />
+              <span>Chats</span>
+            </div>
+            <NotificationBadge count={totalUnreadCount} variant="inline" />
+          </Link>
+
           <Link
             to="/profile"
             onClick={() => setMobileMenuOpen(false)}
-            className={`block ${linkClasses("/profile")}`}
+            className={`flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl transition-all ${
+              isActive("/profile")
+                ? "bg-[#E4EEE8] text-[#1B4332]"
+                : "text-[#16160F] hover:text-[#1B4332] hover:bg-[#F7F6F2]"
+            }`}
           >
-            <User className="w-3.5 h-3.5 inline mr-2" />
-            My Profile
+            <div className="flex items-center gap-2.5">
+              <User className="w-4 h-4 text-[#6B6858]" />
+              <span>My Profile</span>
+            </div>
           </Link>
 
-          <div className="pt-2 border-t border-[#E6E3DA]">
+          <div className="pt-2 mt-1 border-t border-[#E6E3DA]">
             <button
+              type="button"
               onClick={() => {
                 setMobileMenuOpen(false);
                 logout();
               }}
-              type="button"
-              className="w-full text-left px-3.5 py-2 text-xs font-semibold text-red-600 bg-[#F7F6F2] rounded-xl cursor-pointer flex items-center gap-2"
+              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-xl transition-all cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
               <span>Logout</span>

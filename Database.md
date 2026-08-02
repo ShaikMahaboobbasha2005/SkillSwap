@@ -64,11 +64,14 @@ A shared lookup collection — users reference `Skill._id` in `skillsOffered`/`s
   swapRequest: ObjectId, // ref: SwapRequest — authoritative relationship for chat
   sender: ObjectId,      // ref: User
   content: String,       // max 2000 chars
+  status: String,        // "sent" | "delivered" | "read"
+  deliveredAt: Date,     // timestamp when delivered to recipient socket session
+  readAt: Date,          // timestamp when recipient opened/viewed conversation
   createdAt: Date,
   updatedAt: Date
 }
 ```
-**Indexes:** `swapRequest` single index, plus `{ swapRequest: 1, createdAt: -1 }` and `{ swapRequest: 1, createdAt: 1 }` compound indexes for fast, chronological message history retrieval per swap.
+**Indexes:** `swapRequest` single index, plus `{ swapRequest: 1, createdAt: -1 }`, `{ swapRequest: 1, createdAt: 1 }`, and `{ swapRequest: 1, sender: 1, status: 1 }` compound indexes for fast chronological history and unread count queries.
 
 ## 6. Rating
 ```js

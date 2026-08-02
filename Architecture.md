@@ -35,14 +35,15 @@ Single-page app, deployed as a static build on Vercel.
 
 ```
 src/
-├── pages/          # route-level views (Login, Signup, Home, DiscoverPage, OwnProfile, PublicProfile, SwapRequestsPage)
+├── pages/          # route-level views (Login, Signup, Home, DiscoverPage, OwnProfile, PublicProfile, SwapRequestsPage, ChatPage, ChatsPage)
 ├── components/     # reusable UI
+│   ├── chat/       # ChatHeader, MessageList, MessageBubble, MessageInput, ConversationList
 │   ├── profile/    # CompactProfileStats, AvatarLightboxModal
 │   ├── swaps/      # SwapRequestModal, SwapRequestCard, IncomingRequests, OutgoingRequests, StatusBadge, EmptySwapState, SwapRequestSkeleton
 │   └── ...         # Navbar, ProfileBanner, Modal, ConfirmModal, ToastNotification, SkillsSection, etc.
 ├── context/         # AuthContext, SwapContext, SocketContext
 ├── hooks/           # useAuth, useDiscover, useSocket
-├── services/        # API call wrappers (authService, skillService, discoverService, profileService, swapService)
+├── services/        # API call wrappers (authService, skillService, discoverService, profileService, swapService, chatService)
 ├── utils/           # validation helpers, formatters
 └── App.jsx
 ```
@@ -85,7 +86,7 @@ Either user marks the swap complete → triggers a notification to the other par
 Upload → multer (in-memory) → Cloudinary upload → returned URL stored in `User.portfolio[]` → displayed as a grid on the profile page, videos served via Cloudinary's video delivery.
 
 ## 6. Real-Time Layer
-Socket.io runs on the same Express server (attached to the same HTTP server instance) — no separate service. Namespaces/rooms are keyed by swap/chat ID so messages only broadcast to the two relevant users.
+Socket.io runs on the same Express server (attached to the same HTTP server instance) — no separate service. Rooms are keyed by `swap:<swapId>` for isolated chat communications and `user:<userId>` (derived strictly from verified JWT identity) for real-time swap request updates (`swap_request_created`, `swap_request_updated`) and live badge state sync across participants.
 
 ## 7. Scalability Notes (mini-project scope, but designed sensibly)
 - Stateless REST layer — JWT means no server-side session store, so the API layer could scale horizontally behind a load balancer later without rework

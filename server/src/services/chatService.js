@@ -3,6 +3,8 @@ const SwapRequest = require("../models/SwapRequest");
 const { isValidObjectId } = require("../utils/chatValidation");
 
 const SENDER_POPULATE_FIELDS = "name profilePicture";
+const USER_POPULATE_FIELDS = "name profilePicture location";
+const SKILL_POPULATE_FIELDS = "name category level type status";
 
 const validateSwapId = (swapId) => {
   if (!isValidObjectId(swapId)) {
@@ -72,7 +74,7 @@ const getMessagesBySwapId = async (swapId, userId, queryParams = {}) => {
   };
 };
 
-const saveMessage = async ({ swapId, senderId, content }) => {
+const saveMessage = async ({ swapId, senderId, content, status = "sent" }) => {
   await verifyAcceptedSwapParticipant(swapId, senderId);
 
   const trimmedContent = (content || "").trim();
@@ -94,6 +96,8 @@ const saveMessage = async ({ swapId, senderId, content }) => {
     swapRequest: swapId,
     sender: senderId,
     content: trimmedContent,
+    status,
+    deliveredAt: status === "delivered" ? new Date() : undefined,
   });
 
   await newMessage.save();
@@ -103,9 +107,142 @@ const saveMessage = async ({ swapId, senderId, content }) => {
     .lean();
 };
 
+const getConversations = async (userId) => {
+  // Find all accepted swap requests involving the current user
+  const acceptedSwaps = await SwapRequest.find({
+    status: "accepted",
+    $or: [{ fromUser: userId }, { toUser: userId }],
+  })
+    .populate("fromUser", USER_POPULATE_FIELDS)
+    .populate("toUser", USER_POPULATE_FIELDS)
+    .populate("offeredSkill", SKILL_POPULATE_FIELDS)
+    .populate("wantedSkill", SKILL_POPULATE_FIELDS)
+    .lean();
+
+  const conversations = await Promise.all(
+    acceptedSwaps.map(async (swap) => {
+      const isSender = swap.fromUser._id.toString() === userId.toString();
+      const counterpart = isSender ? swap.toUser : swap.fromUser;
+
+      const offeredSkillName = isSender ? swap.offeredSkill?.name : swap.wantedSkill?.name;
+      const learnedSkillName = isSender ? swap.wantedSkill?.name : swap.offeredSkill?.name;
+
+      // Fetch last message
+      const lastMessage = await Message.findOne({ swapRequest: swap._id })
+        .sort({ createdAt: -1 })
+        .populate("sender", SENDER_POPULATE_FIELDS)
+        .lean();
+
+      // Count unread incoming messages for current user
+      const unreadCount = await Message.countDocuments({
+        swapRequest: swap._id,
+        sender: { $ne: userId },
+        status: { $ne: "read" },
+      });
+
+      const lastActivityAt = lastMessage
+        ? lastMessage.createdAt
+        : swap.updatedAt || swap.createdAt;
+
+      return {
+        swapId: swap._id,
+        swap,
+        counterpart,
+        offeredSkillName,
+        learnedSkillName,
+        lastMessage,
+        unreadCount,
+        lastActivityAt,
+      };
+    })
+  );
+
+  // Sort by latest message/activity timestamp, newest first
+  return conversations.sort(
+    (a, b) => new Date(b.lastActivityAt) - new Date(a.lastActivityAt)
+  );
+};
+
+const getTotalUnreadCount = async (userId) => {
+  const acceptedSwaps = await SwapRequest.find({
+    status: "accepted",
+    $or: [{ fromUser: userId }, { toUser: userId }],
+  }).select("_id");
+
+  const swapIds = acceptedSwaps.map((s) => s._id);
+
+  if (swapIds.length === 0) return 0;
+
+  return await Message.countDocuments({
+    swapRequest: { $in: swapIds },
+    sender: { $ne: userId },
+    status: { $ne: "read" },
+  });
+};
+
+const markMessagesAsRead = async (swapId, userId) => {
+  await verifyAcceptedSwapParticipant(swapId, userId);
+
+  const now = new Date();
+  await Message.updateMany(
+    {
+      swapRequest: swapId,
+      sender: { $ne: userId },
+      status: { $ne: "read" },
+    },
+    {
+      $set: {
+        status: "read",
+        readAt: now,
+      },
+    }
+  );
+
+  const totalUnreadCount = await getTotalUnreadCount(userId);
+
+  return {
+    swapId,
+    unreadCount: 0,
+    totalUnreadCount,
+    readAt: now,
+  };
+};
+
+const markMessagesAsDeliveredForUser = async (userId) => {
+  const acceptedSwaps = await SwapRequest.find({
+    status: "accepted",
+    $or: [{ fromUser: userId }, { toUser: userId }],
+  }).select("_id");
+
+  const swapIds = acceptedSwaps.map((s) => s._id);
+
+  if (swapIds.length === 0) return { modifiedCount: 0 };
+
+  const now = new Date();
+  const result = await Message.updateMany(
+    {
+      swapRequest: { $in: swapIds },
+      sender: { $ne: userId },
+      status: "sent",
+    },
+    {
+      $set: {
+        status: "delivered",
+        deliveredAt: now,
+      },
+    }
+  );
+
+  return { modifiedCount: result.modifiedCount, deliveredAt: now };
+};
+
 module.exports = {
   validateSwapId,
   verifyAcceptedSwapParticipant,
   getMessagesBySwapId,
   saveMessage,
+  getConversations,
+  getTotalUnreadCount,
+  markMessagesAsRead,
+  markMessagesAsDeliveredForUser,
 };

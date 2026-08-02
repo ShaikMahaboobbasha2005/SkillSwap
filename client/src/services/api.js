@@ -23,4 +23,17 @@ api.interceptors.request.use(
   }
 );
 
+// Interceptor to handle explicit 401 Unauthorized responses globally
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Only clear token if backend explicitly responds with 401 Unauthorized
+    if (error.response && error.response.status === 401) {
+      console.warn("API received 401 Unauthorized response. Clearing token.");
+      localStorage.removeItem("token");
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

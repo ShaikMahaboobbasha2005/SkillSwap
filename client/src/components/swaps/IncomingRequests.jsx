@@ -144,6 +144,7 @@ export default function IncomingRequests({
         }
         confirmText={actionType === "accept" ? "Accept Swap" : "Reject Request"}
         cancelText="Keep Pending"
+        isDestructive={actionType === "reject"}
         onConfirm={handleConfirmAction}
         onCancel={handleCloseConfirm}
       />

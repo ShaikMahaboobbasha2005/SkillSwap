@@ -76,14 +76,26 @@
   - Public profile integration
 - **Done =** Users can complete the entire swap request lifecycle.
 
-## Phase 7 — Communication
-- **Goal:** Provide real-time chat between matched users.
+## Phase 7 — Communication (Completed)
+- **Goal:** Provide real-time chat between matched users with full conversation workspace, read receipts, and unread badges.
 - **Features:**
-  - Socket.io setup
-  - Per-swap chat rooms
-  - Message persistence in MongoDB
-  - Real-time messaging delivery
-- **Done =** Accepted users can chat in real time.
+  - Socket.io setup attached to HTTP server (Phase 7.1)
+  - Per-swap chat rooms (`swap:<swapId>`) and centralized authorization (Phase 7.1)
+  - Message persistence in MongoDB Atlas (Phase 7.1)
+  - SocketContext & useSocket frontend infrastructure with single-socket session lifecycle (Phase 7.2)
+  - Real-time Chat UI at `/swaps/:swapId/chat` with race-safe Map deduplication (Phase 7.3)
+  - Pine Green `#1B4332` Accept Swap button styling (Phase 7.4)
+  - First-class `/chats` route & Navbar link with live unread badge count (Phase 7.4)
+  - Desktop two-panel chat workspace layout (`ConversationList` sidebar + active conversation) (Phase 7.4)
+  - Persistent message status tracking (`sent` `✓` → `delivered` `✓✓` → `read` `✓✓` emerald) (Phase 7.4)
+  - Clean container focus border & panel-edge scrollbar layout (Phase 7.4)
+  - Maximized desktop chat vertical workspace height (`h-[100dvh]`) & compact header/composer paddings (Phase 7.4 Batch 2)
+  - Authenticated user-specific Socket.io rooms (`user:<userId>`) derived strictly from verified JWT (Phase 7.4 Batch 2)
+  - Real-time `swap_request_created` and `swap_request_updated` socket events with live Navbar & page badge sync (Phase 7.4 Batch 2)
+  - Compact stacked mobile hamburger menu with right-aligned badges and subtle logout divider (Phase 7.4 Batch 2)
+  - Full-screen mobile chat view (`/swaps/:swapId/chat`) with explicit header back-navigation to `/chats` (Phase 7.4 Batch 2)
+- **Architecture Decisions:** Chat is strictly scoped to accepted SwapRequests. Message persistence precedes room broadcast. Socket authentication reuses JWT token (`auth: { token }`). Map deduplication by MongoDB `_id` prevents duplicate renders. Message status transitions (`sent` → `delivered` → `read`) are unidirectional and explicit. User personal rooms (`user:<userId>`) sync real-time swap creation and status updates without client-supplied identity overrides.
+- **Done =** Accepted users can chat in real time with a complete conversation list, persistent read receipts, and live swap request updates across desktop and mobile.
 
 ## Phase 8 — Sessions & Reviews
 - **Goal:** Handle swap completions, reviews, and automated reputation scoring.

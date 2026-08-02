@@ -30,8 +30,27 @@ const initSockets = (io) => {
     }
   });
 
-  io.on("connection", (socket) => {
-    const userId = socket.user?.id;
+  io.on("connection", async (socket) => {
+    const userId = socket.user?.id || socket.user?._id || socket.user?.userId;
+
+    // Safely join authenticated user to their own personal room (derived strictly from verified JWT identity)
+    if (userId) {
+      socket.join(`user:${userId}`);
+      console.log(`[Socket] User connected: ${userId} joined room user:${userId}`);
+    }
+
+    // Automatically mark pending sent messages as delivered for newly connected recipient
+    try {
+      const deliveryResult = await chatService.markMessagesAsDeliveredForUser(userId);
+      if (deliveryResult.modifiedCount > 0) {
+        io.emit("messages_status_update", {
+          type: "delivered",
+          userId,
+        });
+      }
+    } catch (err) {
+      console.warn("Delivery update error on socket connect:", err.message);
+    }
 
     // Join swap chat room
     socket.on("join_swap_chat", async (payload, callback) => {
@@ -63,6 +82,45 @@ const initSockets = (io) => {
           success: false,
           message: error.message || "Failed to join chat room",
           code: error.code || "FORBIDDEN",
+        });
+      }
+    });
+
+    // Explicit Mark Messages as Read Event
+    socket.on("mark_messages_read", async (payload, callback) => {
+      const ack = typeof callback === "function" ? callback : () => {};
+      try {
+        const swapId = typeof payload === "string" ? payload : payload?.swapId;
+
+        if (!isValidObjectId(swapId)) {
+          return ack({
+            success: false,
+            message: "Invalid swap request ID format.",
+            code: "INVALID_SWAP_ID",
+          });
+        }
+
+        const readResult = await chatService.markMessagesAsRead(swapId, userId);
+        const roomName = `swap:${swapId}`;
+
+        // Broadcast read status update to room swap:<swapId>
+        io.to(roomName).emit("messages_status_update", {
+          success: true,
+          type: "read",
+          swapId,
+          readBy: userId,
+          readAt: readResult.readAt,
+        });
+
+        ack({
+          success: true,
+          data: readResult,
+        });
+      } catch (error) {
+        ack({
+          success: false,
+          message: error.message || "Failed to mark messages as read",
+          code: error.code || "SERVER_ERROR",
         });
       }
     });
@@ -103,18 +161,46 @@ const initSockets = (io) => {
           });
         }
 
-        // Authorize participant & persist message in MongoDB
+        // Check if counterpart is connected in the room
+        const roomSockets = io.sockets.adapter.rooms.get(roomName);
+        const isRecipientConnected = roomSockets && roomSockets.size > 1;
+        const initialStatus = isRecipientConnected ? "delivered" : "sent";
+
+        // Authorize participant & get swap details to identify recipient
+        const swapRequest = await chatService.verifyAcceptedSwapParticipant(swapId, userId);
+        const recipientId =
+          swapRequest.fromUser.toString() === userId.toString()
+            ? swapRequest.toUser.toString()
+            : swapRequest.fromUser.toString();
+
+        // Persist message in MongoDB
         const savedMessage = await chatService.saveMessage({
           swapId,
           senderId: userId,
           content: validation.data.content,
+          status: initialStatus,
         });
 
-        // Broadcast to room swap:<swapId>
+        // Broadcast to room swap:<swapId> for open chat rendering
         io.to(roomName).emit("new_message", {
           success: true,
           data: savedMessage,
         });
+
+        // Emit global chat_unread_update with authoritative unread count to recipient's personal user room
+        try {
+          const totalUnreadCount = await chatService.getTotalUnreadCount(recipientId);
+          io.to(`user:${recipientId}`).emit("chat_unread_update", {
+            success: true,
+            data: {
+              swapId,
+              senderId: userId,
+              totalUnreadCount,
+            },
+          });
+        } catch (unreadErr) {
+          console.warn("Failed to calculate/emit totalUnreadCount:", unreadErr.message);
+        }
 
         // Acknowledge sender
         ack({

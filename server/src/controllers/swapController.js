@@ -3,6 +3,27 @@ const swapService = require("../services/swapService");
 const createSwapRequest = async (req, res, next) => {
   try {
     const swapRequest = await swapService.createSwapRequest(req.user.id, req.body);
+
+    const io = req.app.get("io");
+    if (io && swapRequest) {
+      const fromUserId = swapRequest.fromUser?._id?.toString?.() ?? swapRequest.fromUser?.toString?.();
+      const toUserId = swapRequest.toUser?._id?.toString?.() ?? swapRequest.toUser?.toString?.();
+
+      if (toUserId) {
+        io.to(`user:${toUserId}`).emit("swap_request_created", {
+          success: true,
+          data: swapRequest,
+        });
+      }
+      if (fromUserId) {
+        io.to(`user:${fromUserId}`).emit("swap_request_created", {
+          success: true,
+          data: swapRequest,
+        });
+      }
+      console.log(`[Swap Controller] Emitted swap_request_created to user:${toUserId} and user:${fromUserId}`);
+    }
+
     res.status(201).json({
       success: true,
       message: "Swap request sent successfully",
@@ -85,9 +106,25 @@ const getSwapRequestById = async (req, res, next) => {
   }
 };
 
+const emitSwapUpdate = (req, swapRequest) => {
+  const io = req.app.get("io");
+  if (io && swapRequest) {
+    const fromUserId = swapRequest.fromUser?._id?.toString() || swapRequest.fromUser?.toString();
+    const toUserId = swapRequest.toUser?._id?.toString() || swapRequest.toUser?.toString();
+
+    if (fromUserId && toUserId) {
+      io.to(`user:${fromUserId}`).to(`user:${toUserId}`).emit("swap_request_updated", {
+        success: true,
+        data: swapRequest,
+      });
+    }
+  }
+};
+
 const acceptSwapRequest = async (req, res, next) => {
   try {
     const swapRequest = await swapService.acceptSwapRequest(req.params.id, req.user.id);
+    emitSwapUpdate(req, swapRequest);
     res.status(200).json({
       success: true,
       message: "Swap request accepted successfully",
@@ -101,6 +138,7 @@ const acceptSwapRequest = async (req, res, next) => {
 const rejectSwapRequest = async (req, res, next) => {
   try {
     const swapRequest = await swapService.rejectSwapRequest(req.params.id, req.user.id);
+    emitSwapUpdate(req, swapRequest);
     res.status(200).json({
       success: true,
       message: "Swap request rejected successfully",
@@ -114,6 +152,7 @@ const rejectSwapRequest = async (req, res, next) => {
 const cancelSwapRequest = async (req, res, next) => {
   try {
     const swapRequest = await swapService.cancelSwapRequest(req.params.id, req.user.id);
+    emitSwapUpdate(req, swapRequest);
     res.status(200).json({
       success: true,
       message: "Swap request cancelled successfully",

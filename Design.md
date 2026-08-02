@@ -79,7 +79,7 @@ Avatar:  fully circular
 
 **Search** (Airbnb layout) — persistent filter bar at top (skill search input), result cards in a responsive grid below, card shows pfp, name, location, top skills, rating.
 
-**Chat** (Discord layout) — room list on the left (collapses on mobile), message thread on the right, grouped consecutive messages from the same sender, timestamp on hover/tap.
+**Chat** (Linear + SkillSwap Pine identity) — Two-panel desktop layout (sidebar list + active workspace) utilizing full remaining viewport height (`h-[100dvh]`) below Navbar. Compact header and composer paddings maximize vertical message thread space. No avatars/usernames on individual message bubbles (identity in header/sidebar). Incoming messages left-aligned with white background; outgoing messages right-aligned with Pine `#1B4332` surface. Message status indicators: sent `✓`, delivered `✓✓`, read `✓✓` (emerald accent). Message input uses single container focus border with shift+enter multiline support. Primary Accept modal button uses Pine Green `#1B4332`; red reserved for destructive actions (Reject/Cancel).
 
 **Portfolio** (Instagram layout) — 3-column grid on desktop/tablet, 2-column on mobile, square thumbnails, tap opens a lightbox with caption and linked skill tag.
 
@@ -92,7 +92,7 @@ Avatar:  fully circular
 ## 8. Responsive Behavior
 - **Desktop (≥1024px):** multi-column layouts (search grid, chat sidebar + thread)
 - **Tablet (768–1023px):** reduced grid columns, sidebar patterns collapse to a toggle where needed
-- **Mobile (<768px):** single-column stacking, chat room list becomes a separate screen (not a persistent sidebar), portfolio grid drops to 2 columns
+- **Mobile (<768px):** single-column stacking, chat room list (`/chats`) and active chat thread (`/swaps/:swapId/chat`) render on separate views with an explicit header back arrow link. Expanded hamburger menu renders a compact stacked list (Home, Discover Skills, Swap Requests [badge right], Chats [badge right], My Profile, subtle Logout divider) closing automatically upon navigation. Portfolio grid drops to 2 columns.
 
 ## 9. Accessibility Notes
 - Maintain sufficient contrast between `ink`/`ink-muted` and `bg`/`surface` per WCAG AA
