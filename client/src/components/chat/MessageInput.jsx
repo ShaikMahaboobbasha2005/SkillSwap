@@ -46,6 +46,12 @@ export default function MessageInput({
       }
     } catch (err) {
       console.error("Send message error caught in input component:", err);
+    } finally {
+      setTimeout(() => {
+        if (textareaRef.current && !textareaRef.current.disabled) {
+          textareaRef.current.focus();
+        }
+      }, 0);
     }
   };
 

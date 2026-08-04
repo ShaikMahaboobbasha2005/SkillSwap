@@ -51,7 +51,7 @@ const createSwapRequest = async (fromUserId, data) => {
     throw error;
   }
 
-  // 5. Validate skill ownership
+  // 5. Validate skill ownership & type
   if (offeredSkill.owner.toString() !== fromUserId.toString()) {
     const error = new Error("Offered skill must belong to you.");
     error.statusCode = 400;
@@ -60,6 +60,18 @@ const createSwapRequest = async (fromUserId, data) => {
 
   if (wantedSkill.owner.toString() !== toUserId.toString()) {
     const error = new Error("Wanted skill must belong to the target user.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (offeredSkill.type && offeredSkill.type !== "Offer") {
+    const error = new Error("Offered skill must be a skill you offer.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (wantedSkill.type && wantedSkill.type !== "Offer") {
+    const error = new Error("Requested skill must be a skill the target user offers.");
     error.statusCode = 400;
     throw error;
   }

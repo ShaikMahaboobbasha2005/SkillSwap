@@ -79,11 +79,13 @@ Avatar:  fully circular
 
 **Search** (Airbnb layout) — persistent filter bar at top (skill search input), result cards in a responsive grid below, card shows pfp, name, location, top skills, rating.
 
-**Chat** (Linear + SkillSwap Pine identity) — Two-panel desktop layout (sidebar list + active workspace) utilizing full remaining viewport height (`h-[100dvh]`) below Navbar. Compact header and composer paddings maximize vertical message thread space. No avatars/usernames on individual message bubbles (identity in header/sidebar). Incoming messages left-aligned with white background; outgoing messages right-aligned with Pine `#1B4332` surface. Message status indicators: sent `✓`, delivered `✓✓`, read `✓✓` (emerald accent). Message input uses single container focus border with shift+enter multiline support. Primary Accept modal button uses Pine Green `#1B4332`; red reserved for destructive actions (Reject/Cancel).
+**Chat** (Linear + SkillSwap Pine identity) — Two-panel desktop layout (sidebar list + active workspace) utilizing full remaining viewport height (`h-[100dvh]`) below Navbar. Left sidebar features a compact real-time conversation search bar matching by counterpart name or offered/wanted skills. Compact header and composer paddings maximize vertical message thread space. No avatars/usernames on individual message bubbles (identity in header/sidebar). Incoming messages left-aligned with white background; outgoing messages right-aligned with Pine `#1B4332` surface. Message status indicators: sent `✓`, delivered `✓✓`, read `✓✓` (emerald accent). Message input uses single container focus border with shift+enter multiline support and focus retention after sending. Floating scroll-to-bottom pill button with real-time incoming message counter appears when scrolled up. Primary Accept modal button uses Pine Green `#1B4332`; red reserved for destructive actions (Reject/Cancel).
+
+**Navbar & Profile Dropdown** — Sticky top bar with logo, main links (Home, Discover, Swap Requests, Chats with real-time numeric badges), and clean avatar trigger. Desktop profile dropdown is simplified to My Profile, Settings (placeholder), divider, and Logout (red styling). Mobile drawer retains full primary navigation including Swap Requests and Chats.
 
 **Portfolio** (Instagram layout) — 3-column grid on desktop/tablet, 2-column on mobile, square thumbnails, tap opens a lightbox with caption and linked skill tag.
 
-**Forms** (Notion layout) — minimal borders, label above field, inline validation messages, grouped sections with subtle dividers rather than boxed panels.
+**Forms & Modals** (Notion layout) — minimal borders, label above field, inline validation messages, grouped sections with subtle dividers rather than boxed panels. Request Skill Swap modal allows selecting any active offered skill belonging to the recipient user alongside requester's offered skill, preserving initial pre-selected skill as default.
 
 **Notifications** (GitHub layout) — bell icon with unread-count badge, dropdown list grouped by recency ("Today", "Earlier"), unread items visually distinct via `accent-soft` background.
 

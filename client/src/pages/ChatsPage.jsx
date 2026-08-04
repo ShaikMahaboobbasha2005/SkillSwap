@@ -80,11 +80,11 @@ export default function ChatsPage() {
             swapId ? "hidden md:flex" : "flex"
           }`}
         >
-          <div className="p-4 border-b border-[#E6E3DA] bg-[#F7F6F2]/50 shrink-0">
-            <h2 className="text-base font-extrabold text-[#16160F]">
+          <div className="px-3.5 pt-3 pb-1 shrink-0">
+            <h2 className="text-sm font-extrabold text-[#16160F]">
               Conversations
             </h2>
-            <p className="text-xs text-[#6B6858]">
+            <p className="text-[11px] text-[#6B6858]">
               Your active accepted skill swaps
             </p>
           </div>

@@ -210,16 +210,17 @@ export const SocketProvider = ({ children }) => {
   }, []);
 
   const markSwapAsRead = useCallback(
-    async (swapId) => {
+    async (swapId, messageIds = null) => {
       try {
-        const res = await chatService.markAsRead(swapId);
-        if (res && res.success && typeof res.data?.totalUnreadCount === "number") {
-          setTotalUnreadCount(res.data.totalUnreadCount);
-        }
         if (socketRef.current && socketRef.current.connected) {
-          socketRef.current.emit("mark_messages_read", { swapId });
+          socketRef.current.emit("mark_messages_read", { swapId, messageIds });
+        } else {
+          const res = await chatService.markAsRead(swapId, messageIds);
+          if (res && res.success && typeof res.data?.totalUnreadCount === "number") {
+            setTotalUnreadCount(res.data.totalUnreadCount);
+          }
+          return res;
         }
-        return res;
       } catch (err) {
         console.warn("Failed to mark swap as read:", err.message);
       }

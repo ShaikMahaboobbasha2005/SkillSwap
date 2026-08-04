@@ -110,6 +110,13 @@ body {
   outline-offset: 2px;
 }
 
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible {
+  outline: none !important;
+}
+
 /* Subtle transitions */
 .transition-linear {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);

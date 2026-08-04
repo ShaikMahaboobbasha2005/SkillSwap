@@ -34,8 +34,11 @@ export const getUnreadCount = async () => {
  * @param {string} swapId - Swap request ID
  * @returns {Promise<Object>} API response data
  */
-export const markAsRead = async (swapId) => {
-  const response = await api.patch(`/chat/${swapId}/read`);
+export const markAsRead = async (swapId, messageIds = null) => {
+  const response = await api.patch(
+    `/chat/${swapId}/read`,
+    messageIds ? { messageIds } : {}
+  );
   return response.data;
 };
 

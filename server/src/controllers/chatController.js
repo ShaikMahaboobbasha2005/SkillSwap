@@ -48,7 +48,25 @@ const getUnreadCount = async (req, res, next) => {
 
 const markAsRead = async (req, res, next) => {
   try {
-    const result = await chatService.markMessagesAsRead(req.params.swapId, req.user.id);
+    const { messageIds } = req.body || {};
+    const result = await chatService.markMessagesAsRead(
+      req.params.swapId,
+      req.user.id,
+      messageIds
+    );
+
+    const io = req.app.get("io");
+    if (io) {
+      io.to(`swap:${req.params.swapId}`).emit("messages_status_update", {
+        success: true,
+        type: "read",
+        swapId: req.params.swapId,
+        readBy: req.user.id,
+        readAt: result.readAt,
+        messageIds: result.messageIds,
+      });
+    }
+
     res.status(200).json({
       success: true,
       data: result,

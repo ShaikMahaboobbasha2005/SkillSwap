@@ -56,13 +56,6 @@ export default function ChatPage({ isEmbedded = false }) {
     );
   }, []);
 
-  // Explicitly trigger read operation for incoming unread messages in this swap
-  const triggerMarkRead = useCallback(async () => {
-    if (swapId) {
-      await markSwapAsRead(swapId);
-    }
-  }, [swapId, markSwapAsRead]);
-
   // Real-time message listener callback
   const handleNewMessage = useCallback(
     (incomingMsg) => {
@@ -76,31 +69,32 @@ export default function ChatPage({ isEmbedded = false }) {
       // Strict validation: message MUST belong to currently active swapId
       if (msgSwapId?.toString() === activeSwapIdRef.current?.toString()) {
         setMessages((prev) => mergeMessages(prev, [incomingMsg]));
-
-        // If message is incoming from counterpart, mark it read since user is actively viewing this chat
-        const senderId =
-          incomingMsg.sender?._id ||
-          incomingMsg.sender?.id ||
-          incomingMsg.sender;
-
-        if (currentUserId && senderId?.toString() !== currentUserId?.toString()) {
-          triggerMarkRead();
-        }
       }
     },
-    [currentUserId, mergeMessages, triggerMarkRead]
+    [mergeMessages]
   );
 
   // Real-time message status updates (sent -> delivered -> read)
   const handleStatusUpdate = useCallback(
     (payload) => {
       if (!payload) return;
-      
+
       if (payload.type === "read" && payload.swapId?.toString() === activeSwapIdRef.current?.toString()) {
+        const readMsgIds = Array.isArray(payload.messageIds)
+          ? new Set(payload.messageIds.map((id) => id.toString()))
+          : null;
+
         setMessages((prev) =>
           prev.map((msg) => {
-            const senderId = msg.sender?._id || msg.sender?.id || msg.sender;
-            if (senderId?.toString() === currentUserId?.toString()) {
+            const msgIdStr = (msg._id || msg.id)?.toString();
+            const senderId = (msg.sender?._id || msg.sender?.id || msg.sender)?.toString();
+            const isOwn = currentUserId && senderId === currentUserId.toString();
+            
+            const isMatch = readMsgIds
+              ? readMsgIds.has(msgIdStr)
+              : isOwn;
+
+            if (isMatch) {
               return { ...msg, status: "read", readAt: payload.readAt || new Date() };
             }
             return msg;
@@ -109,8 +103,9 @@ export default function ChatPage({ isEmbedded = false }) {
       } else if (payload.type === "delivered") {
         setMessages((prev) =>
           prev.map((msg) => {
-            const senderId = msg.sender?._id || msg.sender?.id || msg.sender;
-            if (senderId?.toString() === currentUserId?.toString() && msg.status === "sent") {
+            const senderId = (msg.sender?._id || msg.sender?.id || msg.sender)?.toString();
+            const isOwn = currentUserId && senderId === currentUserId.toString();
+            if (isOwn && msg.status === "sent") {
               return { ...msg, status: "delivered" };
             }
             return msg;
@@ -208,9 +203,6 @@ export default function ChatPage({ isEmbedded = false }) {
           console.warn("Socket room join warning:", joinErr);
         }
 
-        // Step 5: Explicitly trigger mark_read for active conversation view
-        triggerMarkRead();
-
         if (isMounted && activeSwapIdRef.current === currentSwapId) {
           setLoading(false);
         }
@@ -271,7 +263,6 @@ export default function ChatPage({ isEmbedded = false }) {
     unsubscribeFromStatusUpdates,
     handleNewMessage,
     handleStatusUpdate,
-    triggerMarkRead,
   ]);
 
   // Handle message sending
@@ -382,6 +373,7 @@ export default function ChatPage({ isEmbedded = false }) {
           loading={loading}
           initialUnreadId={initialUnreadId}
           swapId={swapId}
+          onMarkMessagesRead={markSwapAsRead}
         />
       </main>
 

@@ -1,16 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Modal from "../Modal";
 import ToastNotification from "../ToastNotification";
 import { getOwnSkills, getUserActiveSkills } from "../../services/skillService";
 import swapService from "../../services/swapService";
 import useAuth from "../../hooks/useAuth";
 import { useSwap } from "../../context/SwapContext";
-import { Sparkles, GraduationCap, ArrowRight, UserCheck, AlertCircle } from "lucide-react";
+import { Sparkles, GraduationCap, ArrowRight, UserCheck, AlertCircle, ChevronDown } from "lucide-react";
 
 /**
  * SwapRequestModal Component
  *
  * Allows a logged-in user to send a skill swap request to a target user.
+ * Allows selecting any active offered skill belonging to the target user.
  *
  * @param {Object} props
  * @param {boolean} props.isOpen - Controls modal visibility
@@ -54,25 +55,53 @@ export default function SwapRequestModal({
   );
 
   // Normalize target skills offered by targetUser (supports Discover pre-grouped, embedded user skills, or dynamically fetched)
-  const targetOfferedSkills =
-    targetUser?.offeringSkills && targetUser.offeringSkills.length > 0
-      ? targetUser.offeringSkills
-      : targetUser?.skills && targetUser.skills.length > 0
-      ? targetUser.skills.filter((s) => s.type === "Offer" && (s.status === "Active" || !s.status))
-      : fetchedTargetOfferedSkills;
+  const targetOfferedSkills = useMemo(() => {
+    let rawList = [];
+    if (fetchedTargetOfferedSkills.length > 0) {
+      rawList = [...fetchedTargetOfferedSkills];
+    } else if (targetUser?.offeringSkills && targetUser.offeringSkills.length > 0) {
+      rawList = [...targetUser.offeringSkills];
+    } else if (targetUser?.skills && targetUser.skills.length > 0) {
+      rawList = targetUser.skills.filter(
+        (s) => (s.type === "Offer" || !s.type) && (s.status === "Active" || !s.status)
+      );
+    }
 
-  // Determine normalized target skill object to display
-  const resolvedTargetSkill =
-    typeof targetSkill === "object" && targetSkill !== null
-      ? targetSkill
-      : targetOfferedSkills.find(
-          (s) => (s._id || s.skillId || s.id) === targetSkill
-        ) ||
-        targetOfferedSkills[0] ||
-        null;
+    // Ensure targetSkill object is included in list if passed as an object and not already in list
+    if (typeof targetSkill === "object" && targetSkill !== null) {
+      const targetSkillId = targetSkill._id || targetSkill.skillId || targetSkill.id;
+      if (targetSkillId) {
+        const alreadyPresent = rawList.some(
+          (s) => String(s._id || s.skillId || s.id) === String(targetSkillId)
+        );
+        if (!alreadyPresent && targetSkill.type !== "Want") {
+          rawList = [targetSkill, ...rawList];
+        }
+      }
+    }
+
+    return rawList.filter(
+      (s) => (s.type === "Offer" || !s.type) && (s.status === "Active" || !s.status)
+    );
+  }, [targetUser, targetSkill, fetchedTargetOfferedSkills]);
+
+  // Determine normalized target skill object to display for current wantedSkillId
+  const selectedTargetSkill = useMemo(() => {
+    if (!wantedSkillId && targetOfferedSkills.length > 0) {
+      return targetOfferedSkills[0];
+    }
+    return (
+      targetOfferedSkills.find(
+        (s) => String(s._id || s.skillId || s.id) === String(wantedSkillId)
+      ) ||
+      (typeof targetSkill === "object" && targetSkill !== null ? targetSkill : null) ||
+      targetOfferedSkills[0] ||
+      null
+    );
+  }, [wantedSkillId, targetOfferedSkills, targetSkill]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !targetUserId) return;
 
     // Reset state on modal open to prevent stale state
     setOwnSkills([]);
@@ -82,49 +111,69 @@ export default function SwapRequestModal({
     setSubmitting(false);
     setToast({ show: false, type: "", message: "" });
 
-    // If targetUser does not have offeringSkills pre-attached (e.g. opened from Public Profile), fetch them
-    const hasPreloadedSkills =
-      (targetUser?.offeringSkills && targetUser.offeringSkills.length > 0) ||
-      (targetUser?.skills && targetUser.skills.some((s) => s.type === "Offer"));
+    // Determine initial wanted skill ID from props
+    let initialWantedId = "";
+    if (typeof targetSkill === "object" && targetSkill !== null) {
+      initialWantedId = targetSkill._id || targetSkill.skillId || targetSkill.id || "";
+    } else if (typeof targetSkill === "string") {
+      initialWantedId = targetSkill;
+    }
 
-    if (!hasPreloadedSkills && targetUserId) {
-      setLoadingTargetSkills(true);
-      getUserActiveSkills(targetUserId)
-        .then((res) => {
-          const rawSkills = res.data || res.skills || [];
-          const activeOffered = rawSkills
-            .filter((s) => s.type === "Offer" && s.status === "Active")
-            .map((s) => ({
-              skillId: s._id || s.skillId || s.id,
-              _id: s._id || s.skillId || s.id,
-              name: s.name,
-              category: s.category,
-              level: s.level,
-              description: s.description,
-            }));
-          setFetchedTargetOfferedSkills(activeOffered);
-          if (activeOffered.length > 0) {
-            const firstSkillId = activeOffered[0]._id || activeOffered[0].skillId;
-            setWantedSkillId(firstSkillId);
+    if (initialWantedId) {
+      setWantedSkillId(initialWantedId);
+    }
+
+    // Always fetch target user's active offered skills to ensure complete list is available in modal
+    setLoadingTargetSkills(true);
+    getUserActiveSkills(targetUserId)
+      .then((res) => {
+        const rawSkills = res.data || res.skills || [];
+        const activeOffered = rawSkills
+          .filter((s) => (s.type === "Offer" || !s.type) && (s.status === "Active" || !s.status))
+          .map((s) => ({
+            skillId: s._id || s.skillId || s.id,
+            _id: s._id || s.skillId || s.id,
+            name: s.name,
+            category: s.category,
+            level: s.level,
+            description: s.description,
+            type: "Offer",
+            status: "Active",
+          }));
+
+        // Merge with preloaded offeringSkills if any
+        if (targetUser?.offeringSkills && Array.isArray(targetUser.offeringSkills)) {
+          targetUser.offeringSkills.forEach((ps) => {
+            const pId = ps._id || ps.skillId || ps.id;
+            if (pId && !activeOffered.some((s) => String(s._id || s.skillId) === String(pId))) {
+              activeOffered.push(ps);
+            }
+          });
+        }
+
+        // Include targetSkill if it was passed as object
+        if (typeof targetSkill === "object" && targetSkill !== null) {
+          const tId = targetSkill._id || targetSkill.skillId || targetSkill.id;
+          if (tId && !activeOffered.some((s) => String(s._id || s.skillId) === String(tId))) {
+            activeOffered.unshift(targetSkill);
           }
-        })
-        .catch((err) => {
-          console.error("Failed to load target user active skills:", err);
-        })
-        .finally(() => {
-          setLoadingTargetSkills(false);
-        });
-    }
+        }
 
-    // Set target skill ID if resolved or preloaded
-    if (resolvedTargetSkill) {
-      setWantedSkillId(resolvedTargetSkill._id || resolvedTargetSkill.skillId || resolvedTargetSkill.id || "");
-    } else if (targetOfferedSkills.length > 0) {
-      const firstSkill = targetOfferedSkills[0];
-      setWantedSkillId(firstSkill._id || firstSkill.skillId || firstSkill.id || "");
-    } else {
-      setWantedSkillId("");
-    }
+        setFetchedTargetOfferedSkills(activeOffered);
+
+        if (initialWantedId) {
+          setWantedSkillId(initialWantedId);
+        } else if (activeOffered.length > 0) {
+          const firstId = activeOffered[0]._id || activeOffered[0].skillId;
+          setWantedSkillId(firstId);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load target user active skills:", err);
+      })
+      .finally(() => {
+        setLoadingTargetSkills(false);
+      });
 
     // Load fresh offered skills for current authenticated user
     if (Array.isArray(currentUserOfferedSkills) && currentUserOfferedSkills.length > 0) {
@@ -138,7 +187,7 @@ export default function SwapRequestModal({
     } else {
       fetchUserOfferedSkills();
     }
-  }, [isOpen, targetUser, targetSkill, currentUserId]);
+  }, [isOpen, targetUser, targetSkill, targetUserId]);
 
   const fetchUserOfferedSkills = async () => {
     setLoadingSkills(true);
@@ -146,7 +195,7 @@ export default function SwapRequestModal({
       const res = await getOwnSkills();
       const skillsList = res.data || res.skills || [];
       const activeOffered = skillsList.filter(
-        (s) => s.type === "Offer" && s.status === "Active"
+        (s) => (s.type === "Offer" || !s.type) && (s.status === "Active" || !s.status)
       );
       setOwnSkills(activeOffered);
       if (activeOffered.length > 0) {
@@ -252,7 +301,7 @@ export default function SwapRequestModal({
       showCloseButton={true}
       maxWidth="max-w-lg"
     >
-      {/* Toast Notification Container with Lucide Alert Status icon on left and X dismiss button on right */}
+      {/* Toast Notification Container */}
       <ToastNotification
         toast={toast}
         onClose={() => setToast({ show: false, type: "", message: "" })}
@@ -296,50 +345,81 @@ export default function SwapRequestModal({
                 I'm Requesting
               </label>
               <span className="text-[11px] text-[#6B6858]">
-                {targetName} is offering this skill.
+                {targetName} is offering {targetOfferedSkills.length > 1 ? "these skills" : "this skill"}.
               </span>
             </div>
 
             {loadingTargetSkills ? (
               <div className="h-10 bg-[#F7F6F2] border border-[#E6E3DA] rounded-xl animate-pulse flex items-center px-3 text-xs text-[#6B6858]">
-                Loading target user's offered skills...
+                Loading {targetName}'s offered skills...
               </div>
-            ) : resolvedTargetSkill ? (
-              <div className="bg-[#E4EEE8]/60 border border-[#1B4332]/20 rounded-xl p-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4 text-[#1B4332] shrink-0" />
-                  <div>
-                    <span className="text-sm font-bold text-[#1B4332] block">
-                      {resolvedTargetSkill.name}
-                    </span>
-                    {resolvedTargetSkill.category && (
-                      <span className="text-[11px] text-[#6B6858]">
-                        Category: {resolvedTargetSkill.category}
+            ) : targetOfferedSkills.length > 0 ? (
+              <div className="space-y-1.5">
+                {targetOfferedSkills.length > 1 ? (
+                  <div className="relative group">
+                    <select
+                      value={wantedSkillId}
+                      onChange={(e) => setWantedSkillId(e.target.value)}
+                      className="w-full pl-10 pr-10 py-3 text-xs font-bold bg-[#E4EEE8]/70 hover:bg-[#E4EEE8] border border-[#1B4332]/30 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] rounded-xl transition-all appearance-none cursor-pointer text-[#1B4332]"
+                    >
+                      {targetOfferedSkills.map((skill) => {
+                        const sId = skill._id || skill.skillId || skill.id;
+                        const skillName = skill.name;
+                        const levelStr = skill.level ? ` (${skill.level})` : "";
+                        const catStr = skill.category ? ` • ${skill.category}` : "";
+                        return (
+                          <option key={sId} value={sId} className="bg-white text-[#16160F] font-medium py-1">
+                            {skillName}{levelStr}{catStr}
+                          </option>
+                        );
+                      })}
+                    </select>
+
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[#1B4332]">
+                      <GraduationCap className="w-4 h-4" />
+                    </div>
+
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-[#1B4332]">
+                      <ChevronDown className="w-4 h-4" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-[#E4EEE8]/60 border border-[#1B4332]/20 rounded-xl p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <GraduationCap className="w-4 h-4 text-[#1B4332] shrink-0" />
+                      <div className="min-w-0">
+                        <span className="text-sm font-bold text-[#1B4332] block truncate">
+                          {selectedTargetSkill?.name}
+                        </span>
+                        {selectedTargetSkill?.category && (
+                          <span className="text-[11px] text-[#6B6858] block truncate">
+                            Category: {selectedTargetSkill.category}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {selectedTargetSkill?.level && (
+                      <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#1B4332] text-white rounded-full shrink-0">
+                        {selectedTargetSkill.level}
                       </span>
                     )}
                   </div>
-                </div>
-                {resolvedTargetSkill.level && (
-                  <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#1B4332] text-white rounded-full">
-                    {resolvedTargetSkill.level}
-                  </span>
+                )}
+
+                {/* Sub-card metadata preview if multiple skills */}
+                {targetOfferedSkills.length > 1 && selectedTargetSkill && (
+                  <div className="px-3 py-1.5 bg-[#F7F6F2] border border-[#E6E3DA] rounded-lg flex items-center justify-between text-[11px]">
+                    <span className="text-[#6B6858]">
+                      {selectedTargetSkill.category ? `Category: ${selectedTargetSkill.category}` : "Offered Skill"}
+                    </span>
+                    {selectedTargetSkill.level && (
+                      <span className="font-bold text-[#1B4332] uppercase">
+                        {selectedTargetSkill.level}
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
-            ) : targetOfferedSkills.length > 0 ? (
-              <select
-                value={wantedSkillId}
-                onChange={(e) => setWantedSkillId(e.target.value)}
-                className="w-full h-10 px-3 text-xs font-medium bg-white border border-[#E6E3DA] rounded-xl focus:outline-hidden focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] transition-colors"
-              >
-                {targetOfferedSkills.map((skill) => {
-                  const sId = skill._id || skill.skillId || skill.id;
-                  return (
-                    <option key={sId} value={sId}>
-                      {skill.name} {skill.level ? `(${skill.level})` : ""}
-                    </option>
-                  );
-                })}
-              </select>
             ) : (
               <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
@@ -378,7 +458,7 @@ export default function SwapRequestModal({
                 className="w-full h-10 px-3 text-xs font-medium bg-white border border-[#E6E3DA] rounded-xl focus:outline-hidden focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] transition-colors"
               >
                 {ownSkills.map((skill) => {
-                  const sId = skill._id || skill.skillId;
+                  const sId = skill._id || skill.skillId || skill.id;
                   return (
                     <option key={sId} value={sId}>
                       {skill.name} {skill.level ? `(${skill.level})` : ""}
@@ -412,7 +492,7 @@ export default function SwapRequestModal({
               maxLength={500}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder={`Hi ${targetName}, I'd love to swap my skill for your ${resolvedTargetSkill?.name || "skill"}!`}
+              placeholder={`Hi ${targetName}, I'd love to swap my skill for your ${selectedTargetSkill?.name || "skill"}!`}
               className="w-full p-3 text-xs bg-white border border-[#E6E3DA] rounded-xl focus:outline-hidden focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] transition-colors resize-none placeholder:text-[#6B6858]/60"
             />
           </div>

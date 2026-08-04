@@ -90,7 +90,8 @@ const initSockets = (io) => {
     socket.on("mark_messages_read", async (payload, callback) => {
       const ack = typeof callback === "function" ? callback : () => {};
       try {
-        const swapId = typeof payload === "string" ? payload : payload?.swapId;
+        const { swapId, messageIds } =
+          typeof payload === "string" ? { swapId: payload } : payload || {};
 
         if (!isValidObjectId(swapId)) {
           return ack({
@@ -100,7 +101,11 @@ const initSockets = (io) => {
           });
         }
 
-        const readResult = await chatService.markMessagesAsRead(swapId, userId);
+        const readResult = await chatService.markMessagesAsRead(
+          swapId,
+          userId,
+          messageIds
+        );
         const roomName = `swap:${swapId}`;
 
         // Broadcast read status update to room swap:<swapId>
@@ -110,6 +115,16 @@ const initSockets = (io) => {
           swapId,
           readBy: userId,
           readAt: readResult.readAt,
+          messageIds: readResult.messageIds,
+        });
+
+        // Emit updated unread count to user's personal room
+        io.to(`user:${userId}`).emit("chat_unread_update", {
+          success: true,
+          data: {
+            swapId,
+            totalUnreadCount: readResult.totalUnreadCount,
+          },
         });
 
         ack({

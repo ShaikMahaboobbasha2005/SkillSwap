@@ -180,31 +180,92 @@ const getTotalUnreadCount = async (userId) => {
   });
 };
 
-const markMessagesAsRead = async (swapId, userId) => {
+const markMessagesAsRead = async (swapId, userId, messageIds = null) => {
   await verifyAcceptedSwapParticipant(swapId, userId);
 
+  let targetMessageIds = [];
   const now = new Date();
-  await Message.updateMany(
-    {
+
+  if (Array.isArray(messageIds) && messageIds.length > 0) {
+    const validIds = messageIds.filter((id) => isValidObjectId(id));
+    if (validIds.length === 0) {
+      const remainingUnread = await Message.countDocuments({
+        swapRequest: swapId,
+        sender: { $ne: userId },
+        status: { $ne: "read" },
+      });
+      const totalUnreadCount = await getTotalUnreadCount(userId);
+      return {
+        swapId,
+        unreadCount: remainingUnread,
+        totalUnreadCount,
+        readAt: now,
+        messageIds: [],
+      };
+    }
+
+    // Find all matching incoming messages in this swap for the provided message IDs
+    const matchedMsgs = await Message.find({
+      _id: { $in: validIds },
+      swapRequest: swapId,
+      sender: { $ne: userId },
+    })
+      .select("_id status")
+      .lean();
+
+    targetMessageIds = matchedMsgs.map((m) => m._id.toString());
+
+    // Filter messages that need DB update to 'read'
+    const unreadIds = matchedMsgs
+      .filter((m) => m.status !== "read")
+      .map((m) => m._id);
+
+    if (unreadIds.length > 0) {
+      await Message.updateMany(
+        { _id: { $in: unreadIds } },
+        {
+          $set: {
+            status: "read",
+            readAt: now,
+          },
+        }
+      );
+    }
+  } else {
+    // If no messageIds specified, target all incoming unread messages in swap
+    const filter = {
       swapRequest: swapId,
       sender: { $ne: userId },
       status: { $ne: "read" },
-    },
-    {
-      $set: {
-        status: "read",
-        readAt: now,
-      },
+    };
+
+    const targetMessages = await Message.find(filter).select("_id").lean();
+    targetMessageIds = targetMessages.map((m) => m._id.toString());
+
+    if (targetMessageIds.length > 0) {
+      await Message.updateMany(filter, {
+        $set: {
+          status: "read",
+          readAt: now,
+        },
+      });
     }
-  );
+  }
+
+  const remainingUnreadInSwap = await Message.countDocuments({
+    swapRequest: swapId,
+    sender: { $ne: userId },
+    status: { $ne: "read" },
+  });
 
   const totalUnreadCount = await getTotalUnreadCount(userId);
 
   return {
     swapId,
-    unreadCount: 0,
+    unreadCount: remainingUnreadInSwap,
     totalUnreadCount,
     readAt: now,
+    messageIds: targetMessageIds,
   };
 };
 

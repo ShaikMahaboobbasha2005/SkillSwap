@@ -45,15 +45,24 @@ export default function Navbar() {
         : "text-[#16160F] hover:text-[#1B4332] hover:bg-[#F7F6F2]"
     }`;
 
-  // Close profile dropdown when clicking outside
+  // Close profile dropdown when clicking outside or pressing Escape
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
       }
     };
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setDropdownOpen(false);
+      }
+    };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   return (
@@ -114,21 +123,18 @@ export default function Navbar() {
               aria-label="Open user profile menu"
               aria-expanded={dropdownOpen}
             >
-              <div className="relative">
-                <div className="w-8 h-8 rounded-full bg-[#1B4332] text-white flex items-center justify-center font-bold text-xs overflow-hidden border border-[#E6E3DA] shrink-0">
-                  {user?.profilePicture ? (
-                    <img
-                      src={user.profilePicture}
-                      alt={user.name || "User Avatar"}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : user?.name ? (
-                    user.name.charAt(0).toUpperCase()
-                  ) : (
-                    "U"
-                  )}
-                </div>
-                <NotificationBadge count={pendingIncomingCount + totalUnreadCount} variant="floating" />
+              <div className="w-8 h-8 rounded-full bg-[#1B4332] text-white flex items-center justify-center font-bold text-xs overflow-hidden border border-[#E6E3DA] shrink-0">
+                {user?.profilePicture ? (
+                  <img
+                    src={user.profilePicture}
+                    alt={user.name || "User Avatar"}
+                    className="w-full h-full object-cover"
+                  />
+                ) : user?.name ? (
+                  user.name.charAt(0).toUpperCase()
+                ) : (
+                  "U"
+                )}
               </div>
               <span className="text-xs font-semibold text-[#16160F]">
                 {user?.name}
@@ -155,30 +161,6 @@ export default function Navbar() {
                 >
                   <User className="w-4 h-4 text-[#6B6858]" />
                   <span>My Profile</span>
-                </Link>
-
-                <Link
-                  to="/chats"
-                  onClick={() => setDropdownOpen(false)}
-                  className="flex items-center justify-between px-4 py-2 text-xs font-semibold text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332] transition-colors"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <MessageSquare className="w-4 h-4 text-[#6B6858]" />
-                    <span>Chats</span>
-                  </div>
-                  <NotificationBadge count={totalUnreadCount} variant="inline" />
-                </Link>
-
-                <Link
-                  to="/swaps"
-                  onClick={() => setDropdownOpen(false)}
-                  className="flex items-center justify-between px-4 py-2 text-xs font-semibold text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332] transition-colors"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Handshake className="w-4 h-4 text-[#6B6858]" />
-                    <span>Swap Requests</span>
-                  </div>
-                  <NotificationBadge count={pendingIncomingCount} variant="inline" />
                 </Link>
 
                 <div className="flex items-center justify-between px-4 py-2 text-xs font-semibold text-[#6B6858] opacity-60 cursor-not-allowed">

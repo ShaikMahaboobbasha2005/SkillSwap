@@ -54,7 +54,7 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 | GET | `/api/chat/conversations` | Protected | Get all accepted swap conversations for logged-in user with counterpart details, last message preview, and unread incoming count. |
 | GET | `/api/chat/unread-count` | Protected | Get total unread incoming message count across all accepted swaps for navbar badge. |
 | GET | `/api/chat/:swapId/messages` | Protected | Get message history for an accepted swap. Default `page=1, limit=50` retrieves the 50 most recent messages, returned in chronological order (`createdAt: 1`) for natural rendering. Populates sender details (`name profilePicture`). |
-| PATCH | `/api/chat/:swapId/read` | Protected | Mark all incoming unread messages in `swapId` as read for current user and return updated unread count. |
+| PATCH | `/api/chat/:swapId/read` | Protected | Mark incoming unread messages in `swapId` (optionally filtered by `messageIds` array in body) as read for current user and return updated unread count. |
 
 **Chat Authorization Rules:**
 - Requires valid JWT authentication token.
@@ -71,7 +71,7 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 - Client events:
   - `join_swap_chat` (`{ swapId }`, `callback`): Verifies JWT & swap authorization, then joins room `swap:<swapId>`. Returns `{ success: true, message: "Joined chat room successfully" }`.
   - `send_message` (`{ swapId, content }`, `callback`): Validates `swapId` format, verifies room membership (`socket.rooms.has("swap:<swapId>")`), validates content (non-empty string, max 2000 chars), persists message to MongoDB (status `sent` or `delivered` if counterpart connected), broadcasts `new_message` to room `swap:<swapId>`, and responds via callback `{ success: true, data: savedMessage }`.
-  - `mark_messages_read` (`{ swapId }`, `callback`): Marks incoming unread messages in `swapId` as `read` in MongoDB and broadcasts `messages_status_update` to room `swap:<swapId>`.
+  - `mark_messages_read` (`{ swapId, messageIds }`, `callback`): Marks specified incoming unread messages in `swapId` as `read` in MongoDB and broadcasts `messages_status_update` to room `swap:<swapId>`.
 - Server events:
   - `new_message` (server → room): Emits `{ success: true, data: savedMessage }` to all clients in room `swap:<swapId>`.
   - `messages_status_update` (server → room/user): Emits `{ type: "delivered" | "read", swapId, readBy, readAt }` when message status transitions occur.
