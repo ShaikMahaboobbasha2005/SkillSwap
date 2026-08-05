@@ -4,7 +4,7 @@ A modern full-stack skill exchange platform where users can teach what they know
 
 ## Overview
 
-SkillSwap connects people who want to exchange skills instead of paying for courses. Users can showcase their skills, discover other members, send swap requests, manage ongoing exchanges, and build a learning community. 🤝✨
+SkillSwap connects people who want to exchange skills instead of paying for courses. Users can showcase their skills, discover other members, send swap requests, manage ongoing exchanges, and build a community of learners and teachers.
 
 ---
 
@@ -103,7 +103,7 @@ SkillSwap/
 ### Clone Repository
 
 ```bash
-git clone https://github.com/<your-username>/SkillSwap.git
+git clone https://github.com/ShaikMahaboobbasha2005/SkillSwap.git
 ```
 
 ### Navigate
@@ -114,14 +114,14 @@ cd SkillSwap
 
 ### Install Dependencies
 
-Backend
+**Backend**
 
 ```bash
 cd server
 npm install
 ```
 
-Frontend
+**Frontend**
 
 ```bash
 cd ../client
@@ -136,11 +136,8 @@ npm install
 
 ```env
 PORT=5000
-
 MONGO_URI=your_mongodb_connection
-
 JWT_SECRET=your_secret_key
-
 CLIENT_URL=http://localhost:5173
 ```
 
@@ -154,21 +151,21 @@ VITE_API_URL=http://localhost:5000/api
 
 ## Running the Project ▶️
 
-Backend
+**Backend**
 
 ```bash
 cd server
 npm run dev
 ```
 
-Frontend
+**Frontend**
 
 ```bash
 cd client
 npm run dev
 ```
 
-Open
+**Open Application**
 
 ```
 http://localhost:5173
@@ -180,23 +177,26 @@ http://localhost:5173
 
 ### Completed ✅
 
-- User Authentication 🔐
-- Profile Management 👤
-- Skills Management 🧠
-- Discover Page 🔍
-- Public Profiles 🌐
-- Skill Swap Request Creation ✉️
-- Skill Swap Dashboard 📊
-- Swap Request Management 🔁
-- Profile UI Refinements 🎨
+- ✅ User Authentication 🔐
+- ✅ Profile Management 👤
+- ✅ Skills Management 🧠
+- ✅ Discover Page 🔍
+- ✅ Public Profiles 🌐
+- ✅ Skill Swap Request Creation ✉️
+- ✅ Skill Swap Dashboard 📊
+- ✅ Swap Request Management 🔁
+- ✅ Profile UI Refinements 🎨
+
+### In Progress 🔄
+
+- 🔄 Portfolio 🗂️
+- 🔄 Ratings & Reviews ⭐
 
 ### Upcoming ⏳
 
-- Portfolio 🗂️
-- Ratings & Reviews ⭐
-- Chat System 💬
-- Notifications 🔔
-- Admin Panel 🛠️
+- ⏳ Chat System 💬
+- ⏳ Notifications 🔔
+- ⏳ Admin Panel 🛠️
 
 ---
 
@@ -204,38 +204,38 @@ http://localhost:5173
 
 ### Authentication
 
-- Login
-- Register
-- Get Current User
+- POST `/api/auth/login` - User Login
+- POST `/api/auth/register` - User Registration
+- GET `/api/auth/me` - Get Current User
 
 ### Skills
 
-- Create Skill
-- Update Skill
-- Delete Skill
-- Search Skills
+- POST `/api/skills` - Create Skill
+- PUT `/api/skills/:id` - Update Skill
+- DELETE `/api/skills/:id` - Delete Skill
+- GET `/api/skills/search` - Search Skills
 
 ### Swaps
 
-- Create Swap
-- Incoming Requests
-- Outgoing Requests
-- Accept Request
-- Reject Request
-- Cancel Request
-- Dashboard Statistics
+- POST `/api/swaps` - Create Swap Request
+- GET `/api/swaps/incoming` - Incoming Requests
+- GET `/api/swaps/outgoing` - Outgoing Requests
+- PUT `/api/swaps/:id/accept` - Accept Request
+- PUT `/api/swaps/:id/reject` - Reject Request
+- PUT `/api/swaps/:id/cancel` - Cancel Request
+- GET `/api/swaps/stats` - Dashboard Statistics
 
 ---
 
 ## Security 🔒
 
-- JWT Authentication 🛡️
-- Protected Routes 🚧
-- Request Validation using Zod ✅
-- Ownership Verification 👤
-- Duplicate Skill Prevention 🚫
-- Duplicate Swap Prevention ⚠️
-- Input Sanitization 🧹
+- ✅ JWT Authentication 🛡️
+- ✅ Protected Routes 🚧
+- ✅ Request Validation using Zod ✅
+- ✅ Ownership Verification 👤
+- ✅ Duplicate Skill Prevention 🚫
+- ✅ Duplicate Swap Prevention ⚠️
+- ✅ Input Sanitization 🧹
 
 ---
 
@@ -247,6 +247,8 @@ http://localhost:5173
 - Email Notifications 📧
 - Skill Recommendations 🤖
 - Admin Dashboard 🧑‍💼
+- Video Call Integration 📹
+- Advanced Analytics 📊
 
 ---
 
@@ -260,4 +262,16 @@ This project is licensed under the MIT License.
 
 **Shaikh Mahaboob Basha**
 
-GitHub: https://github.com/<your-username>
+GitHub: https://github.com/ShaikMahaboobbasha2005
+
+---
+
+## Contributing 🤝
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+---
+
+## Support 💬
+
+For support or questions, please open an issue on GitHub or reach out to the author.
