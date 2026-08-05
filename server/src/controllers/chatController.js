@@ -36,10 +36,14 @@ const getConversations = async (req, res, next) => {
 
 const getUnreadCount = async (req, res, next) => {
   try {
-    const totalUnreadCount = await chatService.getTotalUnreadCount(req.user.id);
+    const counts = await chatService.getUnreadCounts(req.user.id);
     res.status(200).json({
       success: true,
-      data: { totalUnreadCount },
+      data: {
+        unreadConversationCount: counts.unreadConversationCount,
+        totalUnreadMessageCount: counts.totalUnreadMessageCount,
+        totalUnreadCount: counts.unreadConversationCount,
+      },
     });
   } catch (error) {
     next(error);
@@ -76,9 +80,56 @@ const markAsRead = async (req, res, next) => {
   }
 };
 
+const deleteMessage = async (req, res, next) => {
+  try {
+    const result = await chatService.deleteMessage(
+      req.params.swapId,
+      req.params.messageId,
+      req.user.id
+    );
+
+    const io = req.app.get("io");
+    if (io) {
+      // Broadcast real-time message_deleted event AFTER successful DB persistence
+      io.to(`swap:${result.swapId}`).emit("message_deleted", {
+        swapId: result.swapId,
+        messageId: result.messageId,
+        deletedAt: result.deletedAt,
+      });
+
+      // If deleted message was unread, emit authoritative unread update to recipient
+      if (result.wasUnread && result.recipientUnreadCounts) {
+        io.to(`user:${result.recipientId}`).emit("chat_unread_update", {
+          success: true,
+          data: {
+            swapId: result.swapId,
+            senderId: result.senderId,
+            unreadConversationCount: result.recipientUnreadCounts.unreadConversationCount,
+            totalUnreadMessageCount: result.recipientUnreadCounts.totalUnreadMessageCount,
+            totalUnreadCount: result.recipientUnreadCounts.unreadConversationCount,
+          },
+        });
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        messageId: result.messageId,
+        swapId: result.swapId,
+        isDeleted: true,
+        deletedAt: result.deletedAt,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getMessages,
   getConversations,
   getUnreadCount,
   markAsRead,
+  deleteMessage,
 };

@@ -20,6 +20,8 @@ export default function MessageList({
   initialUnreadId = null,
   swapId,
   onMarkMessagesRead,
+  onDeleteMessage,
+  onSelectReply,
 }) {
   const containerRef = useRef(null);
   const bottomRef = useRef(null);
@@ -31,6 +33,24 @@ export default function MessageList({
   const hasInitializedRef = useRef(false);
   const prevSwapIdRef = useRef(swapId);
   const prevMessageIdsRef = useRef(new Set());
+
+  // Scroll to referenced message & apply temporary accent highlight
+  const handleSelectReplyToMessage = useCallback((targetMessageId) => {
+    if (!containerRef.current || !targetMessageId) return;
+
+    const el = containerRef.current.querySelector(
+      `[data-message-id="${targetMessageId}"]`
+    );
+
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      el.classList.add("bg-emerald-100/60", "rounded-2xl", "transition-colors", "duration-300");
+      setTimeout(() => {
+        el.classList.remove("bg-emerald-100/60", "rounded-2xl", "transition-colors", "duration-300");
+      }, 1200);
+    }
+  }, []);
 
   // IntersectionObserver for Viewport-Aware Read Receipts
   const observerRef = useRef(null);
@@ -310,12 +330,15 @@ export default function MessageList({
             <div
               key={msgIdStr || `msg-${index}`}
               data-message-id={msgIdStr}
-              data-unread-incoming={isIncoming && isUnread ? "true" : "false"}
+              data-unread-incoming={isIncoming && isUnread && !msg.isDeleted ? "true" : "false"}
               className="w-full"
             >
               <MessageBubble
                 message={msg}
                 currentUserId={currentUserId}
+                onDeleteMessage={onDeleteMessage}
+                onSelectReply={onSelectReply}
+                onSelectReplyToMessage={handleSelectReplyToMessage}
               />
             </div>
           );

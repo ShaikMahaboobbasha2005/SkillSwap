@@ -146,7 +146,9 @@ export default function ConversationList({
             const counterpartName = counterpart?.name || "Swap Partner";
             const counterpartAvatar = counterpart?.profilePicture;
             const timeStr = formatPreviewTime(item.lastActivityAt);
-            const lastMsg = item.lastMessage?.content || "No messages yet";
+            const lastMsg = item.lastMessage?.isDeleted
+              ? "This message was deleted"
+              : item.lastMessage?.content || "No messages yet";
 
             const skillContext =
               item.offeredSkillName && item.learnedSkillName

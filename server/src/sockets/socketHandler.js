@@ -123,7 +123,9 @@ const initSockets = (io) => {
           success: true,
           data: {
             swapId,
-            totalUnreadCount: readResult.totalUnreadCount,
+            unreadConversationCount: readResult.unreadConversationCount,
+            totalUnreadMessageCount: readResult.totalUnreadMessageCount,
+            totalUnreadCount: readResult.unreadConversationCount,
           },
         });
 
@@ -144,7 +146,7 @@ const initSockets = (io) => {
     socket.on("send_message", async (payload, callback) => {
       const ack = typeof callback === "function" ? callback : () => {};
       try {
-        const { swapId, content } = payload || {};
+        const { swapId, content, replyTo } = payload || {};
 
         if (!isValidObjectId(swapId)) {
           return ack({
@@ -193,6 +195,7 @@ const initSockets = (io) => {
           swapId,
           senderId: userId,
           content: validation.data.content,
+          replyTo,
           status: initialStatus,
         });
 
@@ -204,17 +207,19 @@ const initSockets = (io) => {
 
         // Emit global chat_unread_update with authoritative unread count to recipient's personal user room
         try {
-          const totalUnreadCount = await chatService.getTotalUnreadCount(recipientId);
+          const counts = await chatService.getUnreadCounts(recipientId);
           io.to(`user:${recipientId}`).emit("chat_unread_update", {
             success: true,
             data: {
               swapId,
               senderId: userId,
-              totalUnreadCount,
+              unreadConversationCount: counts.unreadConversationCount,
+              totalUnreadMessageCount: counts.totalUnreadMessageCount,
+              totalUnreadCount: counts.unreadConversationCount,
             },
           });
         } catch (unreadErr) {
-          console.warn("Failed to calculate/emit totalUnreadCount:", unreadErr.message);
+          console.warn("Failed to calculate/emit unread counts:", unreadErr.message);
         }
 
         // Acknowledge sender

@@ -61,6 +61,14 @@ const getMessagesBySwapId = async (swapId, userId, queryParams = {}) => {
     .skip(skip)
     .limit(limit)
     .populate("sender", SENDER_POPULATE_FIELDS)
+    .populate({
+      path: "replyTo",
+      select: "_id sender content isDeleted createdAt",
+      populate: {
+        path: "sender",
+        select: SENDER_POPULATE_FIELDS,
+      },
+    })
     .lean();
 
   const messages = messagesDesc.reverse();
@@ -74,7 +82,7 @@ const getMessagesBySwapId = async (swapId, userId, queryParams = {}) => {
   };
 };
 
-const saveMessage = async ({ swapId, senderId, content, status = "sent" }) => {
+const saveMessage = async ({ swapId, senderId, content, replyTo = null, status = "sent" }) => {
   await verifyAcceptedSwapParticipant(swapId, senderId);
 
   const trimmedContent = (content || "").trim();
@@ -92,10 +100,40 @@ const saveMessage = async ({ swapId, senderId, content, status = "sent" }) => {
     throw error;
   }
 
+  let validReplyToId = null;
+  if (replyTo) {
+    const replyToIdStr = typeof replyTo === "object" ? replyTo._id || replyTo.id : replyTo;
+    if (!isValidObjectId(replyToIdStr)) {
+      const error = new Error("Invalid reply message ID format.");
+      error.statusCode = 400;
+      error.code = "INVALID_REPLY_MESSAGE_ID";
+      throw error;
+    }
+
+    const replyMsg = await Message.findById(replyToIdStr);
+    if (!replyMsg) {
+      const error = new Error("Referenced reply message not found.");
+      error.statusCode = 404;
+      error.code = "REPLY_MESSAGE_NOT_FOUND";
+      throw error;
+    }
+
+    // Strictly validate that referenced reply message belongs to the SAME swap conversation
+    if (replyMsg.swapRequest.toString() !== swapId.toString()) {
+      const error = new Error("Cannot reply to a message from a different swap conversation.");
+      error.statusCode = 400;
+      error.code = "SWAP_MISMATCH";
+      throw error;
+    }
+
+    validReplyToId = replyMsg._id;
+  }
+
   const newMessage = new Message({
     swapRequest: swapId,
     sender: senderId,
     content: trimmedContent,
+    replyTo: validReplyToId,
     status,
     deliveredAt: status === "delivered" ? new Date() : undefined,
   });
@@ -104,6 +142,14 @@ const saveMessage = async ({ swapId, senderId, content, status = "sent" }) => {
 
   return await Message.findById(newMessage._id)
     .populate("sender", SENDER_POPULATE_FIELDS)
+    .populate({
+      path: "replyTo",
+      select: "_id sender content isDeleted createdAt",
+      populate: {
+        path: "sender",
+        select: SENDER_POPULATE_FIELDS,
+      },
+    })
     .lean();
 };
 
@@ -131,13 +177,22 @@ const getConversations = async (userId) => {
       const lastMessage = await Message.findOne({ swapRequest: swap._id })
         .sort({ createdAt: -1 })
         .populate("sender", SENDER_POPULATE_FIELDS)
+        .populate({
+          path: "replyTo",
+          select: "_id sender content isDeleted createdAt",
+          populate: {
+            path: "sender",
+            select: SENDER_POPULATE_FIELDS,
+          },
+        })
         .lean();
 
-      // Count unread incoming messages for current user
+      // Count unread incoming messages for current user (excluding soft-deleted messages)
       const unreadCount = await Message.countDocuments({
         swapRequest: swap._id,
         sender: { $ne: userId },
         status: { $ne: "read" },
+        isDeleted: { $ne: true },
       });
 
       const lastActivityAt = lastMessage
@@ -163,7 +218,7 @@ const getConversations = async (userId) => {
   );
 };
 
-const getTotalUnreadCount = async (userId) => {
+const getUnreadConversationCount = async (userId) => {
   const acceptedSwaps = await SwapRequest.find({
     status: "accepted",
     $or: [{ fromUser: userId }, { toUser: userId }],
@@ -173,11 +228,51 @@ const getTotalUnreadCount = async (userId) => {
 
   if (swapIds.length === 0) return 0;
 
-  return await Message.countDocuments({
+  const unreadSwapIds = await Message.distinct("swapRequest", {
     swapRequest: { $in: swapIds },
     sender: { $ne: userId },
     status: { $ne: "read" },
+    isDeleted: { $ne: true },
   });
+
+  return unreadSwapIds.length;
+};
+
+const getUnreadCounts = async (userId) => {
+  const acceptedSwaps = await SwapRequest.find({
+    status: "accepted",
+    $or: [{ fromUser: userId }, { toUser: userId }],
+  }).select("_id");
+
+  const swapIds = acceptedSwaps.map((s) => s._id);
+
+  if (swapIds.length === 0) {
+    return { unreadConversationCount: 0, totalUnreadMessageCount: 0 };
+  }
+
+  const unreadSwapIds = await Message.distinct("swapRequest", {
+    swapRequest: { $in: swapIds },
+    sender: { $ne: userId },
+    status: { $ne: "read" },
+    isDeleted: { $ne: true },
+  });
+
+  const totalUnreadMessageCount = await Message.countDocuments({
+    swapRequest: { $in: swapIds },
+    sender: { $ne: userId },
+    status: { $ne: "read" },
+    isDeleted: { $ne: true },
+  });
+
+  return {
+    unreadConversationCount: unreadSwapIds.length,
+    totalUnreadMessageCount,
+  };
+};
+
+const getTotalUnreadCount = async (userId) => {
+  const counts = await getUnreadCounts(userId);
+  return counts.unreadConversationCount;
 };
 
 const markMessagesAsRead = async (swapId, userId, messageIds = null) => {
@@ -193,22 +288,26 @@ const markMessagesAsRead = async (swapId, userId, messageIds = null) => {
         swapRequest: swapId,
         sender: { $ne: userId },
         status: { $ne: "read" },
+        isDeleted: { $ne: true },
       });
-      const totalUnreadCount = await getTotalUnreadCount(userId);
+      const unreadCounts = await getUnreadCounts(userId);
       return {
         swapId,
         unreadCount: remainingUnread,
-        totalUnreadCount,
+        unreadConversationCount: unreadCounts.unreadConversationCount,
+        totalUnreadMessageCount: unreadCounts.totalUnreadMessageCount,
+        totalUnreadCount: unreadCounts.unreadConversationCount,
         readAt: now,
         messageIds: [],
       };
     }
 
-    // Find all matching incoming messages in this swap for the provided message IDs
+    // Find all matching incoming non-deleted messages in this swap for the provided message IDs
     const matchedMsgs = await Message.find({
       _id: { $in: validIds },
       swapRequest: swapId,
       sender: { $ne: userId },
+      isDeleted: { $ne: true },
     })
       .select("_id status")
       .lean();
@@ -232,11 +331,12 @@ const markMessagesAsRead = async (swapId, userId, messageIds = null) => {
       );
     }
   } else {
-    // If no messageIds specified, target all incoming unread messages in swap
+    // If no messageIds specified, target all incoming unread non-deleted messages in swap
     const filter = {
       swapRequest: swapId,
       sender: { $ne: userId },
       status: { $ne: "read" },
+      isDeleted: { $ne: true },
     };
 
     const targetMessages = await Message.find(filter).select("_id").lean();
@@ -256,16 +356,97 @@ const markMessagesAsRead = async (swapId, userId, messageIds = null) => {
     swapRequest: swapId,
     sender: { $ne: userId },
     status: { $ne: "read" },
+    isDeleted: { $ne: true },
   });
 
-  const totalUnreadCount = await getTotalUnreadCount(userId);
+  const unreadCounts = await getUnreadCounts(userId);
 
   return {
     swapId,
     unreadCount: remainingUnreadInSwap,
-    totalUnreadCount,
+    unreadConversationCount: unreadCounts.unreadConversationCount,
+    totalUnreadMessageCount: unreadCounts.totalUnreadMessageCount,
+    totalUnreadCount: unreadCounts.unreadConversationCount,
     readAt: now,
     messageIds: targetMessageIds,
+  };
+};
+
+const deleteMessage = async (swapId, messageId, userId) => {
+  if (!isValidObjectId(messageId)) {
+    const error = new Error("Invalid message ID format.");
+    error.statusCode = 400;
+    error.code = "INVALID_MESSAGE_ID";
+    throw error;
+  }
+
+  const swapRequest = await verifyAcceptedSwapParticipant(swapId, userId);
+
+  const message = await Message.findById(messageId);
+  if (!message) {
+    const error = new Error("Message not found.");
+    error.statusCode = 404;
+    error.code = "MESSAGE_NOT_FOUND";
+    throw error;
+  }
+
+  // Strictly validate message belongs to swapId from route
+  if (message.swapRequest.toString() !== swapId.toString()) {
+    const error = new Error("Message does not belong to the specified swap request.");
+    error.statusCode = 400;
+    error.code = "SWAP_MISMATCH";
+    throw error;
+  }
+
+  // Strictly validate user is the original sender
+  if (message.sender.toString() !== userId.toString()) {
+    const error = new Error("Access denied. You can only delete your own messages.");
+    error.statusCode = 403;
+    error.code = "FORBIDDEN";
+    throw error;
+  }
+
+  const recipientId =
+    swapRequest.fromUser.toString() === userId.toString()
+      ? swapRequest.toUser.toString()
+      : swapRequest.fromUser.toString();
+
+  // Idempotent handling if already deleted
+  if (message.isDeleted) {
+    return {
+      messageId: message._id.toString(),
+      swapId: swapId.toString(),
+      senderId: userId.toString(),
+      recipientId,
+      isDeleted: true,
+      deletedAt: message.deletedAt,
+      wasUnread: false,
+      recipientUnreadCounts: null,
+    };
+  }
+
+  const wasUnread = message.status !== "read";
+
+  // Perform soft deletion in DB
+  message.isDeleted = true;
+  message.deletedAt = new Date();
+  message.content = "";
+  await message.save();
+
+  let recipientUnreadCounts = null;
+  if (wasUnread) {
+    recipientUnreadCounts = await getUnreadCounts(recipientId);
+  }
+
+  return {
+    messageId: message._id.toString(),
+    swapId: swapId.toString(),
+    senderId: userId.toString(),
+    recipientId,
+    isDeleted: true,
+    deletedAt: message.deletedAt,
+    wasUnread,
+    recipientUnreadCounts,
   };
 };
 
@@ -285,6 +466,7 @@ const markMessagesAsDeliveredForUser = async (userId) => {
       swapRequest: { $in: swapIds },
       sender: { $ne: userId },
       status: "sent",
+      isDeleted: { $ne: true },
     },
     {
       $set: {
@@ -303,7 +485,10 @@ module.exports = {
   getMessagesBySwapId,
   saveMessage,
   getConversations,
+  getUnreadConversationCount,
+  getUnreadCounts,
   getTotalUnreadCount,
   markMessagesAsRead,
+  deleteMessage,
   markMessagesAsDeliveredForUser,
 };

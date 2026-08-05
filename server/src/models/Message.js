@@ -17,9 +17,19 @@ const messageSchema = new Schema(
     },
     content: {
       type: String,
-      required: true,
+      required: function () {
+        return !this.isDeleted;
+      },
       trim: true,
       maxlength: 2000,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    deletedAt: {
+      type: Date,
     },
     status: {
       type: String,
@@ -32,6 +42,12 @@ const messageSchema = new Schema(
     },
     readAt: {
       type: Date,
+    },
+    replyTo: {
+      type: Schema.Types.ObjectId,
+      ref: "Message",
+      default: null,
+      index: true,
     },
   },
   {

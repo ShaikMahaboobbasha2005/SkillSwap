@@ -22,26 +22,29 @@ export const SocketProvider = ({ children }) => {
   const statusListenerMap = useRef(new Map());
   const swapRequestListenerMap = useRef(new Map());
   const unreadListenerMap = useRef(new Map());
+  const deletedListenerMap = useRef(new Map());
 
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState(null);
-  const [totalUnreadCount, setTotalUnreadCount] = useState(0);
+  const [unreadConversationCount, setUnreadConversationCount] = useState(0);
 
   const currentUserId = user?._id || user?.id;
 
-  // Fetch initial total unread count on login / auth change
+  // Fetch initial unread conversation count on login / auth change
   const refreshUnreadCount = useCallback(async () => {
     if (!token || !isAuthenticated) {
-      setTotalUnreadCount(0);
+      setUnreadConversationCount(0);
       return;
     }
     try {
       const res = await chatService.getUnreadCount();
-      if (res && res.success && typeof res.data?.totalUnreadCount === "number") {
-        setTotalUnreadCount(res.data.totalUnreadCount);
+      if (res && res.success && typeof res.data?.unreadConversationCount === "number") {
+        setUnreadConversationCount(res.data.unreadConversationCount);
+      } else if (res && res.success && typeof res.data?.totalUnreadCount === "number") {
+        setUnreadConversationCount(res.data.totalUnreadCount);
       }
     } catch (err) {
-      console.warn("Failed to fetch total unread count:", err.message);
+      console.warn("Failed to fetch unread conversation count:", err.message);
     }
   }, [token, isAuthenticated]);
 
@@ -58,7 +61,7 @@ export const SocketProvider = ({ children }) => {
       }
       setIsConnected(false);
       setConnectionError(null);
-      setTotalUnreadCount(0);
+      setUnreadConversationCount(0);
       messageListenerMap.current.clear();
       statusListenerMap.current.clear();
       swapRequestListenerMap.current.clear();
@@ -112,22 +115,13 @@ export const SocketProvider = ({ children }) => {
       setConnectionError(err?.data?.code || err?.message || "Connection error");
     });
 
-    // Auto-update unread count when new message arrives for current user
-    socket.on("new_message", (payload) => {
-      const msg = payload?.data;
-      if (msg) {
-        const senderId = msg.sender?._id || msg.sender?.id || msg.sender;
-        if (currentUserId && senderId?.toString() !== currentUserId?.toString()) {
-          setTotalUnreadCount((prev) => prev + 1);
-        }
-      }
-    });
-
     // Global chat unread count update listener (emitted to personal room user:<userId>)
     socket.on("chat_unread_update", (payload) => {
       const data = payload?.data;
-      if (data && typeof data.totalUnreadCount === "number") {
-        setTotalUnreadCount(data.totalUnreadCount);
+      if (data && typeof data.unreadConversationCount === "number") {
+        setUnreadConversationCount(data.unreadConversationCount);
+      } else if (data && typeof data.totalUnreadCount === "number") {
+        setUnreadConversationCount(data.totalUnreadCount);
       } else {
         refreshUnreadCount();
       }
@@ -147,6 +141,9 @@ export const SocketProvider = ({ children }) => {
     unreadListenerMap.current.forEach((wrapper) => {
       socket.on("chat_unread_update", wrapper);
     });
+    deletedListenerMap.current.forEach((wrapper) => {
+      socket.on("message_deleted", wrapper);
+    });
 
     return () => {
       socket.disconnect();
@@ -154,8 +151,14 @@ export const SocketProvider = ({ children }) => {
       setIsConnected(false);
       messageListenerMap.current.clear();
       statusListenerMap.current.clear();
+      deletedListenerMap.current.clear();
     };
   }, [token, isAuthenticated, currentUserId, refreshUnreadCount]);
+
+  const deleteMessage = useCallback(async (swapId, messageId) => {
+    const res = await chatService.deleteMessage(swapId, messageId);
+    return res;
+  }, []);
 
   const joinSwapChat = useCallback((swapId) => {
     return new Promise((resolve, reject) => {
@@ -183,7 +186,7 @@ export const SocketProvider = ({ children }) => {
     });
   }, []);
 
-  const sendMessage = useCallback((swapId, content) => {
+  const sendMessage = useCallback((swapId, content, replyTo = null) => {
     return new Promise((resolve, reject) => {
       if (!socketRef.current || !socketRef.current.connected) {
         return reject({
@@ -193,7 +196,7 @@ export const SocketProvider = ({ children }) => {
         });
       }
 
-      socketRef.current.emit("send_message", { swapId, content }, (response) => {
+      socketRef.current.emit("send_message", { swapId, content, replyTo }, (response) => {
         if (response && response.success) {
           resolve(response);
         } else {
@@ -216,8 +219,10 @@ export const SocketProvider = ({ children }) => {
           socketRef.current.emit("mark_messages_read", { swapId, messageIds });
         } else {
           const res = await chatService.markAsRead(swapId, messageIds);
-          if (res && res.success && typeof res.data?.totalUnreadCount === "number") {
-            setTotalUnreadCount(res.data.totalUnreadCount);
+          if (res && res.success && typeof res.data?.unreadConversationCount === "number") {
+            setUnreadConversationCount(res.data.unreadConversationCount);
+          } else if (res && res.success && typeof res.data?.totalUnreadCount === "number") {
+            setUnreadConversationCount(res.data.totalUnreadCount);
           }
           return res;
         }
@@ -334,14 +339,41 @@ export const SocketProvider = ({ children }) => {
     }
   }, []);
 
+  const subscribeToMessageDeleted = useCallback((callback) => {
+    if (typeof callback !== "function") return;
+    if (deletedListenerMap.current.has(callback)) return;
+
+    const wrapper = (payload) => {
+      callback(payload);
+    };
+
+    deletedListenerMap.current.set(callback, wrapper);
+    if (socketRef.current) {
+      socketRef.current.on("message_deleted", wrapper);
+    }
+  }, []);
+
+  const unsubscribeFromMessageDeleted = useCallback((callback) => {
+    if (typeof callback !== "function") return;
+    const wrapper = deletedListenerMap.current.get(callback);
+    if (wrapper) {
+      if (socketRef.current) {
+        socketRef.current.off("message_deleted", wrapper);
+      }
+      deletedListenerMap.current.delete(callback);
+    }
+  }, []);
+
   const value = {
     isConnected,
     connectionError,
-    totalUnreadCount,
+    unreadConversationCount,
+    totalUnreadCount: unreadConversationCount,
     refreshUnreadCount,
     markSwapAsRead,
     joinSwapChat,
     sendMessage,
+    deleteMessage,
     subscribeToMessages,
     unsubscribeFromMessages,
     subscribeToStatusUpdates,
@@ -350,6 +382,8 @@ export const SocketProvider = ({ children }) => {
     unsubscribeFromSwapRequests,
     subscribeToUnreadUpdates,
     unsubscribeFromUnreadUpdates,
+    subscribeToMessageDeleted,
+    unsubscribeFromMessageDeleted,
   };
 
   return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;

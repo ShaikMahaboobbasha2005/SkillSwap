@@ -20,7 +20,7 @@ import {
 
 export default function Navbar() {
   const { user, logout } = useAuth();
-  const { totalUnreadCount } = useSocket();
+  const { unreadConversationCount } = useSocket();
   const { pendingIncomingCount } = useSwap();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -109,7 +109,7 @@ export default function Navbar() {
           <Link to="/chats" className={linkClasses("/chats")}>
             <MessageSquare className="w-3.5 h-3.5" />
             <span>Chats</span>
-            <NotificationBadge count={totalUnreadCount} variant="inline" />
+            <NotificationBadge count={unreadConversationCount} variant="inline" />
           </Link>
         </div>
 
@@ -267,7 +267,7 @@ export default function Navbar() {
               <MessageSquare className="w-4 h-4 text-[#6B6858]" />
               <span>Chats</span>
             </div>
-            <NotificationBadge count={totalUnreadCount} variant="inline" />
+            <NotificationBadge count={unreadConversationCount} variant="inline" />
           </Link>
 
           <Link

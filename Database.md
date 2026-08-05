@@ -63,10 +63,13 @@ A shared lookup collection — users reference `Skill._id` in `skillsOffered`/`s
   _id: ObjectId,
   swapRequest: ObjectId, // ref: SwapRequest — authoritative relationship for chat
   sender: ObjectId,      // ref: User
-  content: String,       // max 2000 chars
+  content: String,       // max 2000 chars (cleared to "" when isDeleted: true)
+  isDeleted: Boolean,    // soft delete flag (default: false)
+  deletedAt: Date,       // soft delete timestamp
   status: String,        // "sent" | "delivered" | "read"
   deliveredAt: Date,     // timestamp when delivered to recipient socket session
   readAt: Date,          // timestamp when recipient opened/viewed conversation
+  replyTo: ObjectId,     // ref: Message (optional self-reference to target message being replied to)
   createdAt: Date,
   updatedAt: Date
 }

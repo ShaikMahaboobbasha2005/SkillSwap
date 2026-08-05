@@ -19,10 +19,13 @@ export default function ChatPage({ isEmbedded = false }) {
     markSwapAsRead,
     joinSwapChat,
     sendMessage,
+    deleteMessage,
     subscribeToMessages,
     unsubscribeFromMessages,
     subscribeToStatusUpdates,
     unsubscribeFromStatusUpdates,
+    subscribeToMessageDeleted,
+    unsubscribeFromMessageDeleted,
   } = useSocket();
 
   const [swap, setSwap] = useState(null);
@@ -31,6 +34,7 @@ export default function ChatPage({ isEmbedded = false }) {
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState(null); // Permanent access errors
   const [isSending, setIsSending] = useState(false);
+  const [replyingTo, setReplyingTo] = useState(null);
 
   const [toast, setToast] = useState({ show: false, message: "", type: "info" });
 
@@ -116,6 +120,66 @@ export default function ChatPage({ isEmbedded = false }) {
     [currentUserId]
   );
 
+  // Real-time message_deleted callback (updates target message AND any replies referencing it)
+  const handleMessageDeleted = useCallback((payload) => {
+    if (!payload || !payload.messageId || !payload.swapId) return;
+
+    if (payload.swapId.toString() === activeSwapIdRef.current?.toString()) {
+      const deletedIdStr = payload.messageId.toString();
+
+      setMessages((prev) =>
+        prev.map((msg) => {
+          const msgIdStr = (msg._id || msg.id)?.toString();
+          let updatedMsg = msg;
+
+          // Update target message if it matches deleted ID
+          if (msgIdStr === deletedIdStr) {
+            updatedMsg = {
+              ...updatedMsg,
+              isDeleted: true,
+              deletedAt: payload.deletedAt || new Date(),
+              content: "",
+            };
+          }
+
+          // ALSO update replyTo reference if it points to the deleted message
+          if (updatedMsg.replyTo) {
+            const replyToIdStr = (
+              updatedMsg.replyTo._id ||
+              updatedMsg.replyTo.id ||
+              updatedMsg.replyTo
+            )?.toString();
+
+            if (replyToIdStr === deletedIdStr) {
+              updatedMsg = {
+                ...updatedMsg,
+                replyTo: {
+                  ...(typeof updatedMsg.replyTo === "object"
+                    ? updatedMsg.replyTo
+                    : {}),
+                  isDeleted: true,
+                  content: "",
+                },
+              };
+            }
+          }
+
+          return updatedMsg;
+        })
+      );
+
+      // Also update replyingTo composer preview if currently replying to the deleted message
+      setReplyingTo((prev) => {
+        if (!prev) return null;
+        const prevIdStr = (prev._id || prev.id)?.toString();
+        if (prevIdStr === deletedIdStr) {
+          return { ...prev, isDeleted: true, content: "" };
+        }
+        return prev;
+      });
+    }
+  }, []);
+
   // Predictable Lifecycle for active swapId: Clear state -> SwapDetails -> History -> Subscribe -> Join -> Read -> Ready
   useEffect(() => {
     let isMounted = true;
@@ -126,6 +190,7 @@ export default function ChatPage({ isEmbedded = false }) {
     setSwap(null);
     setPageError(null);
     setInitialUnreadId(null);
+    setReplyingTo(null);
     setLoading(true);
 
     const initializeChat = async () => {
@@ -174,7 +239,8 @@ export default function ChatPage({ isEmbedded = false }) {
               const senderId = m.sender?._id || m.sender?.id || m.sender;
               return (
                 senderId?.toString() !== currentUserId?.toString() &&
-                m.status !== "read"
+                m.status !== "read" &&
+                !m.isDeleted
               );
             });
 
@@ -195,6 +261,7 @@ export default function ChatPage({ isEmbedded = false }) {
         // Step 3: Register subscribers
         subscribeToMessages(handleNewMessage);
         subscribeToStatusUpdates(handleStatusUpdate);
+        subscribeToMessageDeleted(handleMessageDeleted);
 
         // Step 4: Join Socket.io room for currentSwapId
         try {
@@ -252,6 +319,7 @@ export default function ChatPage({ isEmbedded = false }) {
       isMounted = false;
       unsubscribeFromMessages(handleNewMessage);
       unsubscribeFromStatusUpdates(handleStatusUpdate);
+      unsubscribeFromMessageDeleted(handleMessageDeleted);
     };
   }, [
     swapId,
@@ -261,9 +329,16 @@ export default function ChatPage({ isEmbedded = false }) {
     unsubscribeFromMessages,
     subscribeToStatusUpdates,
     unsubscribeFromStatusUpdates,
+    subscribeToMessageDeleted,
+    unsubscribeFromMessageDeleted,
     handleNewMessage,
     handleStatusUpdate,
+    handleMessageDeleted,
   ]);
+
+  const handleSelectReply = useCallback((msg) => {
+    setReplyingTo(msg);
+  }, []);
 
   // Handle message sending
   const handleSendMessage = async (content) => {
@@ -271,7 +346,8 @@ export default function ChatPage({ isEmbedded = false }) {
 
     setIsSending(true);
     try {
-      const response = await sendMessage(swapId, content);
+      const replyToId = replyingTo ? (replyingTo._id || replyingTo.id) : null;
+      const response = await sendMessage(swapId, content, replyToId);
 
       // If ACK returned saved message, merge safely if still on same swapId
       if (
@@ -283,6 +359,8 @@ export default function ChatPage({ isEmbedded = false }) {
         setMessages((prev) => mergeMessages(prev, [response.data]));
       }
 
+      // Clear replyingTo state ONLY AFTER successful send
+      setReplyingTo(null);
       setIsSending(false);
       return true;
     } catch (err) {
@@ -295,6 +373,44 @@ export default function ChatPage({ isEmbedded = false }) {
           err.message ||
           err.data?.message ||
           "Failed to send message. Please try again.",
+        type: "error",
+      });
+      return false;
+    }
+  };
+
+  // Handle message deletion (REST mutation)
+  const handleDeleteMessage = async (messageId) => {
+    if (!swapId || !messageId) return false;
+
+    try {
+      const response = await deleteMessage(swapId, messageId);
+
+      if (response && response.success && activeSwapIdRef.current === swapId) {
+        setMessages((prev) =>
+          prev.map((msg) => {
+            const msgIdStr = (msg._id || msg.id)?.toString();
+            if (msgIdStr === messageId.toString()) {
+              return {
+                ...msg,
+                isDeleted: true,
+                deletedAt: response.data?.deletedAt || new Date(),
+                content: "",
+              };
+            }
+            return msg;
+          })
+        );
+      }
+      return true;
+    } catch (err) {
+      console.error("Delete message failed:", err);
+      setToast({
+        show: true,
+        message:
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to delete message. Please try again.",
         type: "error",
       });
       return false;
@@ -374,14 +490,19 @@ export default function ChatPage({ isEmbedded = false }) {
           initialUnreadId={initialUnreadId}
           swapId={swapId}
           onMarkMessagesRead={markSwapAsRead}
+          onDeleteMessage={handleDeleteMessage}
+          onSelectReply={handleSelectReply}
         />
       </main>
 
       {/* Bottom Message Input Bar */}
       <MessageInput
+        key={swapId}
         onSendMessage={handleSendMessage}
         isSending={isSending}
         isConnected={isConnected}
+        replyingTo={replyingTo}
+        onCancelReply={() => setReplyingTo(null)}
       />
     </div>
   );

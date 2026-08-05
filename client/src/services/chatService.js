@@ -21,8 +21,8 @@ export const getConversations = async () => {
 };
 
 /**
- * Fetch total unread incoming messages count for navbar badge.
- * @returns {Promise<Object>} API response data
+ * Fetch unread conversation count for navbar badge.
+ * @returns {Promise<Object>} API response data containing unreadConversationCount and totalUnreadMessageCount
  */
 export const getUnreadCount = async () => {
   const response = await api.get("/chat/unread-count");
@@ -42,11 +42,23 @@ export const markAsRead = async (swapId, messageIds = null) => {
   return response.data;
 };
 
+/**
+ * Delete a user's own message for everyone.
+ * @param {string} swapId - Swap request ID
+ * @param {string} messageId - Message ID
+ * @returns {Promise<Object>} API response data
+ */
+export const deleteMessage = async (swapId, messageId) => {
+  const response = await api.delete(`/chat/${swapId}/messages/${messageId}`);
+  return response.data;
+};
+
 const chatService = {
   getMessageHistory,
   getConversations,
   getUnreadCount,
   markAsRead,
+  deleteMessage,
 };
 
 export default chatService;

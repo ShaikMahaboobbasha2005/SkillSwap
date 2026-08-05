@@ -8,5 +8,6 @@ router.get("/conversations", authMiddleware, chatController.getConversations);
 router.get("/unread-count", authMiddleware, chatController.getUnreadCount);
 router.get("/:swapId/messages", authMiddleware, chatController.getMessages);
 router.patch("/:swapId/read", authMiddleware, chatController.markAsRead);
+router.delete("/:swapId/messages/:messageId", authMiddleware, chatController.deleteMessage);
 
 module.exports = router;
