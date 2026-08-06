@@ -1,3 +1,4 @@
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   Star,
@@ -22,11 +23,74 @@ export default function DiscoverCard({ user, onRequestSwap }) {
     completedSwaps,
     offeringSkills = [],
     learningSkills = [],
+    matchedSkillIds = [],
   } = user;
 
   const targetId = userId || user._id;
   const currentUserId = currentUser?._id || currentUser?.id;
   const isSelfCard = Boolean(currentUserId && targetId && String(currentUserId) === String(targetId));
+
+  // Independent expansion state for offering and learning sections
+  const [isOfferingExpanded, setIsOfferingExpanded] = useState(false);
+  const [isLearningExpanded, setIsLearningExpanded] = useState(false);
+
+  // Reset expansion state when user or search/filter match metadata changes
+  useEffect(() => {
+    setIsOfferingExpanded(false);
+    setIsLearningExpanded(false);
+  }, [targetId, matchedSkillIds]);
+
+  // Set of matched skill IDs for fast lookup
+  const matchedSet = useMemo(
+    () => new Set((matchedSkillIds || []).map((id) => String(id))),
+    [matchedSkillIds]
+  );
+
+  // Prioritize skills: matched skills first, remaining skills next
+  const prioritizedOfferingSkills = useMemo(() => {
+    if (!Array.isArray(offeringSkills)) return [];
+    if (matchedSet.size === 0) return offeringSkills;
+    const matched = [];
+    const unmatched = [];
+    offeringSkills.forEach((s) => {
+      const sId = String(s.skillId || s._id || s.id);
+      if (matchedSet.has(sId)) {
+        matched.push(s);
+      } else {
+        unmatched.push(s);
+      }
+    });
+    return [...matched, ...unmatched];
+  }, [offeringSkills, matchedSet]);
+
+  const prioritizedLearningSkills = useMemo(() => {
+    if (!Array.isArray(learningSkills)) return [];
+    if (matchedSet.size === 0) return learningSkills;
+    const matched = [];
+    const unmatched = [];
+    learningSkills.forEach((s) => {
+      const sId = String(s.skillId || s._id || s.id);
+      if (matchedSet.has(sId)) {
+        matched.push(s);
+      } else {
+        unmatched.push(s);
+      }
+    });
+    return [...matched, ...unmatched];
+  }, [learningSkills, matchedSet]);
+
+  // Section visible chips and +N count calculation
+  const totalOfferingCount = offeringSkills.length;
+  const visibleOfferingSkills = isOfferingExpanded
+    ? prioritizedOfferingSkills
+    : prioritizedOfferingSkills.slice(0, 2);
+  const extraOfferingCount = totalOfferingCount - 2;
+
+  const totalLearningCount = learningSkills.length;
+  const visibleLearningSkills = isLearningExpanded
+    ? prioritizedLearningSkills
+    : prioritizedLearningSkills.slice(0, 2);
+  const extraLearningCount = totalLearningCount - 2;
 
   // Format Rating per Design.md rules (Gold color #B8860B strictly for ratings only)
   const renderRating = () => {
@@ -111,22 +175,51 @@ export default function DiscoverCard({ user, onRequestSwap }) {
               </h4>
             </div>
 
-            {offeringSkills.length > 0 ? (
+            {totalOfferingCount > 0 ? (
               <div className="flex items-center flex-wrap gap-1.5">
-                {offeringSkills.map((s) => (
-                  <span
-                    key={s.skillId || s.name}
-                    className="px-2.5 py-1 text-xs font-semibold text-[#1B4332] bg-[#E4EEE8] border border-[#1B4332]/20 rounded-full inline-flex items-center gap-1"
-                    title={s.level ? `Level: ${s.level}` : undefined}
+                {visibleOfferingSkills.map((s) => {
+                  const sId = String(s.skillId || s._id || s.id);
+                  const isMatch = matchedSet.has(sId);
+                  return (
+                    <span
+                      key={sId || s.name}
+                      className={`px-2.5 py-1 text-xs font-semibold rounded-full inline-flex items-center gap-1 transition-colors ${
+                        isMatch
+                          ? "text-[#1B4332] bg-[#E4EEE8] border border-[#1B4332]/60 font-bold shadow-2xs"
+                          : "text-[#1B4332] bg-[#E4EEE8]/70 border border-[#1B4332]/20"
+                      }`}
+                      title={s.level ? `Level: ${s.level}` : undefined}
+                    >
+                      <span>{s.name}</span>
+                      {s.level && (
+                        <span className="text-[10px] opacity-75 font-normal">
+                          ({s.level})
+                        </span>
+                      )}
+                    </span>
+                  );
+                })}
+
+                {!isOfferingExpanded && extraOfferingCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setIsOfferingExpanded(true)}
+                    className="px-2.5 py-1 text-xs font-bold text-[#1B4332] bg-white hover:bg-[#E4EEE8] border border-[#1B4332]/30 rounded-full transition-colors cursor-pointer shrink-0"
+                    title="Click to view all offering skills"
                   >
-                    <span>{s.name}</span>
-                    {s.level && (
-                      <span className="text-[10px] opacity-75 font-normal">
-                        ({s.level})
-                      </span>
-                    )}
-                  </span>
-                ))}
+                    +{extraOfferingCount} more
+                  </button>
+                )}
+
+                {isOfferingExpanded && totalOfferingCount > 2 && (
+                  <button
+                    type="button"
+                    onClick={() => setIsOfferingExpanded(false)}
+                    className="px-2.5 py-1 text-xs font-bold text-[#6B6858] hover:text-[#16160F] bg-white hover:bg-[#F7F6F2] border border-[#E6E3DA] rounded-full transition-colors cursor-pointer shrink-0"
+                  >
+                    Show less
+                  </button>
+                )}
               </div>
             ) : (
               <p className="text-xs text-[#6B6858] italic">
@@ -144,16 +237,45 @@ export default function DiscoverCard({ user, onRequestSwap }) {
               </h4>
             </div>
 
-            {learningSkills.length > 0 ? (
+            {totalLearningCount > 0 ? (
               <div className="flex items-center flex-wrap gap-1.5">
-                {learningSkills.map((s) => (
-                  <span
-                    key={s.skillId || s.name}
-                    className="px-2.5 py-1 text-xs font-semibold text-amber-900 bg-amber-50 border border-amber-200 rounded-full"
+                {visibleLearningSkills.map((s) => {
+                  const sId = String(s.skillId || s._id || s.id);
+                  const isMatch = matchedSet.has(sId);
+                  return (
+                    <span
+                      key={sId || s.name}
+                      className={`px-2.5 py-1 text-xs font-semibold rounded-full transition-colors ${
+                        isMatch
+                          ? "text-amber-950 bg-amber-100 border border-amber-400 font-bold shadow-2xs"
+                          : "text-amber-900 bg-amber-50 border border-amber-200"
+                      }`}
+                    >
+                      {s.name}
+                    </span>
+                  );
+                })}
+
+                {!isLearningExpanded && extraLearningCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setIsLearningExpanded(true)}
+                    className="px-2.5 py-1 text-xs font-bold text-amber-900 bg-white hover:bg-amber-50 border border-amber-300 rounded-full transition-colors cursor-pointer shrink-0"
+                    title="Click to view all learning skills"
                   >
-                    {s.name}
-                  </span>
-                ))}
+                    +{extraLearningCount} more
+                  </button>
+                )}
+
+                {isLearningExpanded && totalLearningCount > 2 && (
+                  <button
+                    type="button"
+                    onClick={() => setIsLearningExpanded(false)}
+                    className="px-2.5 py-1 text-xs font-bold text-[#6B6858] hover:text-[#16160F] bg-white hover:bg-[#F7F6F2] border border-[#E6E3DA] rounded-full transition-colors cursor-pointer shrink-0"
+                  >
+                    Show less
+                  </button>
+                )}
               </div>
             ) : (
               <p className="text-xs text-[#6B6858] italic">

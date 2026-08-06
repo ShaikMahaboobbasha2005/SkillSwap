@@ -61,6 +61,14 @@ export default function useDiscover(initialParams = {}) {
       if (level.trim()) params.level = level.trim();
 
       const response = await getDiscoveredSkills(params);
+      const fetchedTotalPages = response.pagination?.totalPages || 1;
+
+      // Handle pagination shrink edge case: if current page is beyond totalPages, gracefully adjust page
+      if (page > fetchedTotalPages && fetchedTotalPages >= 1) {
+        setPage(fetchedTotalPages);
+        return;
+      }
+
       setRawData(response.data || []);
       setPagination(
         response.pagination || {
@@ -87,7 +95,7 @@ export default function useDiscover(initialParams = {}) {
     fetchSkills();
   }, [fetchSkills]);
 
-  // Memoized User-Centric Data Transformation (Groups skills by unique user & protects against duplicates)
+  // Memoized User-Centric Data Transformation (Supports pre-grouped backend user objects & protects against duplicates)
   const users = useMemo(() => {
     if (!rawData || !Array.isArray(rawData)) return [];
 
@@ -99,6 +107,11 @@ export default function useDiscover(initialParams = {}) {
       const userIdStr = String(item.userId);
 
       if (!userMap.has(userIdStr)) {
+        const offeringSkills = Array.isArray(item.offeringSkills) ? [...item.offeringSkills] : [];
+        const learningSkills = Array.isArray(item.learningSkills) ? [...item.learningSkills] : [];
+        const _offeringNames = new Set(offeringSkills.map((s) => (s.name || "").toLowerCase()));
+        const _learningNames = new Set(learningSkills.map((s) => (s.name || "").toLowerCase()));
+
         userMap.set(userIdStr, {
           userId: item.userId,
           name: item.name || "Community Member",
@@ -107,21 +120,20 @@ export default function useDiscover(initialParams = {}) {
           location: item.location || "",
           rating: item.rating || 0,
           completedSwaps: item.completedSwaps || 0,
-          offeringSkills: [],
-          learningSkills: [],
-          _offeringNames: new Set(),
-          _learningNames: new Set(),
+          offeringSkills,
+          learningSkills,
+          matchedSkillIds: item.matchedSkillIds || [],
+          _offeringNames,
+          _learningNames,
         });
       }
 
+      // Backward-compatibility fallback if flat skill item format is passed
       const userObj = userMap.get(userIdStr);
       const skillName = item.skill ? item.skill.trim() : "";
-      if (!skillName) return;
-
-      const skillKey = skillName.toLowerCase();
-
-      if (item.type === "Offer") {
-        if (!userObj._offeringNames.has(skillKey)) {
+      if (skillName) {
+        const skillKey = skillName.toLowerCase();
+        if (item.type === "Offer" && !userObj._offeringNames.has(skillKey)) {
           userObj._offeringNames.add(skillKey);
           userObj.offeringSkills.push({
             skillId: item.skillId,
@@ -131,9 +143,7 @@ export default function useDiscover(initialParams = {}) {
             yearsOfExperience: item.yearsOfExperience,
             description: item.description,
           });
-        }
-      } else if (item.type === "Learn") {
-        if (!userObj._learningNames.has(skillKey)) {
+        } else if (item.type === "Learn" && !userObj._learningNames.has(skillKey)) {
           userObj._learningNames.add(skillKey);
           userObj.learningSkills.push({
             skillId: item.skillId,

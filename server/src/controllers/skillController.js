@@ -3,6 +3,16 @@ const skillService = require("../services/skillService");
 const createSkill = async (req, res, next) => {
   try {
     const skill = await skillService.createSkill(req.user.id, req.body);
+
+    // Emit discover_updated invalidation event ONLY AFTER successful database mutation
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("discover_updated", {
+        userId: req.user.id,
+        action: "skill_created",
+      });
+    }
+
     res.status(201).json({
       success: true,
       data: skill,
@@ -62,6 +72,16 @@ const updateSkill = async (req, res, next) => {
       req.params.id,
       req.body
     );
+
+    // Emit discover_updated invalidation event ONLY AFTER successful database mutation
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("discover_updated", {
+        userId: req.user.id,
+        action: "skill_updated",
+      });
+    }
+
     res.status(200).json({
       success: true,
       data: updatedSkill,
@@ -74,6 +94,16 @@ const updateSkill = async (req, res, next) => {
 const deleteSkill = async (req, res, next) => {
   try {
     const result = await skillService.deleteSkill(req.user.id, req.params.id);
+
+    // Emit discover_updated invalidation event ONLY AFTER successful database mutation
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("discover_updated", {
+        userId: req.user.id,
+        action: "skill_deleted",
+      });
+    }
+
     res.status(200).json({
       success: true,
       message: "Skill deleted successfully",

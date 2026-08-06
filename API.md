@@ -22,14 +22,15 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
 | GET | `/api/skills` | Public | List all available skills (for dropdowns/autocomplete) |
-| POST | `/api/users/me/skills/offered` | Protected | Add a skill to skills-offered |
-| DELETE | `/api/users/me/skills/offered/:skillId` | Protected | Remove a skill from skills-offered |
-| POST | `/api/users/me/skills/wanted` | Protected | Add a skill to skills-wanted |
-| DELETE | `/api/users/me/skills/wanted/:skillId` | Protected | Remove a skill from skills-wanted |
+| POST | `/api/users/me/skills/offered` | Protected | Add a skill to skills-offered (Enforces max 5 non-deleted offering skills limit; returns `409 Conflict` if capacity is reached) |
+| DELETE | `/api/users/me/skills/offered/:skillId` | Protected | Remove a skill from skills-offered (Frees capacity slot) |
+| POST | `/api/users/me/skills/wanted` | Protected | Add a skill to skills-wanted (Enforces max 5 non-deleted learning skills limit; returns `409 Conflict` if capacity is reached) |
+| DELETE | `/api/users/me/skills/wanted/:skillId` | Protected | Remove a skill from skills-wanted (Frees capacity slot) |
 
 ## Search & Matching
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
+| GET | `/api/discover` | Protected | Unique-user discovery API with search, category, type, level filters, pagination (`?page=&limit=`), and sorting. Returns paginated unique discoverable user objects with active skills. |
 | GET | `/api/search?skill=` | Public | Search users by a skill name. Supports optional `?page=&limit=` pagination (e.g. `?skill=react&page=1&limit=10`) — not required for MVP, but documented so it can be added without an API contract change |
 | GET | `/api/matches` | Protected | Traditional rule-based matches for current user |
 | GET | `/api/matches/recommended` | Protected | AI-ranked recommendations (re-ranks the traditional match set) |
@@ -64,6 +65,11 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 - SwapRequest status must be `"accepted"` (`403 Forbidden` / `SWAP_NOT_ACCEPTED`).
 - Logged-in user must be either `fromUser` or `toUser` on the SwapRequest (`403 Forbidden` / `FORBIDDEN`).
 - For message deletion: authenticated user must be the original sender of `messageId` and `message.swapRequest` must match `swapId` (returns `403 Forbidden` or `400 Bad Request / SWAP_MISMATCH` otherwise).
+
+**Unread Divider Presentation Snapshot:**
+- A client-side visual unread boundary (`UnreadDivider`) renders immediately before the first unread incoming message when opening a conversation.
+- The snapshot (`initialUnreadCount` and `firstUnreadMessageId`) is captured once when history loads before viewport read receipt mutations occur.
+- Existing `IntersectionObserver` viewport read receipts, backend status transitions, Navbar unread count, and ConversationList unread badges remain authoritative.
 
 **Socket.io real-time layer:**
 - Connection handshake requires JWT token in `auth.token` or `Authorization: Bearer <token>` header. On connect, automatically joins personal room `user:<userId>` (strictly derived from verified JWT identity) and marks pending sent messages for recipient as `delivered`.

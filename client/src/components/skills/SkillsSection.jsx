@@ -204,22 +204,39 @@ export default function SkillsSection({
                 <h2 className="text-sm font-extrabold text-[#16160F]">Skills Offered</h2>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-semibold text-[#1B4332] bg-[#E4EEE8] px-2.5 py-0.5 rounded-full border border-[#1B4332]/20">
-                  {offeredSkills.length} {offeredSkills.length === 1 ? "Skill" : "Skills"}
+                <span
+                  className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
+                    offeredSkills.length >= 5
+                      ? "text-amber-800 bg-amber-50 border-amber-200 font-bold"
+                      : "text-[#1B4332] bg-[#E4EEE8] border-[#1B4332]/20"
+                  }`}
+                  title="Maximum 5 offering skills (Active + Inactive)"
+                >
+                  {offeredSkills.length}/5
                 </span>
                 {isOwner && (
                   <button
                     type="button"
                     onClick={() => handleOpenAddModal("Offer")}
-                    className="h-7 px-2.5 text-[11px] font-bold text-white bg-[#1B4332] hover:bg-[#143326] rounded-lg transition-all active:scale-[0.98] inline-flex items-center gap-1 shadow-2xs cursor-pointer"
-                    title="Add Offered Skill"
+                    disabled={offeredSkills.length >= 5}
+                    className="h-7 px-2.5 text-[11px] font-bold text-white bg-[#1B4332] hover:bg-[#143326] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg transition-all active:scale-[0.98] inline-flex items-center gap-1 shadow-2xs cursor-pointer"
+                    title={
+                      offeredSkills.length >= 5
+                        ? "Maximum of 5 offering skills reached. Delete an existing skill to add another."
+                        : "Add Offered Skill"
+                    }
                   >
                     <span>+ Add</span>
                   </button>
                 )}
               </div>
             </div>
-            <p className="text-[11px] text-[#6B6858] mb-4">Skills available to teach and mentor other members</p>
+            <p className="text-[11px] text-[#6B6858] mb-2">Skills available to teach and mentor other members</p>
+            {isOwner && offeredSkills.length >= 5 && (
+              <p className="text-[11px] font-medium text-amber-800 bg-amber-50/80 border border-amber-200/60 rounded-lg p-2 mb-3">
+                Maximum of 5 offering skills reached. Delete an existing skill to add another.
+              </p>
+            )}
 
             {offeredSkills.length > 0 ? (
               <div className="grid grid-cols-1 gap-3 animate-fadeIn">
@@ -238,8 +255,8 @@ export default function SkillsSection({
                 icon="📚"
                 title="No Skills Offered Yet"
                 description="Share what you know and help others learn."
-                actionText={isOwner ? "Add Your First Skill" : ""}
-                onAction={isOwner ? () => handleOpenAddModal("Offer") : undefined}
+                actionText={isOwner && offeredSkills.length < 5 ? "Add Your First Skill" : ""}
+                onAction={isOwner && offeredSkills.length < 5 ? () => handleOpenAddModal("Offer") : undefined}
               />
             )}
           </div>
@@ -254,22 +271,39 @@ export default function SkillsSection({
                 <h2 className="text-sm font-extrabold text-[#16160F]">Skills Wanted</h2>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-semibold text-[#16160F] bg-[#F7F6F2] px-2.5 py-0.5 rounded-full border border-[#E6E3DA]">
-                  {wantedSkills.length} {wantedSkills.length === 1 ? "Skill" : "Skills"}
+                <span
+                  className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
+                    wantedSkills.length >= 5
+                      ? "text-amber-800 bg-amber-50 border-amber-200 font-bold"
+                      : "text-[#16160F] bg-[#F7F6F2] border-[#E6E3DA]"
+                  }`}
+                  title="Maximum 5 learning skills (Active + Inactive)"
+                >
+                  {wantedSkills.length}/5
                 </span>
                 {isOwner && (
                   <button
                     type="button"
                     onClick={() => handleOpenAddModal("Learn")}
-                    className="h-7 px-2.5 text-[11px] font-bold text-white bg-[#1B4332] hover:bg-[#143326] rounded-lg transition-all active:scale-[0.98] inline-flex items-center gap-1 shadow-2xs cursor-pointer"
-                    title="Add Learning Skill"
+                    disabled={wantedSkills.length >= 5}
+                    className="h-7 px-2.5 text-[11px] font-bold text-white bg-[#1B4332] hover:bg-[#143326] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg transition-all active:scale-[0.98] inline-flex items-center gap-1 shadow-2xs cursor-pointer"
+                    title={
+                      wantedSkills.length >= 5
+                        ? "Maximum of 5 learning skills reached. Delete an existing skill to add another."
+                        : "Add Learning Skill"
+                    }
                   >
                     <span>+ Add</span>
                   </button>
                 )}
               </div>
             </div>
-            <p className="text-[11px] text-[#6B6858] mb-4">Skills looking to learn from community mentors</p>
+            <p className="text-[11px] text-[#6B6858] mb-2">Skills looking to learn from community mentors</p>
+            {isOwner && wantedSkills.length >= 5 && (
+              <p className="text-[11px] font-medium text-amber-800 bg-amber-50/80 border border-amber-200/60 rounded-lg p-2 mb-3">
+                Maximum of 5 learning skills reached. Delete an existing skill to add another.
+              </p>
+            )}
 
             {wantedSkills.length > 0 ? (
               <div className="grid grid-cols-1 gap-3 animate-fadeIn">
@@ -288,8 +322,8 @@ export default function SkillsSection({
                 icon="🎯"
                 title="No Skills Wanted Yet"
                 description="Tell the community what you want to learn."
-                actionText={isOwner ? "Add Your First Skill" : ""}
-                onAction={isOwner ? () => handleOpenAddModal("Learn") : undefined}
+                actionText={isOwner && wantedSkills.length < 5 ? "Add Your First Skill" : ""}
+                onAction={isOwner && wantedSkills.length < 5 ? () => handleOpenAddModal("Learn") : undefined}
               />
             )}
           </div>

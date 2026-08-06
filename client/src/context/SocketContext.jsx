@@ -23,6 +23,7 @@ export const SocketProvider = ({ children }) => {
   const swapRequestListenerMap = useRef(new Map());
   const unreadListenerMap = useRef(new Map());
   const deletedListenerMap = useRef(new Map());
+  const discoverListenerMap = useRef(new Map());
 
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState(null);
@@ -66,6 +67,7 @@ export const SocketProvider = ({ children }) => {
       statusListenerMap.current.clear();
       swapRequestListenerMap.current.clear();
       unreadListenerMap.current.clear();
+      discoverListenerMap.current.clear();
       return;
     }
 
@@ -87,6 +89,7 @@ export const SocketProvider = ({ children }) => {
       statusListenerMap.current.clear();
       swapRequestListenerMap.current.clear();
       unreadListenerMap.current.clear();
+      discoverListenerMap.current.clear();
     }
 
     const socket = io(socketUrl, {
@@ -144,6 +147,9 @@ export const SocketProvider = ({ children }) => {
     deletedListenerMap.current.forEach((wrapper) => {
       socket.on("message_deleted", wrapper);
     });
+    discoverListenerMap.current.forEach((wrapper) => {
+      socket.on("discover_updated", wrapper);
+    });
 
     return () => {
       socket.disconnect();
@@ -152,6 +158,7 @@ export const SocketProvider = ({ children }) => {
       messageListenerMap.current.clear();
       statusListenerMap.current.clear();
       deletedListenerMap.current.clear();
+      discoverListenerMap.current.clear();
     };
   }, [token, isAuthenticated, currentUserId, refreshUnreadCount]);
 
@@ -364,6 +371,31 @@ export const SocketProvider = ({ children }) => {
     }
   }, []);
 
+  const subscribeToDiscoverUpdates = useCallback((callback) => {
+    if (typeof callback !== "function") return;
+    if (discoverListenerMap.current.has(callback)) return;
+
+    const wrapper = (payload) => {
+      callback(payload);
+    };
+
+    discoverListenerMap.current.set(callback, wrapper);
+    if (socketRef.current) {
+      socketRef.current.on("discover_updated", wrapper);
+    }
+  }, []);
+
+  const unsubscribeFromDiscoverUpdates = useCallback((callback) => {
+    if (typeof callback !== "function") return;
+    const wrapper = discoverListenerMap.current.get(callback);
+    if (wrapper) {
+      if (socketRef.current) {
+        socketRef.current.off("discover_updated", wrapper);
+      }
+      discoverListenerMap.current.delete(callback);
+    }
+  }, []);
+
   const value = {
     isConnected,
     connectionError,
@@ -384,6 +416,8 @@ export const SocketProvider = ({ children }) => {
     unsubscribeFromUnreadUpdates,
     subscribeToMessageDeleted,
     unsubscribeFromMessageDeleted,
+    subscribeToDiscoverUpdates,
+    unsubscribeFromDiscoverUpdates,
   };
 
   return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;

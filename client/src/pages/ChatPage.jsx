@@ -31,6 +31,8 @@ export default function ChatPage({ isEmbedded = false }) {
   const [swap, setSwap] = useState(null);
   const [messages, setMessages] = useState([]);
   const [initialUnreadId, setInitialUnreadId] = useState(null);
+  const [initialUnreadCount, setInitialUnreadCount] = useState(0);
+  const [isDividerDismissed, setIsDividerDismissed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState(null); // Permanent access errors
   const [isSending, setIsSending] = useState(false);
@@ -190,6 +192,8 @@ export default function ChatPage({ isEmbedded = false }) {
     setSwap(null);
     setPageError(null);
     setInitialUnreadId(null);
+    setInitialUnreadCount(0);
+    setIsDividerDismissed(false);
     setReplyingTo(null);
     setLoading(true);
 
@@ -234,8 +238,8 @@ export default function ChatPage({ isEmbedded = false }) {
           ) {
             const historyMsgs = historyRes.data;
 
-            // Capture FIRST incoming unread message BEFORE mark-as-read alters status
-            const firstUnread = historyMsgs.find((m) => {
+            // Capture FIRST incoming unread message AND total unread count BEFORE mark-as-read alters status
+            const unreadIncoming = historyMsgs.filter((m) => {
               const senderId = m.sender?._id || m.sender?.id || m.sender;
               return (
                 senderId?.toString() !== currentUserId?.toString() &&
@@ -244,7 +248,12 @@ export default function ChatPage({ isEmbedded = false }) {
               );
             });
 
-            setInitialUnreadId(firstUnread ? firstUnread._id : null);
+            const firstUnread = unreadIncoming.length > 0 ? unreadIncoming[0] : null;
+            const firstUnreadId = firstUnread ? (firstUnread._id || firstUnread.id)?.toString() : null;
+
+            setInitialUnreadId(firstUnreadId);
+            setInitialUnreadCount(unreadIncoming.length);
+            setIsDividerDismissed(false);
             setMessages(historyMsgs);
           }
         } catch (histErr) {
@@ -359,8 +368,9 @@ export default function ChatPage({ isEmbedded = false }) {
         setMessages((prev) => mergeMessages(prev, [response.data]));
       }
 
-      // Clear replyingTo state ONLY AFTER successful send
+      // Clear replyingTo state & dismiss unread divider ONLY AFTER successful send
       setReplyingTo(null);
+      setIsDividerDismissed(true);
       setIsSending(false);
       return true;
     } catch (err) {
@@ -488,6 +498,8 @@ export default function ChatPage({ isEmbedded = false }) {
           currentUserId={currentUserId}
           loading={loading}
           initialUnreadId={initialUnreadId}
+          initialUnreadCount={initialUnreadCount}
+          isDividerDismissed={isDividerDismissed}
           swapId={swapId}
           onMarkMessagesRead={markSwapAsRead}
           onDeleteMessage={handleDeleteMessage}

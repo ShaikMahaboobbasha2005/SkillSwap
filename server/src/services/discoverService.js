@@ -132,57 +132,87 @@ const discoverSkills = async (queryParams = {}, requestingUserId = null) => {
     });
   }
 
-  // 5. Sorting Validation (default = newest, invalid sort falls back to newest)
+  // 5. Group by Owner (Unique User) - Identifies qualifying unique users and tracks matched skill IDs
+  pipeline.push({
+    $group: {
+      _id: "$ownerDoc._id",
+      ownerDoc: { $first: "$ownerDoc" },
+      matchedSkillIds: { $addToSet: "$_id" },
+      latestSkillCreatedAt: { $max: "$createdAt" },
+    },
+  });
+
+  // 6. Lookup ALL active skills for qualifying users to preserve full active skill sets
+  pipeline.push({
+    $lookup: {
+      from: "skills",
+      let: { userId: "$_id" },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ["$owner", "$$userId"] },
+                { $eq: ["$status", "Active"] },
+              ],
+            },
+          },
+        },
+        { $sort: { createdAt: -1 } },
+      ],
+      as: "allActiveSkills",
+    },
+  });
+
+  // 7. Deterministic Unique User Sorting
   const sortStage = {};
   const normalizedSort = typeof sort === "string" ? sort.trim().toLowerCase() : "newest";
 
   switch (normalizedSort) {
     case "oldest":
-      sortStage.createdAt = 1;
+      sortStage.latestSkillCreatedAt = 1;
+      sortStage._id = 1;
       break;
     case "alpha_asc":
     case "a-z":
     case "name_asc":
-      sortStage.name = 1;
+      sortStage["ownerDoc.name"] = 1;
+      sortStage._id = 1;
       break;
     case "alpha_desc":
     case "z-a":
     case "name_desc":
-      sortStage.name = -1;
+      sortStage["ownerDoc.name"] = -1;
+      sortStage._id = -1;
       break;
     case "newest":
     default:
-      sortStage.createdAt = -1;
+      sortStage.latestSkillCreatedAt = -1;
+      sortStage._id = -1;
       break;
   }
 
   pipeline.push({ $sort: sortStage });
 
-  // 6. Final Facet Stage for total count metadata & explicit field projection
+  // 8. Final Facet Stage for unique user total count & paginated user results
   pipeline.push({
     $facet: {
-      metadata: [{ $count: "totalResults" }],
+      metadata: [{ $count: "totalUsers" }],
       results: [
         { $skip: skip },
         { $limit: limitNum },
         {
           $project: {
             _id: 0,
-            userId: "$ownerDoc._id",
-            skillId: "$_id",
+            userId: "$_id",
             name: "$ownerDoc.name",
             avatar: "$ownerDoc.profilePicture",
             banner: "$ownerDoc.profileBanner",
             location: "$ownerDoc.location",
-            skill: "$name",
-            category: "$category",
-            type: "$type",
-            level: "$level",
-            description: "$description",
-            yearsOfExperience: "$yearsOfExperience",
             rating: "$ownerDoc.avgRating",
             completedSwaps: "$ownerDoc.completedSwaps",
-            createdAt: "$createdAt",
+            matchedSkillIds: 1,
+            allActiveSkills: 1,
           },
         },
       ],
@@ -191,19 +221,84 @@ const discoverSkills = async (queryParams = {}, requestingUserId = null) => {
 
   const aggregateResult = await Skill.aggregate(pipeline);
 
-  const metadata = aggregateResult[0]?.metadata[0] || { totalResults: 0 };
-  const totalResults = metadata.totalResults || 0;
-  const results = aggregateResult[0]?.results || [];
+  const metadata = aggregateResult[0]?.metadata[0] || { totalUsers: 0 };
+  const totalUsers = metadata.totalUsers || 0;
+  const rawUserResults = aggregateResult[0]?.results || [];
 
-  // Ensure totalPages is at least 1 when totalResults is 0 to avoid empty pagination edge cases
-  const totalPages = totalResults === 0 ? 1 : Math.ceil(totalResults / limitNum);
+  // 9. Format User Cards with Authoritative Match Metadata and Partitioned Skills
+  const hasSearch = Boolean(search && typeof search === "string" && search.trim().length > 0);
+  const searchRegex = hasSearch ? new RegExp(escapeRegex(search.trim()), "i") : null;
+  const hasCategory = Boolean(category && typeof category === "string" && SKILL_CATEGORIES.includes(category.trim()));
+  const formattedCategory = hasCategory ? category.trim() : null;
+  const formattedType = type && typeof type === "string"
+    ? SKILL_TYPES.find((t) => t.toLowerCase() === type.trim().toLowerCase())
+    : null;
+  const formattedLevel = level && typeof level === "string"
+    ? SKILL_LEVELS.find((l) => l.toLowerCase() === level.trim().toLowerCase())
+    : null;
+
+  const hasSkillFilter = Boolean(hasSearch || formattedCategory || formattedType || formattedLevel);
+
+  const formattedResults = rawUserResults.map((user) => {
+    const offeringSkills = [];
+    const learningSkills = [];
+    const matchedSkillIds = [];
+
+    (user.allActiveSkills || []).forEach((s) => {
+      const sIdStr = String(s._id);
+      const skillObj = {
+        skillId: s._id,
+        name: s.name,
+        category: s.category,
+        type: s.type,
+        level: s.level,
+        description: s.description,
+        yearsOfExperience: s.yearsOfExperience,
+        createdAt: s.createdAt,
+      };
+
+      if (s.type === "Offer") {
+        offeringSkills.push(skillObj);
+      } else if (s.type === "Learn") {
+        learningSkills.push(skillObj);
+      }
+
+      // Check if skill satisfies active search/filter criteria
+      if (hasSkillFilter) {
+        const matchesSearch = !hasSearch || searchRegex.test(s.name);
+        const matchesCategory = !formattedCategory || s.category === formattedCategory;
+        const matchesType = !formattedType || s.type === formattedType;
+        const matchesLevel = !formattedLevel || s.level === formattedLevel;
+
+        if (matchesSearch && matchesCategory && matchesType && matchesLevel) {
+          matchedSkillIds.push(sIdStr);
+        }
+      }
+    });
+
+    return {
+      userId: user.userId,
+      name: user.name || "Community Member",
+      avatar: user.avatar || "",
+      banner: user.banner || "",
+      location: user.location || "",
+      rating: user.rating || 0,
+      completedSwaps: user.completedSwaps || 0,
+      offeringSkills,
+      learningSkills,
+      matchedSkillIds,
+    };
+  });
+
+  // Ensure totalPages is at least 1 when totalUsers is 0 to avoid empty pagination edge cases
+  const totalPages = totalUsers === 0 ? 1 : Math.ceil(totalUsers / limitNum);
 
   return {
-    data: results,
+    data: formattedResults,
     pagination: {
       currentPage: pageNum,
       totalPages,
-      totalResults,
+      totalResults: totalUsers,
       limit: limitNum,
       hasNextPage: pageNum < totalPages,
       hasPreviousPage: pageNum > 1,

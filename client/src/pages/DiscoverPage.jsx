@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import SearchBar from "../components/discover/SearchBar";
 import FilterPanel from "../components/discover/FilterPanel";
@@ -11,8 +11,14 @@ import ErrorState from "../components/discover/ErrorState";
 import Pagination from "../components/discover/Pagination";
 import SwapRequestModal from "../components/swaps/SwapRequestModal";
 import useDiscover from "../hooks/useDiscover";
+import useAuth from "../hooks/useAuth";
+import useSocket from "../hooks/useSocket";
 
 export default function DiscoverPage() {
+  const { user } = useAuth();
+  const { subscribeToDiscoverUpdates, unsubscribeFromDiscoverUpdates } = useSocket();
+  const currentUserId = user?._id || user?.id;
+
   const {
     search,
     setSearch,
@@ -40,6 +46,34 @@ export default function DiscoverPage() {
   const [selectedSwapSkill, setSelectedSwapSkill] = useState(null);
 
   const resultsTopRef = useRef(null);
+
+  // Real-Time Discover Socket Invalidation with 300ms Debounce
+  useEffect(() => {
+    let timer = null;
+
+    const handleDiscoverUpdated = (payload) => {
+      // Safely ignore self-mutations (since requesting user's profile is excluded from Discover)
+      if (
+        payload?.userId &&
+        currentUserId &&
+        String(payload.userId) === String(currentUserId)
+      ) {
+        return;
+      }
+
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        refetch();
+      }, 300);
+    };
+
+    subscribeToDiscoverUpdates(handleDiscoverUpdated);
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      unsubscribeFromDiscoverUpdates(handleDiscoverUpdated);
+    };
+  }, [subscribeToDiscoverUpdates, unsubscribeFromDiscoverUpdates, refetch, currentUserId]);
 
   const handleOpenSwapModal = (user, skill = null) => {
     setSelectedSwapUser(user);

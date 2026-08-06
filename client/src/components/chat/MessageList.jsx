@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import MessageBubble from "./MessageBubble";
+import UnreadDivider from "./UnreadDivider";
 import { MessageSquareDashed, ArrowDown } from "lucide-react";
 
 /**
@@ -18,6 +19,8 @@ export default function MessageList({
   currentUserId,
   loading = false,
   initialUnreadId = null,
+  initialUnreadCount = 0,
+  isDividerDismissed = false,
   swapId,
   onMarkMessagesRead,
   onDeleteMessage,
@@ -224,7 +227,7 @@ export default function MessageList({
             `[data-message-id="${initialUnreadId}"]`
           );
           if (unreadElement) {
-            unreadElement.scrollIntoView({ block: "start", behavior: "auto" });
+            unreadElement.scrollIntoView({ block: "center", behavior: "auto" });
 
             const distanceFromBottom =
               container.scrollHeight -
@@ -325,21 +328,27 @@ export default function MessageList({
           const isIncoming =
             currentUserId && senderId !== currentUserId.toString();
           const isUnread = msg.status !== "read";
+          const isFirstUnread =
+            initialUnreadId &&
+            msgIdStr === initialUnreadId.toString() &&
+            !isDividerDismissed;
 
           return (
-            <div
-              key={msgIdStr || `msg-${index}`}
-              data-message-id={msgIdStr}
-              data-unread-incoming={isIncoming && isUnread && !msg.isDeleted ? "true" : "false"}
-              className="w-full"
-            >
-              <MessageBubble
-                message={msg}
-                currentUserId={currentUserId}
-                onDeleteMessage={onDeleteMessage}
-                onSelectReply={onSelectReply}
-                onSelectReplyToMessage={handleSelectReplyToMessage}
-              />
+            <div key={msgIdStr || `msg-${index}`} className="w-full">
+              {isFirstUnread && <UnreadDivider count={initialUnreadCount} />}
+              <div
+                data-message-id={msgIdStr}
+                data-unread-incoming={isIncoming && isUnread && !msg.isDeleted ? "true" : "false"}
+                className="w-full"
+              >
+                <MessageBubble
+                  message={msg}
+                  currentUserId={currentUserId}
+                  onDeleteMessage={onDeleteMessage}
+                  onSelectReply={onSelectReply}
+                  onSelectReplyToMessage={handleSelectReplyToMessage}
+                />
+              </div>
             </div>
           );
         })}

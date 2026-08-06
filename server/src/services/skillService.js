@@ -5,19 +5,36 @@ const normalizeSkillName = (name) => {
 };
 
 const createSkill = async (userId, skillData) => {
-  const normalized = normalizeSkillName(skillData.name);
+  const targetType = skillData.type || "Offer";
 
-  // Prevent duplicate skills for the same user with the same type (case & space insensitive)
+  // 1. Enforce capacity limit (max 5 non-deleted skills per type per user)
+  const existingCount = await Skill.countDocuments({
+    owner: userId,
+    type: targetType,
+  });
+
+  if (existingCount >= 5) {
+    const error = new Error(
+      targetType === "Offer"
+        ? "You can have a maximum of 5 offering skills."
+        : "You can have a maximum of 5 learning skills."
+    );
+    error.statusCode = 409;
+    throw error;
+  }
+
+  // 2. Prevent duplicate skills for the same user with the same type (case & space insensitive)
+  const normalized = normalizeSkillName(skillData.name);
   const existing = await Skill.findOne({
     owner: userId,
-    type: skillData.type,
+    type: targetType,
     normalizedName: normalized,
   });
 
   if (existing) {
     const error = new Error(
       `You have already added '${skillData.name.trim()}' to your ${
-        skillData.type === "Offer" ? "Skills Offered" : "Skills Wanted"
+        targetType === "Offer" ? "Skills Offered" : "Skills Wanted"
       }`
     );
     error.statusCode = 400;
@@ -116,6 +133,24 @@ const updateSkill = async (userId, skillId, updateData) => {
     const error = new Error("Not authorized to update this skill");
     error.statusCode = 403;
     throw error;
+  }
+
+  // If type is updated to a different type, verify target type capacity
+  if (updateData.type && updateData.type !== skill.type) {
+    const targetTypeCount = await Skill.countDocuments({
+      owner: userId,
+      type: updateData.type,
+    });
+
+    if (targetTypeCount >= 5) {
+      const error = new Error(
+        updateData.type === "Offer"
+          ? "You can have a maximum of 5 offering skills."
+          : "You can have a maximum of 5 learning skills."
+      );
+      error.statusCode = 409;
+      throw error;
+    }
   }
 
   // If name or type is updated, verify duplicate normalization

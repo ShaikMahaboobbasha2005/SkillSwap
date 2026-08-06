@@ -16,6 +16,16 @@ const getMe = async (req, res, next) => {
 const updateMe = async (req, res, next) => {
   try {
     const updatedUser = await profileService.updateOwnProfile(req.user.id, req.body);
+
+    // Emit discover_updated invalidation event after successful profile update (refreshes name, avatar, location, banner)
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("discover_updated", {
+        userId: req.user.id,
+        action: "profile_updated",
+      });
+    }
+
     res.status(200).json({
       success: true,
       data: updatedUser,
