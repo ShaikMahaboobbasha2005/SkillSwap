@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import MessageBubble from "./MessageBubble";
 import UnreadDivider from "./UnreadDivider";
+import DateSeparator from "./DateSeparator";
+import { isSameDay } from "../../utils/dateUtils";
 import { MessageSquareDashed, ArrowDown } from "lucide-react";
 
 /**
@@ -333,8 +335,13 @@ export default function MessageList({
             msgIdStr === initialUnreadId.toString() &&
             !isDividerDismissed;
 
+          const prevMsg = index > 0 ? messages[index - 1] : null;
+          const showDateSeparator =
+            index === 0 || !isSameDay(msg.createdAt, prevMsg?.createdAt);
+
           return (
             <div key={msgIdStr || `msg-${index}`} className="w-full">
+              {showDateSeparator && <DateSeparator date={msg.createdAt} />}
               {isFirstUnread && <UnreadDivider count={initialUnreadCount} />}
               <div
                 data-message-id={msgIdStr}

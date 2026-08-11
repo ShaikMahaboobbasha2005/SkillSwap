@@ -94,7 +94,8 @@
   - Real-time `swap_request_created` and `swap_request_updated` socket events with live Navbar & page badge sync (Phase 7.4 Batch 2)
   - Compact stacked mobile hamburger menu with right-aligned badges and subtle logout divider (Phase 7.4 Batch 2)
   - Full-screen mobile chat view (`/swaps/:swapId/chat`) with explicit header back-navigation to `/chats` (Phase 7.4 Batch 2)
-- **Architecture Decisions:** Chat is strictly scoped to accepted SwapRequests. Message persistence precedes room broadcast. Socket authentication reuses JWT token (`auth: { token }`). Map deduplication by MongoDB `_id` prevents duplicate renders. Message status transitions (`sent` → `delivered` → `read`) are unidirectional and explicit. User personal rooms (`user:<userId>`) sync real-time swap creation and status updates without client-supplied identity overrides.
+  - WhatsApp-style chat date boundary separators (`DateSeparator`) rendering local calendar day headings ("Today", "Yesterday", "D MMMM YYYY")
+- **Architecture Decisions:** Chat is strictly scoped to accepted SwapRequests. Message persistence precedes room broadcast. Socket authentication reuses JWT token (`auth: { token }`). Map deduplication by MongoDB `_id` prevents duplicate renders. Message status transitions (`sent` → `delivered` → `read`) are unidirectional and explicit. User personal rooms (`user:<userId>`) sync real-time swap creation and status updates without client-supplied identity overrides. Date separators are presentation-only components rendered dynamically inside `MessageList` using local browser timezone comparisons.
 - **Done =** Accepted users can chat in real time with a complete conversation list, persistent read receipts, and live swap request updates across desktop and mobile.
 
 ## Phase 8 — Sessions & Reviews
