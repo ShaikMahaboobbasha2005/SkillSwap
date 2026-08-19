@@ -267,6 +267,19 @@ const getSwapStats = async (req, res, next) => {
   }
 };
 
+const hideSwapRequest = async (req, res, next) => {
+  try {
+    const swapRequest = await swapService.hideSwapForUser(req.params.id, req.user.id);
+    res.status(200).json({
+      success: true,
+      message: "Swap request hidden from your list successfully",
+      data: swapRequest,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createSwapRequest,
   getSwapRequests,
@@ -283,4 +296,6 @@ module.exports = {
   leaveSwapRequest,
   getSwapHistory,
   getSwapStats,
+  hideSwapRequest,
 };
+

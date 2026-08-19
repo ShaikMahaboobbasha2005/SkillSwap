@@ -116,7 +116,7 @@
     - Archived read-only chat access (`/swaps/:swapId/chat`) for `completed` and `left` swaps with read-only banner ("This swap was completed/ended on [date]"), disabled message composer/write actions, and backend write protection.
     - Swap History API (`GET /api/swaps/history`) with sub-filtering (`completed`, `left`, `cancelled`) and pagination.
     - Per-user history deletion (`DELETE /api/chat/:swapId/history` appending `userId` to `chatDeletedFor`).
-    - Swap Requests UI with 3 main tabs (`[ Incoming Requests ] [ Outgoing Requests ] [ Swap History ]`), status sub-filters synced to URL (`?tab=history&status=...`), and status badges (`StatusBadge`).
+    - Swap Requests UI with 3 main tabs (`[ Incoming Requests ] [ Outgoing Requests ] [ Swap History ]`), responsive 2-column desktop/tablet grid layout (`grid-cols-1 md:grid-cols-2`), priority status sorting (`accepted` → `pending` → `completed` → `rejected` → `cancelled`), per-user list hiding (`hiddenFor` array via `PATCH /api/swaps/:id/hide` with confirmation modal), status sub-filters synced to URL (`?tab=history&status=...`), and status badges (`StatusBadge`).
     - `CompactProfileStats` "Swaps Done" card made clickable to navigate directly to completed swap history.
   - **Phase 8.2 — Ratings & Reviews:**
     - **Phase 8.2.1 — Ratings & Reviews Backend Foundation (Completed):**

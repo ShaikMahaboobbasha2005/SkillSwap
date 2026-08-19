@@ -28,5 +28,6 @@ router.patch("/:id/request-completion", authMiddleware, swapController.requestCo
 router.patch("/:id/confirm-completion", authMiddleware, swapController.confirmCompletion);
 router.patch("/:id/cancel-completion-request", authMiddleware, swapController.cancelCompletionRequest);
 router.patch("/:id/leave", authMiddleware, swapController.leaveSwapRequest);
+router.patch("/:id/hide", authMiddleware, swapController.hideSwapRequest);
 
 module.exports = router;

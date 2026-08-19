@@ -164,6 +164,16 @@ export const getSwapStats = async () => {
   return response.data;
 };
 
+/**
+ * Hide a swap request from the current user's incoming/outgoing request list.
+ * @param {string} id - Swap request ID
+ * @returns {Promise<Object>} API response data
+ */
+export const hideSwap = async (id) => {
+  const response = await api.patch(`/swaps/${id}/hide`);
+  return response.data;
+};
+
 const swapService = {
   createSwap,
   getAllSwaps,
@@ -178,8 +188,10 @@ const swapService = {
   confirmCompletion,
   cancelCompletionRequest,
   leaveSwap,
+  hideSwap,
   getSwapHistory,
   getSwapStats,
 };
 
 export default swapService;
+

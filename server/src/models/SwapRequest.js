@@ -100,6 +100,12 @@ const swapRequestSchema = new Schema(
         ref: "User",
       },
     ],
+    hiddenFor: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
   {
     timestamps: true,

@@ -37,7 +37,9 @@ export default function IncomingRequests({
   const { refreshStats } = useSwap();
   const [selectedSwap, setSelectedSwap] = useState(null);
   const [actionType, setActionType] = useState(null); // "accept" | "reject"
+  const [hideSwapTarget, setHideSwapTarget] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [isHiding, setIsHiding] = useState(false);
   const [toast, setToast] = useState({ show: false, type: "", message: "" });
   const currentUserId = user?._id || user?.id;
 
@@ -92,8 +94,38 @@ export default function IncomingRequests({
     }
   };
 
+  const handleConfirmHide = async () => {
+    if (!hideSwapTarget || isHiding) return;
+
+    setIsHiding(true);
+    const swapId = hideSwapTarget._id || hideSwapTarget.id;
+
+    try {
+      await swapService.hideSwap(swapId);
+      setToast({
+        show: true,
+        type: "success",
+        message: "Swap removed from your request list.",
+      });
+      setHideSwapTarget(null);
+      if (onActionComplete) {
+        onActionComplete();
+      }
+    } catch (err) {
+      console.error("Failed to hide swap request:", err);
+      setToast({
+        show: true,
+        type: "error",
+        message:
+          err.response?.data?.message || err.message || "Failed to hide swap request. Please try again.",
+      });
+    } finally {
+      setIsHiding(false);
+    }
+  };
+
   if (loading) {
-    return <SwapRequestSkeleton count={3} />;
+    return <SwapRequestSkeleton count={4} />;
   }
 
   if (error) {
@@ -128,20 +160,23 @@ export default function IncomingRequests({
     <div className="space-y-4 w-full">
       <ToastNotification toast={toast} onClose={() => setToast({ show: false, type: "", message: "" })} />
 
-      {requests.map((swap) => (
-        <SwapRequestCard
-          key={swap._id}
-          swap={swap}
-          type="incoming"
-          currentUserId={currentUserId}
-          onAccept={(s) => handleOpenConfirm(s, "accept")}
-          onReject={(s) => handleOpenConfirm(s, "reject")}
-          onComplete={onComplete}
-          onCancelCompletion={onCancelCompletion}
-          onLeave={onLeave}
-          isProcessing={processing && selectedSwap?._id === swap._id}
-        />
-      ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {requests.map((swap) => (
+          <SwapRequestCard
+            key={swap._id}
+            swap={swap}
+            type="incoming"
+            currentUserId={currentUserId}
+            onAccept={(s) => handleOpenConfirm(s, "accept")}
+            onReject={(s) => handleOpenConfirm(s, "reject")}
+            onComplete={onComplete}
+            onCancelCompletion={onCancelCompletion}
+            onLeave={onLeave}
+            onHide={(s) => setHideSwapTarget(s)}
+            isProcessing={processing && selectedSwap?._id === swap._id}
+          />
+        ))}
+      </div>
 
       {/* Confirmation Modal for Accept / Reject Actions */}
       <ConfirmModal
@@ -158,6 +193,22 @@ export default function IncomingRequests({
         isProcessing={processing}
         onConfirm={handleConfirmAction}
         onCancel={handleCloseConfirm}
+      />
+
+      {/* Confirmation Modal for Hide Action */}
+      <ConfirmModal
+        isOpen={Boolean(hideSwapTarget)}
+        title="Hide Swap?"
+        message="This swap will be removed from your request list. It will remain available in your Swap History."
+        confirmText="Hide Swap"
+        cancelText="Cancel"
+        isDestructive={false}
+        variant="primary"
+        isProcessing={isHiding}
+        onConfirm={handleConfirmHide}
+        onCancel={() => {
+          if (!isHiding) setHideSwapTarget(null);
+        }}
       />
     </div>
   );

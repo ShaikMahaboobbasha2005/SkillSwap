@@ -10,6 +10,7 @@ import ConfirmModal from "../components/ConfirmModal";
 import RatingModal from "../components/swaps/RatingModal";
 import ToastNotification from "../components/ToastNotification";
 import swapService from "../services/swapService";
+import { sortSwapsByPriority, sortSwapsByDate } from "../utils/swapSortUtils";
 import { useSwap } from "../context/SwapContext";
 import useSocket from "../hooks/useSocket";
 import useAuth from "../hooks/useAuth";
@@ -135,7 +136,10 @@ export default function SwapRequestsPage() {
             : Array.isArray(res?.swapRequests)
             ? res.swapRequests
             : [];
-          setIncomingRequests(incomingData);
+          const sorted = statusFilter
+            ? sortSwapsByDate(incomingData)
+            : sortSwapsByPriority(incomingData);
+          setIncomingRequests(sorted);
         } else {
           const res = await swapService.getOutgoingSwaps(params);
           const outgoingData = Array.isArray(res?.data)
@@ -143,7 +147,10 @@ export default function SwapRequestsPage() {
             : Array.isArray(res?.swapRequests)
             ? res.swapRequests
             : [];
-          setOutgoingRequests(outgoingData);
+          const sorted = statusFilter
+            ? sortSwapsByDate(outgoingData)
+            : sortSwapsByPriority(outgoingData);
+          setOutgoingRequests(sorted);
         }
       }
     } catch (err) {

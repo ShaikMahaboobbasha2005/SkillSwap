@@ -205,7 +205,9 @@ const getSwapRequests = async (userId, queryParams = {}) => {
   const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
   const skip = (pageNum - 1) * limitNum;
 
-  const filter = {};
+  const filter = {
+    hiddenFor: { $ne: userId },
+  };
 
   if (type === "incoming") {
     filter.toUser = userId;
@@ -767,6 +769,41 @@ const getSwapStats = async (userId) => {
   };
 };
 
+const hideSwapForUser = async (swapId, userId) => {
+  validateSwapId(swapId);
+
+  const existingSwap = await SwapRequest.findById(swapId);
+  if (!existingSwap) {
+    const error = new Error("Swap request not found.");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const fromUserIdStr = existingSwap.fromUser?._id ? String(existingSwap.fromUser._id) : String(existingSwap.fromUser);
+  const toUserIdStr = existingSwap.toUser?._id ? String(existingSwap.toUser._id) : String(existingSwap.toUser);
+  const currentUserIdStr = String(userId);
+
+  if (fromUserIdStr !== currentUserIdStr && toUserIdStr !== currentUserIdStr) {
+    const error = new Error("Access denied. You are not a participant in this swap request.");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  const updatedSwap = await SwapRequest.findByIdAndUpdate(
+    swapId,
+    { $addToSet: { hiddenFor: userId } },
+    { new: true }
+  )
+    .populate("fromUser", USER_POPULATE_FIELDS)
+    .populate("toUser", USER_POPULATE_FIELDS)
+    .populate("offeredSkill", SKILL_POPULATE_FIELDS)
+    .populate("wantedSkill", SKILL_POPULATE_FIELDS)
+    .populate("leftBy", USER_POPULATE_FIELDS)
+    .populate("completionRequestedBy", USER_POPULATE_FIELDS);
+
+  return formatSwapWithSnapshots(updatedSwap);
+};
+
 module.exports = {
   createSwapRequest,
   getSwapRequests,
@@ -781,4 +818,6 @@ module.exports = {
   leaveSwapRequest,
   getSwapHistory,
   getSwapStats,
+  hideSwapForUser,
 };
+

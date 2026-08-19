@@ -6,9 +6,9 @@
  * @param {Object} props
  * @param {number} [props.count=3] - Number of skeleton cards to render
  */
-export default function SwapRequestSkeleton({ count = 3 }) {
+export default function SwapRequestSkeleton({ count = 4 }) {
   return (
-    <div className="space-y-4 w-full" aria-label="Loading swap requests">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full" aria-label="Loading swap requests">
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}

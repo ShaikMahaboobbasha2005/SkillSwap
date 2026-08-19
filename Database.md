@@ -76,6 +76,7 @@ A shared lookup collection — users reference `Skill._id` in `skillsOffered`/`s
   completedAt: Date,       // timestamp when both users confirmed completion
   endedAt: Date,           // timestamp when swap completed or left
   chatDeletedFor: [ObjectId], // ref: User (array of userIds who deleted this swap from their personal history)
+  hiddenFor: [ObjectId],      // ref: User (array of userIds who hid this swap from incoming/outgoing lists)
   createdAt: Date,
   updatedAt: Date
 }

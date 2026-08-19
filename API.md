@@ -53,6 +53,7 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 | PATCH | `/api/swaps/:id/confirm-completion` | Protected | Confirm completion requested by partner (Partner only; changes status to `completed`, sets `endedAt`/`completedAt`, makes chat read-only, increments `completedSwaps` for both users) |
 | PATCH | `/api/swaps/:id/cancel-completion-request` | Protected | Cancel or decline a pending completion request for an accepted swap (Participant only; resets completion request state, swap remains `accepted`) |
 | PATCH | `/api/swaps/:id/leave` | Protected | Intentionally end/leave an ongoing accepted swap (Participant only; sets status to `left` and records `leftBy`) |
+| PATCH | `/api/swaps/:id/hide` | Protected | Hide a swap request from the authenticated participant's incoming/outgoing request list (`$addToSet: { hiddenFor: userId }`) without deleting the swap or removing it from Swap History |
 
 ## Chat
 | Method | Endpoint | Auth | Description |

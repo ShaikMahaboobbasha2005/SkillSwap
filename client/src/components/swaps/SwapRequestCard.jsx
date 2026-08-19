@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import StatusBadge from "./StatusBadge";
 import ratingService from "../../services/ratingService";
@@ -14,6 +14,8 @@ import {
   Sparkles,
   Star,
   Clock,
+  MoreVertical,
+  EyeOff,
 } from "lucide-react";
 
 /**
@@ -31,6 +33,7 @@ import {
  * @param {Function} [props.onCancelCompletion] - Triggered when Cancel Completion is clicked
  * @param {Function} [props.onLeave] - Triggered when Leave is clicked
  * @param {Function} [props.onRatePartner] - Triggered when Rate Partner is clicked
+ * @param {Function} [props.onHide] - Triggered when Hide from list is clicked
  * @param {boolean} [props.isProcessing] - Disables action buttons during in-flight request
  */
 export default function SwapRequestCard({
@@ -44,6 +47,7 @@ export default function SwapRequestCard({
   onCancelCompletion,
   onLeave,
   onRatePartner,
+  onHide,
   isProcessing = false,
 }) {
   if (!swap) return null;
@@ -60,6 +64,26 @@ export default function SwapRequestCard({
   const swapId = swap._id || swap.id;
   const [hasRated, setHasRated] = useState(false);
   const [loadingRatingStatus, setLoadingRatingStatus] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  // Close overflow menu when clicking outside
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [isMenuOpen]);
 
   useEffect(() => {
     let isMounted = true;
@@ -245,8 +269,43 @@ export default function SwapRequestCard({
           </div>
         </div>
 
-        {/* Status Badge */}
-        <StatusBadge status={status} className="shrink-0" />
+        {/* Status Badge & Overflow Menu */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <StatusBadge status={status} className="shrink-0" />
+          {onHide && (
+            <div className="relative" ref={menuRef}>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMenuOpen((prev) => !prev);
+                }}
+                className="w-7 h-7 rounded-lg text-[#6B6858] hover:text-[#16160F] hover:bg-[#F7F6F2] border border-transparent hover:border-[#E6E3DA] transition-colors flex items-center justify-center cursor-pointer"
+                title="Options"
+                aria-label="Options"
+              >
+                <MoreVertical className="w-3.5 h-3.5" />
+              </button>
+
+              {isMenuOpen && (
+                <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-[#E6E3DA] rounded-xl shadow-lg py-1 z-20 animate-in fade-in duration-100">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsMenuOpen(false);
+                      onHide(swap);
+                    }}
+                    className="w-full px-3 py-2 text-xs font-semibold text-[#6B6858] hover:text-[#16160F] hover:bg-[#F7F6F2] flex items-center gap-2 transition-colors cursor-pointer text-left"
+                  >
+                    <EyeOff className="w-3.5 h-3.5 text-[#6B6858]" />
+                    <span>Hide from list</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Middle Exchange Box */}
