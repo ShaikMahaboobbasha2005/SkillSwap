@@ -6,6 +6,7 @@ import ConfirmModal from "../ConfirmModal";
 import ToastNotification from "../ToastNotification";
 import swapService from "../../services/swapService";
 import { useSwap } from "../../context/SwapContext";
+import useAuth from "../../hooks/useAuth";
 import { AlertCircle, RefreshCw } from "lucide-react";
 
 /**
@@ -27,12 +28,17 @@ export default function OutgoingRequests({
   error = "",
   onRetry,
   onActionComplete,
+  onComplete,
+  onCancelCompletion,
+  onLeave,
   statusFilter = "",
 }) {
+  const { user } = useAuth();
   const { refreshStats } = useSwap();
   const [selectedSwap, setSelectedSwap] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [toast, setToast] = useState({ show: false, type: "", message: "" });
+  const currentUserId = user?._id || user?.id;
 
   const handleOpenCancelConfirm = (swap) => {
     setSelectedSwap(swap);
@@ -115,7 +121,11 @@ export default function OutgoingRequests({
           key={swap._id}
           swap={swap}
           type="outgoing"
+          currentUserId={currentUserId}
           onCancel={handleOpenCancelConfirm}
+          onComplete={onComplete}
+          onCancelCompletion={onCancelCompletion}
+          onLeave={onLeave}
           isProcessing={processing && selectedSwap?._id === swap._id}
         />
       ))}

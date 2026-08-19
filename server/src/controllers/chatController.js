@@ -10,6 +10,8 @@ const getMessages = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: result.messages,
+      swapRequest: result.swapRequest,
+      isReadOnly: result.isReadOnly,
       meta: {
         total: result.total,
         page: result.page,
@@ -126,10 +128,27 @@ const deleteMessage = async (req, res, next) => {
   }
 };
 
+const deleteChatHistory = async (req, res, next) => {
+  try {
+    const result = await chatService.deleteChatHistoryForUser(
+      req.params.swapId,
+      req.user.id
+    );
+    res.status(200).json({
+      success: true,
+      message: "Chat deleted from history successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getMessages,
   getConversations,
   getUnreadCount,
   markAsRead,
   deleteMessage,
+  deleteChatHistory,
 };

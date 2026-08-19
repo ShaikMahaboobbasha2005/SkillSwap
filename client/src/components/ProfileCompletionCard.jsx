@@ -1,36 +1,54 @@
-export default function ProfileCompletionCard({ profile, bio, skillsCount = { offered: 0, wanted: 0 } }) {
+export default function ProfileCompletionCard({
+  profile,
+  bio,
+  skillsCount = { offered: 0, wanted: 0 },
+}) {
   if (!profile) return null;
 
   const items = [
     {
       id: "photo",
       label: "Photo",
-      completed: Boolean(profile.profilePicture && profile.profilePicture.trim().length > 0),
+      completed: Boolean(
+        profile.profilePicture &&
+          typeof profile.profilePicture === "string" &&
+          profile.profilePicture.trim().length > 0
+      ),
     },
     {
       id: "bio",
       label: "Bio",
-      completed: Boolean(bio && bio.trim().length > 0),
+      completed: Boolean(bio && typeof bio === "string" && bio.trim().length > 0),
     },
     {
       id: "location",
       label: "Location",
-      completed: Boolean(profile.location && profile.location.trim().length > 0),
+      completed: Boolean(
+        profile.location &&
+          typeof profile.location === "string" &&
+          profile.location.trim().length > 0
+      ),
     },
     {
       id: "offerSkills",
       label: "Offer Skills",
-      completed: Boolean(skillsCount.offered > 0),
+      completed: Boolean(skillsCount && skillsCount.offered > 0),
     },
     {
       id: "learnSkills",
       label: "Learn Skills",
-      completed: Boolean(skillsCount.wanted > 0),
+      completed: Boolean(skillsCount && skillsCount.wanted > 0),
     },
   ];
 
   const completedCount = items.filter((item) => item.completed).length;
-  const percentage = Math.round((completedCount / items.length) * 100);
+
+  // Completely hide the Profile Completion card when 100% complete (5/5 requirements)
+  if (completedCount === 5) {
+    return null;
+  }
+
+  const percentage = Math.round((completedCount / 5) * 100);
 
   return (
     <div className="bg-white rounded-2xl border border-[#E6E3DA] p-5 sm:p-6 shadow-xs hover:shadow-md transition-all duration-200">
@@ -57,11 +75,9 @@ export default function ProfileCompletionCard({ profile, bio, skillsCount = { of
         />
       </div>
 
-      {/* Encouraging Helper Text below progress bar */}
+      {/* Helper Text */}
       <p className="text-[11px] font-medium text-[#6B6858] mb-3">
-        {percentage === 100
-          ? "✓ Profile 100% complete! Ready for top quality skill swap matches."
-          : "Complete your skills to improve matching."}
+        Complete your skills to improve matching.
       </p>
 
       {/* Checklist */}

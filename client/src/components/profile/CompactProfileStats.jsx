@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Star, RefreshCw, GraduationCap, Image } from "lucide-react";
 
 /**
@@ -45,20 +46,24 @@ export default function CompactProfileStats({
 
       <div className="w-px h-6 bg-[#E6E3DA] shrink-0" />
 
-      {/* 2. Completed Swaps Metric */}
-      <div className="flex items-center gap-2 px-2 shrink-0">
-        <div className="w-8 h-8 rounded-lg bg-[#E4EEE8] text-[#1B4332] border border-[#1B4332]/20 flex items-center justify-center shrink-0">
+      {/* 2. Completed Swaps Metric (Clickable to Completed History) */}
+      <Link
+        to="/swaps?tab=history&status=completed"
+        className="flex items-center gap-2 px-2 shrink-0 group hover:opacity-80 transition-opacity cursor-pointer"
+        title="View completed swap history"
+      >
+        <div className="w-8 h-8 rounded-lg bg-[#E4EEE8] text-[#1B4332] border border-[#1B4332]/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
           <RefreshCw className="w-4 h-4 text-[#1B4332]" />
         </div>
         <div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B6858] block leading-none">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B6858] group-hover:text-[#1B4332] block leading-none transition-colors">
             Swaps Done
           </span>
-          <span className="text-xs sm:text-sm font-extrabold text-[#16160F] mt-0.5 block leading-tight">
+          <span className="text-xs sm:text-sm font-extrabold text-[#16160F] group-hover:text-[#1B4332] mt-0.5 block leading-tight transition-colors">
             {completedSwaps} {completedSwaps === 1 ? "swap" : "swaps"}
           </span>
         </div>
-      </div>
+      </Link>
 
       <div className="w-px h-6 bg-[#E6E3DA] shrink-0" />
 

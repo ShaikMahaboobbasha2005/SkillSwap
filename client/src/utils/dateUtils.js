@@ -86,3 +86,40 @@ export function formatDateSeparator(dateInput) {
 
   return `${day} ${month} ${year}`;
 }
+
+/**
+ * Returns a numeric timestamp (ms since epoch) representing the effective activity
+ * time for a conversation/swap entry. Used for consistent sorting and default swap
+ * selection across sidebar grouping, display, and swap switching.
+ *
+ * Priority:
+ * 1. lastMessage.createdAt (most recent message timestamp)
+ * 2. lastActivityAt (pre-computed by backend)
+ * 3. swap.updatedAt
+ * 4. swap.createdAt
+ * 5. 0 (epoch fallback)
+ *
+ * @param {Object} conversation - A conversation entry from GET /api/chat/conversations
+ * @returns {number} Millisecond timestamp for sorting (higher = more recent)
+ */
+export function getSwapActivityTimestamp(conversation) {
+  if (!conversation) return 0;
+
+  if (conversation.lastMessage?.createdAt) {
+    const ts = new Date(conversation.lastMessage.createdAt).getTime();
+    if (!isNaN(ts)) return ts;
+  }
+  if (conversation.lastActivityAt) {
+    const ts = new Date(conversation.lastActivityAt).getTime();
+    if (!isNaN(ts)) return ts;
+  }
+  if (conversation.swap?.updatedAt) {
+    const ts = new Date(conversation.swap.updatedAt).getTime();
+    if (!isNaN(ts)) return ts;
+  }
+  if (conversation.swap?.createdAt) {
+    const ts = new Date(conversation.swap.createdAt).getTime();
+    if (!isNaN(ts)) return ts;
+  }
+  return 0;
+}

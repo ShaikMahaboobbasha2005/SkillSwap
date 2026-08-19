@@ -40,30 +40,52 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 |---|---|---|---|
 | POST | `/api/swaps` | Protected | Send a swap request to another user |
 | GET | `/api/swaps` | Protected | List current user's swap requests (supports `?page=`, `?limit=`, `?type=incoming|outgoing|all`, `?status=pending|accepted|rejected|cancelled`) |
+| GET | `/api/swaps/history` | Protected | Get swap history for logged-in user (status `completed`, `left`, `cancelled`, excluding `chatDeletedFor` items; supports `?status=`, `?page=`, `?limit=`) |
 | GET | `/api/swaps/incoming` | Protected | Get incoming swap requests for logged-in user |
 | GET | `/api/swaps/outgoing` | Protected | Get outgoing swap requests for logged-in user |
-| GET | `/api/swaps/stats` | Protected | Get lightweight dashboard swap statistics (counts for pending, accepted, rejected, cancelled) |
+| GET | `/api/swaps/stats` | Protected | Get lightweight dashboard swap statistics (counts for `pending`, `accepted`, `rejected`, `cancelled`, `completed`, `left`) |
 | GET | `/api/swaps/:id` | Protected | Get swap request details (must be a participant) |
 | PATCH | `/api/swaps/:id/accept` | Protected | Accept a pending swap request (Receiver only) |
 | PATCH | `/api/swaps/:id/reject` | Protected | Reject a pending swap request (Receiver only) |
 | PATCH | `/api/swaps/:id/cancel` | Protected | Soft-cancel a pending swap request (Sender only) |
-| PATCH | `/api/swaps/:id/complete` | Protected | Mark an accepted swap as completed (Phase 8) |
+| PATCH | `/api/swaps/:id/complete` | Protected | Legacy/smart completion route for an accepted swap (determines request vs confirm based on current state) |
+| PATCH | `/api/swaps/:id/request-completion` | Protected | Request completion of an accepted swap (Participant only; sets `completionRequestedBy`, status remains `accepted`, sends in-app notification to partner) |
+| PATCH | `/api/swaps/:id/confirm-completion` | Protected | Confirm completion requested by partner (Partner only; changes status to `completed`, sets `endedAt`/`completedAt`, makes chat read-only, increments `completedSwaps` for both users) |
+| PATCH | `/api/swaps/:id/cancel-completion-request` | Protected | Cancel or decline a pending completion request for an accepted swap (Participant only; resets completion request state, swap remains `accepted`) |
+| PATCH | `/api/swaps/:id/leave` | Protected | Intentionally end/leave an ongoing accepted swap (Participant only; sets status to `left` and records `leftBy`) |
 
 ## Chat
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/api/chat/conversations` | Protected | Get all accepted swap conversations for logged-in user with counterpart details, last message preview, and unread incoming count. |
+| GET | `/api/chat/conversations` | Protected | Get all active accepted swap conversations for logged-in user with counterpart details, last message preview, and unread incoming count (filters `status: "accepted"` and `chatDeletedFor: { $ne: userId }`). |
 | GET | `/api/chat/unread-count` | Protected | Get unread conversation count (`unreadConversationCount` distinct accepted swaps with unread incoming messages) and total unread message count (`totalUnreadMessageCount`) for navbar badge. |
-| GET | `/api/chat/:swapId/messages` | Protected | Get message history for an accepted swap. Default `page=1, limit=50` retrieves the 50 most recent messages, returned in chronological order (`createdAt: 1`) for natural rendering. Populates sender details (`name profilePicture`). |
+| GET | `/api/chat/:swapId/messages` | Protected | Get message history for a swap (status `accepted`, `completed`, `left`). Default `page=1, limit=50` retrieves messages in chronological order. Returns `swapRequest` object and `isReadOnly: true` if swap status is `completed` or `left`. |
 | PATCH | `/api/chat/:swapId/read` | Protected | Mark incoming unread messages in `swapId` (optionally filtered by `messageIds` array in body) as read for current user and return updated unread count. |
-| DELETE | `/api/chat/:swapId/messages/:messageId` | Protected | Soft delete a user's own sent message for everyone. Validates user ownership and swapId match (`message.swapRequest === swapId`), clears content to `""`, sets `isDeleted: true` and `deletedAt`, and broadcasts `message_deleted` to room `swap:<swapId>`. |
+| DELETE | `/api/chat/:swapId/messages/:messageId` | Protected | Soft delete a user's own sent message for everyone. Validates user ownership and swapId match, clears content to `""`, sets `isDeleted: true` and `deletedAt`, and broadcasts `message_deleted` to room `swap:<swapId>`. |
+| DELETE | `/api/chat/:swapId/history` | Protected | Remove/delete an archived conversation (`completed`, `left`, `cancelled`) from current user's personal history (`$addToSet: { chatDeletedFor: userId }`). |
+
+## Ratings & Reviews
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/api/ratings/:swapId` | Protected | Submit a rating + review for a completed swap |
+| GET | `/api/ratings/user/:userId` | Public | Get all ratings/reviews for a user |
+
+## Notifications
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/api/notifications` | Protected | Get current user's notifications. Supports optional `?page=&limit=` (e.g. `?page=1&limit=20`) |
+| GET | `/api/notifications/unread-count` | Protected | Get unread notifications count for current user |
+| PATCH | `/api/notifications/:id/read` | Protected | Mark a single notification as read |
+| PATCH | `/api/notifications/read-all` | Protected | Mark all notifications as read for current user |
 
 **Chat Authorization Rules:**
 - Requires valid JWT authentication token.
 - `swapId` must be a valid 24-character hexadecimal MongoDB ObjectId (returns `400 Bad Request` / `INVALID_SWAP_ID` otherwise).
 - SwapRequest must exist (`404 Not Found` / `SWAP_NOT_FOUND`).
-- SwapRequest status must be `"accepted"` (`403 Forbidden` / `SWAP_NOT_ACCEPTED`).
+- SwapRequest status must be `"accepted"`, `"completed"`, or `"left"` (`403 Forbidden` / `SWAP_NOT_ACCEPTED`).
+- SwapRequest must not be deleted for the requesting user (`chatDeletedFor` does not contain `userId`; returns `404 Not Found` / `CHAT_DELETED`).
 - Logged-in user must be either `fromUser` or `toUser` on the SwapRequest (`403 Forbidden` / `FORBIDDEN`).
+- Write operations (sending messages, Socket chat room interactions) are blocked if status is not `"accepted"` (returns `403 Forbidden` / `CHAT_READ_ONLY`).
 - For message deletion: authenticated user must be the original sender of `messageId` and `message.swapRequest` must match `swapId` (returns `403 Forbidden` or `400 Bad Request / SWAP_MISMATCH` otherwise).
 
 **Unread Divider Presentation Snapshot:**
@@ -92,8 +114,9 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 ## Ratings & Reviews
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| POST | `/api/ratings/:swapId` | Protected | Submit a rating + review for a completed swap |
-| GET | `/api/ratings/user/:userId` | Public | Get all ratings/reviews for a user |
+| POST | `/api/ratings/:swapId` | Protected | Submit a rating + review for a completed swap. Body: `{ stars: Number (1-5), review: String (max 500) }`. Requires `status === "completed"` and participant membership. Derives `reviewer` from `req.user.id` and `ratedUser` from `SwapRequest`. Enforces 1 rating per reviewer per swap (returns `409 Conflict` for duplicates). Recalculates `ratedUser.avgRating` via MongoDB aggregation (rounded to 1 decimal place). Returns `{ success: true, message: "Rating submitted successfully", data: { rating, updatedAvgRating } }`. |
+| GET | `/api/ratings/swap/:swapId/status` | Protected | Check if the authenticated user has submitted a rating for a specific swap. Returns `{ success: true, data: { hasRated: Boolean, rating: Object\|null } }`. |
+| GET | `/api/ratings/user/:userId` | Public | Get all ratings received by a specific user (`ratedUser == userId`), sorted newest first. Supports pagination (`?page=1&limit=10`). Populates `reviewer` with safe public fields (`name profilePicture location`). Invalid `userId` format returns `400 Bad Request`, nonexistent user returns `404 Not Found`, user with 0 ratings returns `200 OK` with `data: []`. |
 
 ## Notifications
 | Method | Endpoint | Auth | Description |

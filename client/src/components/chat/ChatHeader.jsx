@@ -1,17 +1,23 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, WifiOff, RefreshCw } from "lucide-react";
+import { ArrowLeft, WifiOff, RefreshCw, Trash2 } from "lucide-react";
+import SwapSelector, { getSkillPair } from "./SwapSelector";
 
 /**
  * ChatHeader Component
  *
  * Displays conversation header with counterpart profile info, relative skill exchange summary,
- * back navigation, and subtle connection status indicator.
+ * back navigation, swap selector (when multiple swaps exist), and connection status indicator.
  */
 export default function ChatHeader({
   swap,
   currentUserId,
   isConnected = true,
   connectionError = null,
+  isReadOnly = false,
+  onDeleteHistory = null,
+  allSwaps = null,
+  activeSwapId = null,
+  onSwapChange = null,
 }) {
   if (!swap) return null;
 
@@ -22,14 +28,14 @@ export default function ChatHeader({
   const counterpartName = counterpart?.name || "Swap Partner";
   const counterpartAvatar = counterpart?.profilePicture;
 
-  // Derive skill labels relative to current logged-in user
-  const offeredSkillName = isSender
-    ? swap.offeredSkill?.name
-    : swap.wantedSkill?.name;
+  // Derive skill labels using snapshot-first resolution for safety against deleted/edited skills
+  const skills = getSkillPair(swap, currentUserId);
+  const offeredSkillName = skills.offered;
+  const learnedSkillName = skills.learned;
 
-  const learnedSkillName = isSender
-    ? swap.wantedSkill?.name
-    : swap.offeredSkill?.name;
+  // Determine if we should show the swap selector
+  const hasMultipleSwaps =
+    Array.isArray(allSwaps) && allSwaps.length > 1 && !isReadOnly;
 
   return (
     <header className="bg-white border-b border-[#E6E3DA] px-4 py-2 sm:px-6 sticky top-0 z-30 shadow-2xs">
@@ -37,10 +43,10 @@ export default function ChatHeader({
         {/* Left Action & Counterpart User Info */}
         <div className="flex items-center gap-3 min-w-0">
           <Link
-            to="/chats"
+            to={isReadOnly ? "/swaps?tab=history" : "/chats"}
             className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-[#E6E3DA] bg-[#F7F6F2] hover:bg-white text-[#16160F] hover:text-[#1B4332] flex items-center justify-center shrink-0 transition-colors cursor-pointer"
-            title="Back to Conversations"
-            aria-label="Back to Conversations"
+            title={isReadOnly ? "Back to Swap History" : "Back to Conversations"}
+            aria-label={isReadOnly ? "Back to Swap History" : "Back to Conversations"}
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
@@ -68,43 +74,73 @@ export default function ChatHeader({
               >
                 {counterpartName}
               </Link>
+              {isReadOnly && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                  Read-Only
+                </span>
+              )}
             </div>
 
-            {/* Contextual Skill Exchange Summary */}
-            <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-[#6B6858] truncate">
-              {offeredSkillName && (
-                <span>
-                  You offer: <strong className="text-[#1B4332] font-bold">{offeredSkillName}</strong>
-                </span>
-              )}
-              {offeredSkillName && learnedSkillName && <span>·</span>}
-              {learnedSkillName && (
-                <span>
-                  You learn: <strong className="text-[#16160F] font-bold">{learnedSkillName}</strong>
-                </span>
-              )}
-            </div>
+            {/* Swap Selector (multi-swap) or Static Skill Exchange Summary (single swap) */}
+            {hasMultipleSwaps ? (
+              <SwapSelector
+                swaps={allSwaps}
+                activeSwapId={activeSwapId}
+                currentUserId={currentUserId}
+                onSelect={onSwapChange}
+              />
+            ) : (
+              <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-[#6B6858] truncate">
+                {offeredSkillName && (
+                  <span>
+                    You offer: <strong className="text-[#1B4332] font-bold">{offeredSkillName}</strong>
+                  </span>
+                )}
+                {offeredSkillName && learnedSkillName && <span>·</span>}
+                {learnedSkillName && (
+                  <span>
+                    You learn: <strong className="text-[#16160F] font-bold">{learnedSkillName}</strong>
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Right Connection Status Indicator (Surfaced ONLY when disconnected / reconnecting) */}
-        {!isConnected && (
-          <div className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 shrink-0">
-            {connectionError ? (
-              <>
-                <WifiOff className="w-3.5 h-3.5 text-amber-700" />
-                <span className="hidden sm:inline">Connection unavailable</span>
-                <span className="sm:hidden">Offline</span>
-              </>
-            ) : (
-              <>
-                <RefreshCw className="w-3.5 h-3.5 text-amber-700 animate-spin" />
-                <span className="hidden sm:inline">Reconnecting…</span>
-                <span className="sm:hidden">Connecting</span>
-              </>
-            )}
-          </div>
-        )}
+        {/* Right Header Actions */}
+        <div className="flex items-center gap-2">
+          {/* Read-Only Delete from History Button */}
+          {isReadOnly && onDeleteHistory && (
+            <button
+              type="button"
+              onClick={onDeleteHistory}
+              className="h-8 px-3 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl transition-all cursor-pointer inline-flex items-center gap-1.5"
+              title="Delete from my history"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Delete from history</span>
+            </button>
+          )}
+
+          {/* Connection Status Indicator */}
+          {!isConnected && !isReadOnly && (
+            <div className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 shrink-0">
+              {connectionError ? (
+                <>
+                  <WifiOff className="w-3.5 h-3.5 text-amber-700" />
+                  <span className="hidden sm:inline">Connection unavailable</span>
+                  <span className="sm:hidden">Offline</span>
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-3.5 h-3.5 text-amber-700 animate-spin" />
+                  <span className="hidden sm:inline">Reconnecting…</span>
+                  <span className="sm:hidden">Connecting</span>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

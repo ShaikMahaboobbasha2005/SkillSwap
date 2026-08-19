@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   CheckCircle2,
   AlertCircle,
@@ -13,7 +14,9 @@ import {
 /**
  * ToastNotification Component
  *
- * Renders context-aware semantic toast variants per Design.md rules.
+ * Renders context-aware semantic toast variants per Design.md rules via a React Portal
+ * at document.body with z-[10050] stacking order to ensure toasts are ALWAYS visible
+ * above modals, overlays, and all page elements.
  *
  * Supported toast types:
  * - "sent" | "primary" : Pine / Dark Accent with Send icon
@@ -84,11 +87,11 @@ export default function ToastNotification({
       break;
   }
 
-  return (
+  return createPortal(
     <div
       role="status"
       aria-live="polite"
-      className="fixed top-5 right-5 z-50 max-w-sm w-full animate-slideDown pointer-events-auto"
+      className="fixed top-5 right-5 z-[10050] max-w-sm w-full animate-slideDown pointer-events-auto"
     >
       <div
         className={`relative overflow-hidden p-4 rounded-xl shadow-xl border flex items-start gap-3 backdrop-blur-md transition-all ${bgStyles}`}
@@ -128,6 +131,7 @@ export default function ToastNotification({
           />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

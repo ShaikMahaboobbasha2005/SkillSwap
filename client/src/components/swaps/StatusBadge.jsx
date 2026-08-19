@@ -1,18 +1,38 @@
-import { Clock, CheckCircle2, XCircle, Ban } from "lucide-react";
+import { Clock, CheckCircle2, XCircle, Ban, LogOut, Award } from "lucide-react";
 
 /**
  * StatusBadge Component
  *
- * Displays a styled, status badge per Design.md rules (subtle borders, muted palette, flat design).
+ * Displays a styled status badge per Design.md rules (subtle borders, muted palette, flat design).
  *
  * @param {Object} props
- * @param {string} props.status - "pending" | "accepted" | "rejected" | "cancelled"
+ * @param {string} props.status - "pending" | "accepted" | "rejected" | "cancelled" | "completed" | "left"
  * @param {string} [props.className] - Additional Tailwind classes
  */
 export default function StatusBadge({ status = "pending", className = "" }) {
   const normalizedStatus = status ? status.toLowerCase() : "pending";
 
   switch (normalizedStatus) {
+    case "completed":
+      return (
+        <span
+          className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 tracking-wide ${className}`}
+        >
+          <Award className="w-3.5 h-3.5 text-emerald-700" />
+          <span>Completed</span>
+        </span>
+      );
+
+    case "left":
+      return (
+        <span
+          className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-zinc-100 text-zinc-700 border border-zinc-300 tracking-wide ${className}`}
+        >
+          <LogOut className="w-3.5 h-3.5 text-zinc-600" />
+          <span>Left</span>
+        </span>
+      );
+
     case "accepted":
       return (
         <span

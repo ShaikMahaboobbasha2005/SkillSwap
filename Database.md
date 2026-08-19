@@ -9,8 +9,11 @@ MongoDB Atlas (free tier), accessed via Mongoose. Collections below map directly
   name: String,
   email: String,          // unique, indexed
   passwordHash: String,
-  profilePicture: String,     // Cloudinary URL
-  location: String,           // city only, e.g. "Bangalore" — no exact address
+  profilePicture: String,             // Cloudinary URL
+  profilePicturePublicId: String,     // Cloudinary public_id for safe deletion
+  profileBanner: String,              // Cloudinary URL
+  profileBannerPublicId: String,      // Cloudinary public_id for safe deletion
+  location: String,                   // city only, e.g. "Bangalore" — no exact address
   role: String,                // "user" | "admin" — reserved for future use (e.g. admin panel); guests are unauthenticated visitors and are never stored as a User document
   skillsOffered: [ObjectId],   // ref: Skill
   skillsWanted: [ObjectId],    // ref: Skill
@@ -49,13 +52,35 @@ A shared lookup collection — users reference `Skill._id` in `skillsOffered`/`s
   toUser: ObjectId,        // ref: User
   offeredSkill: ObjectId,  // ref: Skill
   wantedSkill: ObjectId,   // ref: Skill
+  offeredSkillSnapshot: {  // immutable historical snapshot at creation time
+    name: String,
+    level: String
+  },
+  wantedSkillSnapshot: {   // immutable historical snapshot at creation time
+    name: String,
+    level: String
+  },
+  offeredSkillName: String, // immutable snapshot of offered skill name
+  offeredSkillLevel: String, // immutable snapshot of offered skill level
+  wantedSkillName: String,  // immutable snapshot of wanted skill name
+  wantedSkillLevel: String, // immutable snapshot of wanted skill level
   message: String,         // optional request message (max 500 chars)
-  status: String,          // "pending" | "accepted" | "rejected" | "cancelled" ("completed" added in Phase 8)
+  status: String,          // "pending" | "accepted" | "rejected" | "cancelled" | "completed" | "left"
+  leftBy: ObjectId,        // ref: User (optional — user who left when status is "left")
+  completionRequestedBy: ObjectId, // ref: User (user who initiated completion request)
+  completionRequestedAt: Date,     // timestamp when completion was requested
+  completion: {
+    fromUserConfirmed: Boolean,    // true if fromUser confirmed completion
+    toUserConfirmed: Boolean       // true if toUser confirmed completion
+  },
+  completedAt: Date,       // timestamp when both users confirmed completion
+  endedAt: Date,           // timestamp when swap completed or left
+  chatDeletedFor: [ObjectId], // ref: User (array of userIds who deleted this swap from their personal history)
   createdAt: Date,
   updatedAt: Date
 }
 ```
-**Indexes:** `fromUser`, `toUser`, `status` — plus compound index `{ fromUser: 1, toUser: 1, offeredSkill: 1, wantedSkill: 1, status: 1 }` for exact duplicate request detection and fast query lookups.
+**Indexes:** `fromUser`, `toUser`, `status`, `chatDeletedFor` — plus compound indexes `{ fromUser: 1, toUser: 1, offeredSkill: 1, wantedSkill: 1, status: 1 }` and `{ status: 1, chatDeletedFor: 1 }` for duplicate request detection, history queries, and active conversation filtering.
 
 ## 4. Message
 ```js
@@ -80,29 +105,33 @@ A shared lookup collection — users reference `Skill._id` in `skillsOffered`/`s
 ```js
 {
   _id: ObjectId,
-  swapRequest: ObjectId,   // ref: SwapRequest — one rating per user per completed swap
-  ratedBy: ObjectId,        // ref: User
-  ratedUser: ObjectId,       // ref: User
-  stars: Number,              // 1–5
-  review: String,
-  createdAt: Date
+  swapRequest: ObjectId, // ref: SwapRequest — target completed swap
+  reviewer: ObjectId,    // ref: User — user submitting rating
+  ratedUser: ObjectId,   // ref: User — user receiving rating
+  stars: Number,         // 1–5 integer
+  review: String,        // optional text (max 500 chars)
+  createdAt: Date,
+  updatedAt: Date
 }
 ```
-**Index:** `ratedUser` — used to recalculate `User.avgRating` efficiently.
+**Indexes:** `ratedUser` single index (for fetching received reviews), plus compound unique index `{ swapRequest: 1, reviewer: 1 }` (enforcing max 1 rating per reviewer per swap at the database level).
 
 ## 7. Notification
 ```js
 {
   _id: ObjectId,
-  user: ObjectId,       // ref: User — recipient
-  type: String,          // "swap_request" | "swap_accepted" | "swap_rejected" | "new_message" | "session_completed" | "new_rating"
+  user: ObjectId,        // ref: User — recipient
+  sender: ObjectId,      // ref: User — sender / trigger user
+  swap: ObjectId,        // ref: SwapRequest
+  type: String,          // "completion_request" | "completion_confirmed" | "completion_cancelled" | "swap_request" | "swap_accepted"
+  title: String,
   message: String,
-  relatedId: ObjectId,    // e.g. SwapRequest._id or ChatRoom._id
-  isRead: Boolean,
-  createdAt: Date
+  read: Boolean,         // default: false
+  createdAt: Date,
+  updatedAt: Date
 }
 ```
-**Index:** `user` + `isRead` — for fast "unread notifications" queries.
+**Indexes:** `{ user: 1, read: 1, createdAt: -1 }` — for fast unread notifications list and count queries.
 
 ## 8. Relationships Overview
 - `User` ↔ `Skill` — many-to-many, via `skillsOffered`/`skillsWanted` arrays of ObjectIds
@@ -112,7 +141,10 @@ A shared lookup collection — users reference `Skill._id` in `skillsOffered`/`s
 - `Notification` — many-to-one with `User`, generated by events across SwapRequest/Message/Rating
 
 ## 9. Auto-Calculated Fields
-`User.avgRating` and `User.completedSwaps` are never written directly by any client request — they're recomputed server-side (in `services/`) whenever a `Rating` is created or a `SwapRequest` status changes to `"completed"`.
+`User.avgRating` and `User.completedSwaps` are server-managed statistics that can never be modified directly by client requests:
+- `User.avgRating`: Recalculated server-side in `ratingService.js` using MongoDB aggregation (`Rating.aggregate({ ratedUser: userId })`) whenever a `Rating` document is successfully persisted. Based strictly on ratings RECEIVED by that user, rounded to 1 decimal place (`Math.round(average * 10) / 10`). Defaults to `0` if 0 ratings received. Submitting a rating updates only the rated user's reputation.
+- `User.completedSwaps`: Incremented server-side once for both participants when two-party completion confirmation succeeds in `swapService.js`. Never modified by rating submissions.
+- `PUT /api/profile` / `PUT /api/users/me` strictly whitelist-filters editable profile fields (`name`, `profilePicture`, `profileBanner`, `location`), protecting `avgRating` and `completedSwaps` from manual client-side manipulation.
 
 ## 10. Notes on Scalability
 - Referencing `Skill` by ObjectId instead of storing skill names as free text avoids duplication and keeps matching queries exact-match rather than fuzzy-string

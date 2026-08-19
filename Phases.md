@@ -25,15 +25,17 @@
 - **Done =** Users can authenticate and access protected resources.
 
 ## Phase 3 — User Profiles
-- **Goal:** Support profile creation, modification, and public viewing.
+- **Goal:** Support profile creation, modification, public viewing, and automatic Cloudinary media lifecycle cleanup.
 - **Features:**
   - Profile CRUD operations
-  - Profile picture management
+  - Profile picture & banner management
+  - Safe Cloudinary asset cleanup for replaced or removed profile pictures and banners (`profilePicturePublicId`, `profileBannerPublicId`)
   - Bio management
   - Location setting
   - Public profile view
   - Placeholder fields for `avgRating` and `completedSwaps`
-- **Done =** Users can manage their profile and others can view it.
+- **Architecture Decisions:** Cloudinary deletion triggers strictly post-database update (`findByIdAndUpdate`). Legacy assets without stored `publicId` use unambiguous URL parsing (`skillswap/profiles/`), skipping deletion if ambiguous or default. Before destroying assets, the latest User document is re-read to prevent race conditions during rapid updates. Failed DB updates attempt orphan cleanup on newly uploaded `publicId`s while preserving old active assets. Cleanup failures log silently without rolling back or failing user profile updates.
+- **Done =** Users can manage their profile and obsolete Cloudinary profile assets are automatically and safely cleaned up.
 
 ## Phase 4 — Skills Management
 - **Goal:** Provide full skill lifecycle management and categorization.
@@ -94,18 +96,51 @@
   - Real-time `swap_request_created` and `swap_request_updated` socket events with live Navbar & page badge sync (Phase 7.4 Batch 2)
   - Compact stacked mobile hamburger menu with right-aligned badges and subtle logout divider (Phase 7.4 Batch 2)
   - Full-screen mobile chat view (`/swaps/:swapId/chat`) with explicit header back-navigation to `/chats` (Phase 7.4 Batch 2)
-  - WhatsApp-style chat date boundary separators (`DateSeparator`) rendering local calendar day headings ("Today", "Yesterday", "D MMMM YYYY")
-- **Architecture Decisions:** Chat is strictly scoped to accepted SwapRequests. Message persistence precedes room broadcast. Socket authentication reuses JWT token (`auth: { token }`). Map deduplication by MongoDB `_id` prevents duplicate renders. Message status transitions (`sent` → `delivered` → `read`) are unidirectional and explicit. User personal rooms (`user:<userId>`) sync real-time swap creation and status updates without client-supplied identity overrides. Date separators are presentation-only components rendered dynamically inside `MessageList` using local browser timezone comparisons.
+  - WhatsApp-style chat date boundary separators (`DateSeparator`) rendering local calendar day headings ("Today", "Yesterday", "D MMMM YYYY") with inline time-only message bubble timestamps
+- **Architecture Decisions:** Chat is strictly scoped to accepted SwapRequests. Message persistence precedes room broadcast. Socket authentication reuses JWT token (`auth: { token }`). Map deduplication by MongoDB `_id` prevents duplicate renders. Message status transitions (`sent` → `delivered` → `read`) are unidirectional and explicit. User personal rooms (`user:<userId>`) sync real-time swap creation and status updates without client-supplied identity overrides. Date separators are presentation-only components rendered dynamically inside `MessageList` using local browser timezone comparisons. Message bubbles render time-only timestamps (`7:42 PM`) inline at the bottom-right of message content to maximize thread compactness.
 - **Done =** Accepted users can chat in real time with a complete conversation list, persistent read receipts, and live swap request updates across desktop and mobile.
 
 ## Phase 8 — Sessions & Reviews
-- **Goal:** Handle swap completions, reviews, and automated reputation scoring.
-- **Features:**
-  - Complete swap action
-  - Ratings & reviews submission
-  - Average rating calculation (`avgRating`)
-  - Completed swap count increment (`completedSwaps`)
-- **Done =** Completed swaps update ratings and user reputation.
+- **Goal:** Handle swap completions, swap history, archived read-only chats, reviews, and automated reputation scoring.
+- **Sub-Phases:**
+  - **Phase 8.1 — Swap History & Archived Chats (Completed):**
+    - Extended `SWAP_STATUS` enum: `["pending", "accepted", "rejected", "cancelled", "completed", "left"]`.
+    - Implemented **Two-Party Swap Completion Confirmation**:
+      - Requester clicks "Mark Completed" → swap remains status `"accepted"` while recording `completionRequestedBy: UserA` and `completionRequestedAt`.
+      - Real-time Socket event (`swap_request_updated`) and in-app Notification created for `UserB`.
+      - Partner (`UserB`) sees dynamic UI banner (`"[User A] marked this swap as completed"`) with `[ Confirm Completion ]` and `[ Not Yet ]` action buttons in both Swap Request cards and Chat workspace.
+      - Clicking `[ Confirm Completion ]` transitions status to `"completed"`, sets `completedAt`/`endedAt`, archives conversation, moves swap to Swap History, and increments `completedSwaps` exactly once for both users.
+      - Clicking `[ Not Yet ]` or `[ Cancel Request ]` clears `completionRequestedBy` while keeping swap status `"accepted"`.
+    - Created MongoDB `Notification` model, service, controllers, and `/api/notifications` routes.
+    - Active chats page (`/chats`) filtered strictly to `accepted` swaps where `chatDeletedFor` does not include user.
+    - Archived read-only chat access (`/swaps/:swapId/chat`) for `completed` and `left` swaps with read-only banner ("This swap was completed/ended on [date]"), disabled message composer/write actions, and backend write protection.
+    - Swap History API (`GET /api/swaps/history`) with sub-filtering (`completed`, `left`, `cancelled`) and pagination.
+    - Per-user history deletion (`DELETE /api/chat/:swapId/history` appending `userId` to `chatDeletedFor`).
+    - Swap Requests UI with 3 main tabs (`[ Incoming Requests ] [ Outgoing Requests ] [ Swap History ]`), status sub-filters synced to URL (`?tab=history&status=...`), and status badges (`StatusBadge`).
+    - `CompactProfileStats` "Swaps Done" card made clickable to navigate directly to completed swap history.
+  - **Phase 8.2 — Ratings & Reviews:**
+    - **Phase 8.2.1 — Ratings & Reviews Backend Foundation (Completed):**
+      - Created `Rating` Mongoose model with compound unique index `{ swapRequest: 1, reviewer: 1 }` enforcing max 1 rating per reviewer per swap at database level while allowing both participants to rate each other.
+      - Implemented `POST /api/ratings/:swapId` endpoint with Zod validation schema (`stars` required integer 1–5, `review` optional max 500 chars). Derives `reviewer` from `req.user.id` and `ratedUser` from `SwapRequest`. Restricts rating creation strictly to `completed` swaps and blocks self-rating.
+      - Implemented `GET /api/ratings/user/:userId` endpoint fetching ratings received by `userId` sorted newest first, paginated, with safe reviewer public profile fields (`name profilePicture location`). Validates ObjectId format (`400 Bad Request`) and user existence (`404 Not Found`), returning empty `data: []` array for existing users with 0 ratings (`200 OK`).
+      - Enforced strict phase boundary: `User.avgRating` and `User.completedSwaps` are NOT modified during rating creation.
+    - **Phase 8.2.2 — Reputation Calculation (Completed):**
+      - Implemented automatic server-side reputation recalculation (`recalculateUserRating`) inside `ratingService.js`.
+      - Computes `User.avgRating` exclusively from ratings RECEIVED matching `{ ratedUser: userId }` using MongoDB aggregation (`$avg: "$stars"`).
+      - Rounds `avgRating` to 1 decimal place (`Math.round(rawAvg * 10) / 10`) and defaults to `0` for users with 0 ratings received.
+      - Updates **ONLY** the `ratedUser`'s reputation upon successful `Rating` persistence; reviewer reputation remains untouched.
+      - Returns `{ rating, updatedAvgRating }` in `POST /api/ratings/:swapId` response payload.
+    - **Phase 8.2.3 — Ratings & Reviews Frontend UI (Completed):**
+      - Created `RatingModal.jsx` component leveraging `Modal.jsx` portal overlay with 5 interactive star buttons (hover preview, selection fill, accessible labels), optional review textarea (max 500 chars, character counter), inline star validation, loading spinner, and error alert.
+      - Added `client/src/services/ratingService.js` client service supporting `createRating`, `getRatingsForUser`, and `getRatingStatusForSwap`.
+      - Registered `GET /api/ratings/swap/:swapId/status` protected endpoint on backend.
+      - Updated `SwapRequestCard.jsx` to safely fetch rating status strictly for `status === "completed"` swaps, rendering `[ Rate Partner ]` for unrated completed swaps and `✓ Review Submitted` for rated swaps.
+    - **Phase 8.2.4 — Reviews Display & Profile Integration (Completed):**
+      - Created `ReviewCard.jsx` displaying reviewer avatar, name, location, 1-5 gold star rating (`#B8860B`), formatted date, and conditional review text block (omitting quotation block when text is empty).
+      - Created `ReviewsSection.jsx` fetching ratings received by `userId` using `ratingService.getRatingsForUser(userId, { page, limit: 5 })`. Displays overall `avgRating` from user profile data, total reviews count, initial skeleton loader, error retry state, clean empty state ("No reviews yet"), and `Load More Reviews` button appending subsequent pages without duplicate items.
+      - Integrated `ReviewsSection` into own profile (`OwnProfile.jsx`) and public user profiles (`PublicProfile.jsx`).
+      - Confirmed Discover cards (`DiscoverCard.jsx`) and stats bars (`CompactProfileStats.jsx`) render current server-managed `avgRating` correctly.
+- **Done =** Completed swaps increment reputation, move conversations to archived read-only chat history, and allow submission of ratings & reviews.
 
 ## Phase 9 — Portfolio & Media
 - **Goal:** Enable portfolio uploads to display user work samples.

@@ -53,7 +53,15 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
+    profilePicturePublicId: {
+      type: String,
+      default: "",
+    },
     profileBanner: {
+      type: String,
+      default: "",
+    },
+    profileBannerPublicId: {
       type: String,
       default: "",
     },

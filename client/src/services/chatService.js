@@ -53,12 +53,23 @@ export const deleteMessage = async (swapId, messageId) => {
   return response.data;
 };
 
+/**
+ * Remove/delete an archived conversation from current user's personal history.
+ * @param {string} swapId - Swap request ID
+ * @returns {Promise<Object>} API response data
+ */
+export const deleteChatForMe = async (swapId) => {
+  const response = await api.delete(`/chat/${swapId}/history`);
+  return response.data;
+};
+
 const chatService = {
   getMessageHistory,
   getConversations,
   getUnreadCount,
   markAsRead,
   deleteMessage,
+  deleteChatForMe,
 };
 
 export default chatService;

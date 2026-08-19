@@ -12,6 +12,8 @@ const skillRoutes = require("./routes/skillRoutes");
 const discoverRoutes = require("./routes/discoverRoutes");
 const swapRoutes = require("./routes/swapRoutes");
 const chatRoutes = require("./routes/chatRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const ratingRoutes = require("./routes/ratingRoutes");
 const initSockets = require("./sockets/socketHandler");
 const errorHandler = require("./middleware/errorHandler");
 
@@ -65,6 +67,8 @@ app.use("/api/skills", skillRoutes);
 app.use("/api/discover", discoverRoutes);
 app.use("/api/swaps", swapRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/ratings", ratingRoutes);
 
 // Initialize Socket.io Connection & Event Handlers
 initSockets(io);

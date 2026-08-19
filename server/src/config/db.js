@@ -5,6 +5,7 @@ const dns = require("node:dns");
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const migrateSkillStatus = require("../utils/migrateSkillStatus");
+const backfillSwapSkillSnapshots = require("../utils/backfillSwapSkillSnapshots");
 
 const connectDB = async () => {
   try {
@@ -12,6 +13,7 @@ const connectDB = async () => {
 
     console.log("✅ MongoDB Atlas Connected");
     await migrateSkillStatus();
+    await backfillSwapSkillSnapshots();
   } catch (error) {
     console.error("❌ MongoDB Connection Failed");
     console.error(error);

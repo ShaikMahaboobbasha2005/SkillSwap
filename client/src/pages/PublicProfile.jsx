@@ -6,6 +6,7 @@ import ProfileSkeleton from "../components/ProfileSkeleton";
 import ProfileBanner from "../components/ProfileBanner";
 import CompactProfileStats from "../components/profile/CompactProfileStats";
 import AvatarLightboxModal from "../components/profile/AvatarLightboxModal";
+import ReviewsSection from "../components/profile/ReviewsSection";
 import SkillsSection from "../components/skills/SkillsSection";
 import SwapRequestModal from "../components/swaps/SwapRequestModal";
 import useAuth from "../hooks/useAuth";
@@ -243,6 +244,12 @@ export default function PublicProfile() {
           onSkillsLoaded={(skills) => {
             setTotalSkills(skills.length);
           }}
+        />
+
+        {/* REVIEWS & RATINGS SECTION */}
+        <ReviewsSection
+          userId={profile._id}
+          avgRating={profile?.avgRating || 0}
         />
 
         {/* PORTFOLIO PLACEHOLDER CARD */}

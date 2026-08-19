@@ -48,15 +48,21 @@ export default function SkillsSection({
 
       if (res && res.success && Array.isArray(res.data)) {
         setSkills(res.data);
-        if (onSkillsCountChanged) {
-          onSkillsCountChanged(res.data.length);
-        }
+        notifySkillsCount(res.data);
       }
     } catch (err) {
       console.error("Failed to load skills:", err);
       if (showToast) showToast("Failed to load skills", "error");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const notifySkillsCount = (skillsList) => {
+    if (onSkillsCountChanged) {
+      const offered = skillsList.filter((s) => s.type === "Offer").length;
+      const wanted = skillsList.filter((s) => s.type === "Learn").length;
+      onSkillsCountChanged({ total: skillsList.length, offered, wanted });
     }
   };
 
@@ -88,9 +94,9 @@ export default function SkillsSection({
         // Update Skill
         const res = await updateSkill(selectedSkill._id, payload);
         if (res.success && res.data) {
-          setSkills((prev) =>
-            prev.map((s) => (s._id === res.data._id ? res.data : s))
-          );
+          const updatedSkills = skills.map((s) => (s._id === res.data._id ? res.data : s));
+          setSkills(updatedSkills);
+          notifySkillsCount(updatedSkills);
           if (showToast) showToast("Skill updated successfully", "success");
           setShowModal(false);
           setSelectedSkill(null);
@@ -99,11 +105,10 @@ export default function SkillsSection({
         // Create Skill
         const res = await createSkill(payload);
         if (res.success && res.data) {
-          setSkills((prev) => [res.data, ...prev]);
+          const updatedSkills = [res.data, ...skills];
+          setSkills(updatedSkills);
+          notifySkillsCount(updatedSkills);
           if (showToast) showToast("Skill added successfully", "success");
-          if (onSkillsCountChanged) {
-            onSkillsCountChanged(skills.length + 1);
-          }
           setShowModal(false);
           setSelectedSkill(null);
         }
@@ -128,11 +133,10 @@ export default function SkillsSection({
     try {
       const res = await deleteSkill(skillToDelete._id);
       if (res.success) {
-        setSkills((prev) => prev.filter((s) => s._id !== skillToDelete._id));
+        const updatedSkills = skills.filter((s) => s._id !== skillToDelete._id);
+        setSkills(updatedSkills);
+        notifySkillsCount(updatedSkills);
         if (showToast) showToast("Skill deleted successfully", "info");
-        if (onSkillsCountChanged) {
-          onSkillsCountChanged(Math.max(0, skills.length - 1));
-        }
       }
     } catch (err) {
       console.error("Error deleting skill:", err);

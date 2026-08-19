@@ -3,49 +3,18 @@ import { Check, CheckCheck, MoreVertical, Trash2, Ban, Reply } from "lucide-reac
 
 /**
  * Helper to format timestamp cleanly for chat messages without third-party dependencies.
+ * Returns time only (e.g. "7:42 PM") as calendar date is handled by DateSeparator.
  */
 function formatMessageTime(dateString) {
   if (!dateString) return "";
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return "";
 
-  const now = new Date();
-  const isToday =
-    date.getDate() === now.getDate() &&
-    date.getMonth() === now.getMonth() &&
-    date.getFullYear() === now.getFullYear();
-
-  const yesterday = new Date(now);
-  yesterday.setDate(now.getDate() - 1);
-  const isYesterday =
-    date.getDate() === yesterday.getDate() &&
-    date.getMonth() === yesterday.getMonth() &&
-    date.getFullYear() === yesterday.getFullYear();
-
   const hours = date.getHours();
   const minutes = date.getMinutes().toString().padStart(2, "0");
   const ampm = hours >= 12 ? "PM" : "AM";
   const formattedHours = hours % 12 || 12;
-  const timeStr = `${formattedHours}:${minutes} ${ampm}`;
-
-  if (isToday) return timeStr;
-  if (isYesterday) return `Yesterday, ${timeStr}`;
-
-  const monthNames = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  return `${monthNames[date.getMonth()]} ${date.getDate()}, ${timeStr}`;
+  return `${formattedHours}:${minutes} ${ampm}`;
 }
 
 /**
@@ -311,34 +280,36 @@ export default function MessageBubble({
         </button>
       )}
 
-      {isDeleted ? (
-        <p className="flex items-center gap-1.5 text-xs select-none">
-          <Ban className="w-3.5 h-3.5 opacity-75 shrink-0" />
-          <span>This message was deleted</span>
-        </p>
-      ) : (
-        <p className="whitespace-pre-wrap">{message.content}</p>
-      )}
-
-      <div
-        className={`flex items-center justify-end gap-1.5 text-[10px] mt-1 select-none ${
-          isMine ? "text-white/75" : "text-[#6B6858]"
-        }`}
-      >
-        <span>{timeString}</span>
-
-        {/* Status Ticks for Current User's Non-Deleted Outgoing Messages */}
-        {isMine && !isDeleted && (
-          <span className="inline-flex items-center ml-0.5">
-            {status === "sent" && <Check className="w-3 h-3 text-white/70" />}
-            {status === "delivered" && (
-              <CheckCheck className="w-3.5 h-3.5 text-white/75" />
-            )}
-            {status === "read" && (
-              <CheckCheck className="w-3.5 h-3.5 text-emerald-300 font-bold" />
-            )}
+      <div className="flow-root relative">
+        {isDeleted ? (
+          <span className="inline-flex items-center gap-1.5 text-xs select-none">
+            <Ban className="w-3.5 h-3.5 opacity-75 shrink-0" />
+            <span>This message was deleted</span>
           </span>
+        ) : (
+          <span className="whitespace-pre-wrap break-words">{message.content}</span>
         )}
+
+        <span
+          className={`inline-flex items-center gap-1 text-[10px] leading-none ml-2.5 select-none float-right mt-1 sm:mt-0.5 ${
+            isMine ? "text-white/75" : "text-[#6B6858]"
+          }`}
+        >
+          <span>{timeString}</span>
+
+          {/* Status Ticks for Current User's Non-Deleted Outgoing Messages */}
+          {isMine && !isDeleted && (
+            <span className="inline-flex items-center ml-0.5 shrink-0">
+              {status === "sent" && <Check className="w-3 h-3 text-white/70" />}
+              {status === "delivered" && (
+                <CheckCheck className="w-3.5 h-3.5 text-white/75" />
+              )}
+              {status === "read" && (
+                <CheckCheck className="w-3.5 h-3.5 text-emerald-300 font-bold" />
+              )}
+            </span>
+          )}
+        </span>
       </div>
     </div>
   );

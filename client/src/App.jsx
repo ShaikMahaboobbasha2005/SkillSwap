@@ -32,6 +32,7 @@ function App() {
                 <Route path="/discover" element={<DiscoverPage />} />
                 <Route path="/swaps" element={<SwapRequestsPage />} />
                 <Route path="/chats" element={<ChatsPage />} />
+                <Route path="/chats/:userId" element={<ChatsPage />} />
                 <Route path="/swaps/:swapId/chat" element={<ChatsPage />} />
                 <Route path="/profile" element={<OwnProfile />} />
               </Route>

@@ -107,17 +107,21 @@ const getSwapRequestById = async (req, res, next) => {
 };
 
 const emitSwapUpdate = (req, swapRequest) => {
-  const io = req.app.get("io");
-  if (io && swapRequest) {
-    const fromUserId = swapRequest.fromUser?._id?.toString() || swapRequest.fromUser?.toString();
-    const toUserId = swapRequest.toUser?._id?.toString() || swapRequest.toUser?.toString();
+  try {
+    const io = req.app.get("io");
+    if (io && swapRequest) {
+      const fromUserId = swapRequest.fromUser?._id?.toString() || swapRequest.fromUser?.toString();
+      const toUserId = swapRequest.toUser?._id?.toString() || swapRequest.toUser?.toString();
 
-    if (fromUserId && toUserId) {
-      io.to(`user:${fromUserId}`).to(`user:${toUserId}`).emit("swap_request_updated", {
-        success: true,
-        data: swapRequest,
-      });
+      if (fromUserId && toUserId) {
+        io.to(`user:${fromUserId}`).to(`user:${toUserId}`).emit("swap_request_updated", {
+          success: true,
+          data: swapRequest,
+        });
+      }
     }
+  } catch (ioErr) {
+    console.error("Socket emit error:", ioErr.message);
   }
 };
 
@@ -163,6 +167,94 @@ const cancelSwapRequest = async (req, res, next) => {
   }
 };
 
+const completeSwapRequest = async (req, res, next) => {
+  try {
+    const swapRequest = await swapService.completeSwapRequest(req.params.id, req.user.id);
+    emitSwapUpdate(req, swapRequest);
+    res.status(200).json({
+      success: true,
+      message: "Completion status updated successfully",
+      data: swapRequest,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const requestCompletion = async (req, res, next) => {
+  try {
+    const swapRequest = await swapService.requestCompletion(req.params.id, req.user.id);
+    emitSwapUpdate(req, swapRequest);
+    res.status(200).json({
+      success: true,
+      message: "Completion request sent to swap partner",
+      data: swapRequest,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const confirmCompletion = async (req, res, next) => {
+  try {
+    const swapRequest = await swapService.confirmCompletion(req.params.id, req.user.id);
+    emitSwapUpdate(req, swapRequest);
+    res.status(200).json({
+      success: true,
+      message: "Swap officially completed!",
+      data: swapRequest,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const cancelCompletionRequest = async (req, res, next) => {
+  try {
+    const swapRequest = await swapService.cancelCompletionRequest(req.params.id, req.user.id);
+    emitSwapUpdate(req, swapRequest);
+    res.status(200).json({
+      success: true,
+      message: "Completion request updated",
+      data: swapRequest,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const leaveSwapRequest = async (req, res, next) => {
+  try {
+    const swapRequest = await swapService.leaveSwapRequest(req.params.id, req.user.id);
+    emitSwapUpdate(req, swapRequest);
+    res.status(200).json({
+      success: true,
+      message: "Left swap successfully",
+      data: swapRequest,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getSwapHistory = async (req, res, next) => {
+  try {
+    const result = await swapService.getSwapHistory(req.user.id, req.query);
+    res.status(200).json({
+      success: true,
+      data: result.swapRequests,
+      meta: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: result.totalPages,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getSwapStats = async (req, res, next) => {
   try {
     const stats = await swapService.getSwapStats(req.user.id);
@@ -184,5 +276,11 @@ module.exports = {
   acceptSwapRequest,
   rejectSwapRequest,
   cancelSwapRequest,
+  completeSwapRequest,
+  requestCompletion,
+  confirmCompletion,
+  cancelCompletionRequest,
+  leaveSwapRequest,
+  getSwapHistory,
   getSwapStats,
 };

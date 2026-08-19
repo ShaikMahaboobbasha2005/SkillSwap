@@ -177,26 +177,24 @@ http://localhost:5173
 
 ### Completed ✅
 
-- ✅ User Authentication 🔐
-- ✅ Profile Management 👤
-- ✅ Skills Management 🧠
-- ✅ Discover Page 🔍
-- ✅ Public Profiles 🌐
-- ✅ Skill Swap Request Creation ✉️
-- ✅ Skill Swap Dashboard 📊
-- ✅ Swap Request Management 🔁
-- ✅ Profile UI Refinements 🎨
+- ✅ User Authentication 🔐 (Phase 2)
+- ✅ Profile Management & Cloudinary Lifecycle 👤 (Phase 3)
+- ✅ Skills Management & Capacity Constraints 🧠 (Phase 4)
+- ✅ Discover Page & Search Filtering 🔍 (Phase 5)
+- ✅ Skill Swap Workflow & Dashboard ✉️ (Phase 6)
+- ✅ Real-time Chat & Conversation Workspace 💬 (Phase 7)
+- ✅ Swap History & Archived Read-Only Chats 📜 (Phase 8.1)
 
-### In Progress 🔄
+### Current Phase 🎯
 
-- 🔄 Portfolio 🗂️
-- 🔄 Ratings & Reviews ⭐
+- 🎯 **Phase 8.2 — Ratings & Reviews**: Submit ratings & reviews for completed swaps, automatic recalculation of user `avgRating`.
 
-### Upcoming ⏳
+### Upcoming Phases ⏳
 
-- ⏳ Chat System 💬
-- ⏳ Notifications 🔔
-- ⏳ Admin Panel 🛠️
+- ⏳ **Phase 9 — Portfolio & Media**: Cloudinary image/video upload grid & lightbox.
+- ⏳ **Phase 10 — Smart Recommendations**: AI candidate ranking & compatibility scoring layer.
+- ⏳ **Phase 11 — Notifications & Polish**: Notification center, micro-animations, design polish.
+- ⏳ **Phase 12 — Testing & Deployment**: Comprehensive API/flow testing & production deployment on Vercel/Render.
 
 ---
 

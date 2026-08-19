@@ -10,9 +10,10 @@ import ProfileSkeleton from "../components/ProfileSkeleton";
 import CompactProfileStats from "../components/profile/CompactProfileStats";
 import AvatarLightboxModal from "../components/profile/AvatarLightboxModal";
 import ProfileCompletionCard from "../components/ProfileCompletionCard";
+import ReviewsSection from "../components/profile/ReviewsSection";
 import ConfirmModal from "../components/ConfirmModal";
 import SkillsSection from "../components/skills/SkillsSection";
-import { Eye, Camera, Edit3, MapPin, Calendar } from "lucide-react";
+import { Eye, Camera, Edit3, MapPin, Calendar, Trash2 } from "lucide-react";
 
 export default function OwnProfile() {
   const { user: authUser, updateUser } = useContext(AuthContext);
@@ -208,7 +209,11 @@ export default function OwnProfile() {
       const uploadRes = await uploadProfilePicture(croppedFile);
       if (uploadRes.success && uploadRes.data?.url) {
         const imageUrl = uploadRes.data.url;
-        const res = await updateOwnProfile({ profilePicture: imageUrl });
+        const publicId = uploadRes.data.publicId || "";
+        const res = await updateOwnProfile({
+          profilePicture: imageUrl,
+          profilePicturePublicId: publicId,
+        });
         if (res.success) {
           setProfile(res.data);
           updateUser(res.data);
@@ -224,6 +229,28 @@ export default function OwnProfile() {
     } finally {
       setUploadingAvatar(false);
       setRawAvatarImageSrc(null);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!profile?.profilePicture) return;
+    setUploadingAvatar(true);
+    setAvatarMenuOpen(false);
+    try {
+      const updateRes = await updateOwnProfile({
+        profilePicture: "",
+        profilePicturePublicId: "",
+      });
+      if (updateRes.success) {
+        setProfile(updateRes.data);
+        updateUser(updateRes.data);
+        showToast("Profile photo removed", "info");
+      }
+    } catch (err) {
+      console.error("Error removing profile photo:", err);
+      showToast("Failed to remove profile photo", "error");
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -436,6 +463,17 @@ export default function OwnProfile() {
                       <Camera className="w-3.5 h-3.5 text-[#1B4332]" />
                       <span>Change Profile Picture</span>
                     </button>
+
+                    {profile?.profilePicture && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveAvatar}
+                        className="w-full px-3.5 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2 cursor-pointer text-left border-t border-[#E6E3DA]/60 mt-0.5 pt-2"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                        <span>Remove Profile Picture</span>
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -677,10 +715,19 @@ export default function OwnProfile() {
           userId={profile?._id}
           isOwner={true}
           showToast={showToast}
-          onSkillsCountChanged={(total) => {
-            // Count offered & wanted skills dynamically
-            setSkillsMeta((prev) => ({ ...prev, total }));
+          onSkillsCountChanged={(countInfo) => {
+            if (typeof countInfo === "object" && countInfo !== null) {
+              setSkillsMeta(countInfo);
+            } else if (typeof countInfo === "number") {
+              setSkillsMeta((prev) => ({ ...prev, total: countInfo }));
+            }
           }}
+        />
+
+        {/* REVIEWS & RATINGS SECTION */}
+        <ReviewsSection
+          userId={profile?._id}
+          avgRating={profile?.avgRating || 0}
         />
 
         {/* PORTFOLIO PLACEHOLDER CARD */}

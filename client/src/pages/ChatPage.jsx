@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import useSocket from "../hooks/useSocket";
 import swapService from "../services/swapService";
@@ -7,11 +7,16 @@ import chatService from "../services/chatService";
 import ChatHeader from "../components/chat/ChatHeader";
 import MessageList from "../components/chat/MessageList";
 import MessageInput from "../components/chat/MessageInput";
+import ConfirmModal from "../components/ConfirmModal";
 import ToastNotification from "../components/ToastNotification";
-import { AlertCircle, ArrowLeft, ShieldAlert } from "lucide-react";
+import { AlertCircle, ArrowLeft, ShieldAlert, Lock, Info, Clock, Sparkles, Check, X } from "lucide-react";
 
-export default function ChatPage({ isEmbedded = false }) {
-  const { swapId } = useParams();
+export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null, allSwaps = null, onSwapChange = null }) {
+  const { swapId: urlSwapId } = useParams();
+  const navigate = useNavigate();
+
+  // effectiveSwapId: prop takes priority (grouped chat), falls back to URL param (direct link)
+  const swapId = propSwapId || urlSwapId;
   const { user } = useAuth();
   const {
     isConnected,
@@ -26,6 +31,8 @@ export default function ChatPage({ isEmbedded = false }) {
     unsubscribeFromStatusUpdates,
     subscribeToMessageDeleted,
     unsubscribeFromMessageDeleted,
+    subscribeToSwapRequests,
+    unsubscribeFromSwapRequests,
   } = useSocket();
 
   const [swap, setSwap] = useState(null);
@@ -37,6 +44,8 @@ export default function ChatPage({ isEmbedded = false }) {
   const [pageError, setPageError] = useState(null); // Permanent access errors
   const [isSending, setIsSending] = useState(false);
   const [replyingTo, setReplyingTo] = useState(null);
+  const [isReadOnly, setIsReadOnly] = useState(false);
+  const [showDeleteHistoryModal, setShowDeleteHistoryModal] = useState(false);
 
   const [toast, setToast] = useState({ show: false, message: "", type: "info" });
 
@@ -182,6 +191,60 @@ export default function ChatPage({ isEmbedded = false }) {
     }
   }, []);
 
+  const handleSwapRequestUpdated = useCallback((updatedSwapData) => {
+    if (!updatedSwapData) return;
+    const updatedId = updatedSwapData._id || updatedSwapData.id;
+    if (updatedId?.toString() === swapId?.toString()) {
+      setSwap(updatedSwapData);
+      if (updatedSwapData.status !== "accepted") {
+        setIsReadOnly(true);
+      } else {
+        setIsReadOnly(false);
+      }
+    }
+  }, [swapId]);
+
+  const handleConfirmCompletionFromChat = async () => {
+    try {
+      const res = await swapService.confirmCompletion(swapId);
+      const updatedSwap = res?.data || res;
+      setSwap(updatedSwap);
+      if (updatedSwap?.status === "completed") {
+        setIsReadOnly(true);
+        setToast({
+          show: true,
+          message: "Swap officially completed!",
+          type: "success",
+        });
+      }
+    } catch (err) {
+      setToast({
+        show: true,
+        message: err.response?.data?.message || "Failed to confirm completion",
+        type: "error",
+      });
+    }
+  };
+
+  const handleCancelCompletionFromChat = async () => {
+    try {
+      const res = await swapService.cancelCompletionRequest(swapId);
+      const updatedSwap = res?.data || res;
+      setSwap(updatedSwap);
+      setToast({
+        show: true,
+        message: "Completion request updated.",
+        type: "info",
+      });
+    } catch (err) {
+      setToast({
+        show: true,
+        message: err.response?.data?.message || "Failed to update completion request",
+        type: "error",
+      });
+    }
+  };
+
   // Predictable Lifecycle for active swapId: Clear state -> SwapDetails -> History -> Subscribe -> Join -> Read -> Ready
   useEffect(() => {
     let isMounted = true;
@@ -195,17 +258,18 @@ export default function ChatPage({ isEmbedded = false }) {
     setInitialUnreadCount(0);
     setIsDividerDismissed(false);
     setReplyingTo(null);
+    setIsReadOnly(false);
     setLoading(true);
 
     const initializeChat = async () => {
       try {
-        // Step 1: Validate SwapRequest details & user access for currentSwapId
-        const swapData = await swapService.getSwapDetails(currentSwapId);
+        // Step 1: Fetch persisted message history first to get swap details & status
+        const historyRes = await chatService.getMessageHistory(currentSwapId);
 
         // Guard against unmounted component or stale user navigation (e.g. A -> B -> C)
         if (!isMounted || activeSwapIdRef.current !== currentSwapId) return;
 
-        const activeSwap = swapData?.data || (swapData?.status ? swapData : null);
+        const activeSwap = historyRes?.swapRequest;
 
         if (!activeSwap) {
           setPageError({
@@ -216,67 +280,54 @@ export default function ChatPage({ isEmbedded = false }) {
           return;
         }
 
-        if (activeSwap.status !== "accepted") {
+        const ALLOWED_STATUSES = ["accepted", "completed", "left"];
+        if (!ALLOWED_STATUSES.includes(activeSwap.status)) {
           setPageError({
             code: "SWAP_NOT_ACCEPTED",
-            message: "Chat is only available for accepted skill swap requests.",
+            message: "Chat is only available for accepted, completed, or ended skill swap requests.",
           });
           setLoading(false);
           return;
         }
 
         setSwap(activeSwap);
+        setIsReadOnly(activeSwap.status !== "accepted");
 
-        // Step 2: Fetch persisted message history for currentSwapId
-        try {
-          const historyRes = await chatService.getMessageHistory(currentSwapId);
-          if (
-            isMounted &&
-            activeSwapIdRef.current === currentSwapId &&
-            historyRes?.success &&
-            Array.isArray(historyRes.data)
-          ) {
-            const historyMsgs = historyRes.data;
+        if (historyRes?.success && Array.isArray(historyRes.data)) {
+          const historyMsgs = historyRes.data;
 
-            // Capture FIRST incoming unread message AND total unread count BEFORE mark-as-read alters status
-            const unreadIncoming = historyMsgs.filter((m) => {
-              const senderId = m.sender?._id || m.sender?.id || m.sender;
-              return (
-                senderId?.toString() !== currentUserId?.toString() &&
-                m.status !== "read" &&
-                !m.isDeleted
-              );
-            });
+          // Capture FIRST incoming unread message AND total unread count BEFORE mark-as-read alters status
+          const unreadIncoming = historyMsgs.filter((m) => {
+            const senderId = m.sender?._id || m.sender?.id || m.sender;
+            return (
+              senderId?.toString() !== currentUserId?.toString() &&
+              m.status !== "read" &&
+              !m.isDeleted
+            );
+          });
 
-            const firstUnread = unreadIncoming.length > 0 ? unreadIncoming[0] : null;
-            const firstUnreadId = firstUnread ? (firstUnread._id || firstUnread.id)?.toString() : null;
+          const firstUnread = unreadIncoming.length > 0 ? unreadIncoming[0] : null;
+          const firstUnreadId = firstUnread ? (firstUnread._id || firstUnread.id)?.toString() : null;
 
-            setInitialUnreadId(firstUnreadId);
-            setInitialUnreadCount(unreadIncoming.length);
-            setIsDividerDismissed(false);
-            setMessages(historyMsgs);
-          }
-        } catch (histErr) {
-          console.error("Failed to load message history:", histErr);
-          if (isMounted && activeSwapIdRef.current === currentSwapId) {
-            setToast({
-              show: true,
-              message: "Could not load complete message history. Real-time chat is active.",
-              type: "warning",
-            });
-          }
+          setInitialUnreadId(firstUnreadId);
+          setInitialUnreadCount(unreadIncoming.length);
+          setIsDividerDismissed(false);
+          setMessages(historyMsgs);
         }
 
-        // Step 3: Register subscribers
+        // Register subscribers
         subscribeToMessages(handleNewMessage);
         subscribeToStatusUpdates(handleStatusUpdate);
         subscribeToMessageDeleted(handleMessageDeleted);
+        subscribeToSwapRequests(handleSwapRequestUpdated);
 
-        // Step 4: Join Socket.io room for currentSwapId
-        try {
-          await joinSwapChat(currentSwapId);
-        } catch (joinErr) {
-          console.warn("Socket room join warning:", joinErr);
+        // Join Socket.io room for currentSwapId (if active)
+        if (activeSwap.status === "accepted") {
+          try {
+            await joinSwapChat(currentSwapId);
+          } catch (joinErr) {
+            console.warn("Socket room join warning:", joinErr);
+          }
         }
 
         if (isMounted && activeSwapIdRef.current === currentSwapId) {
@@ -292,8 +343,13 @@ export default function ChatPage({ isEmbedded = false }) {
           err.message ||
           "Failed to access chat room.";
 
-        if (status === 404 || err.code === "SWAP_NOT_FOUND") {
-          setPageError({ code: "SWAP_NOT_FOUND", message: "Swap request not found." });
+        if (status === 404 || err.code === "SWAP_NOT_FOUND" || err.code === "CHAT_DELETED") {
+          setPageError({
+            code: "SWAP_NOT_FOUND",
+            message: err.code === "CHAT_DELETED"
+              ? "This conversation was removed from your history."
+              : "Swap request not found or has been deleted.",
+          });
         } else if (status === 403 || err.code === "FORBIDDEN") {
           setPageError({
             code: "FORBIDDEN",
@@ -329,6 +385,7 @@ export default function ChatPage({ isEmbedded = false }) {
       unsubscribeFromMessages(handleNewMessage);
       unsubscribeFromStatusUpdates(handleStatusUpdate);
       unsubscribeFromMessageDeleted(handleMessageDeleted);
+      unsubscribeFromSwapRequests(handleSwapRequestUpdated);
     };
   }, [
     swapId,
@@ -343,20 +400,21 @@ export default function ChatPage({ isEmbedded = false }) {
     handleNewMessage,
     handleStatusUpdate,
     handleMessageDeleted,
+    currentUserId
   ]);
 
   const handleSelectReply = useCallback((msg) => {
+    if (isReadOnly) return;
     setReplyingTo(msg);
-  }, []);
+  }, [isReadOnly]);
 
-  // Handle message sending
-  const handleSendMessage = async (content) => {
-    if (!content || isSending || !swapId) return false;
+  // Handle message sending (via Socket.io with REST fallback)
+  const handleSendMessage = async (text, replyToId = null) => {
+    if (!text || !swapId || isSending || isReadOnly) return false;
 
     setIsSending(true);
     try {
-      const replyToId = replyingTo ? (replyingTo._id || replyingTo.id) : null;
-      const response = await sendMessage(swapId, content, replyToId);
+      const response = await sendMessage(swapId, text, replyToId);
 
       // If ACK returned saved message, merge safely if still on same swapId
       if (
@@ -391,7 +449,7 @@ export default function ChatPage({ isEmbedded = false }) {
 
   // Handle message deletion (REST mutation)
   const handleDeleteMessage = async (messageId) => {
-    if (!swapId || !messageId) return false;
+    if (!swapId || !messageId || isReadOnly) return false;
 
     try {
       const response = await deleteMessage(swapId, messageId);
@@ -424,6 +482,30 @@ export default function ChatPage({ isEmbedded = false }) {
         type: "error",
       });
       return false;
+    }
+  };
+
+  // Handle Per-User Archived Chat Deletion
+  const handleDeleteHistory = async () => {
+    if (!swapId || !isReadOnly) return;
+
+    try {
+      await chatService.deleteChatForMe(swapId);
+      setToast({
+        show: true,
+        message: "Conversation removed from your history.",
+        type: "success",
+      });
+      setTimeout(() => {
+        navigate("/swaps?tab=history");
+      }, 500);
+    } catch (err) {
+      console.error("Delete chat history error:", err);
+      setToast({
+        show: true,
+        message: err.response?.data?.message || "Failed to remove conversation from history.",
+        type: "error",
+      });
     }
   };
 
@@ -463,17 +545,31 @@ export default function ChatPage({ isEmbedded = false }) {
 
           <div className="pt-2">
             <Link
-              to="/chats"
+              to="/swaps?tab=history"
               className="w-full py-2.5 px-4 rounded-xl bg-[#1B4332] hover:bg-[#143326] text-white font-bold text-xs sm:text-sm transition-all inline-flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Back to Conversations</span>
+              <span>Back to Swap History</span>
             </Link>
           </div>
         </div>
       </div>
     );
   }
+
+  const endedDateFormatted = swap?.endedAt
+    ? new Date(swap.endedAt).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : swap?.updatedAt
+    ? new Date(swap.updatedAt).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "an earlier date";
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#F7F6F2] text-[#16160F] font-sans antialiased overflow-hidden">
@@ -483,13 +579,105 @@ export default function ChatPage({ isEmbedded = false }) {
         onClose={() => setToast({ show: false, message: "", type: "info" })}
       />
 
+      {/* Delete Chat History Confirmation Modal */}
+      {showDeleteHistoryModal && (
+        <ConfirmModal
+          isOpen={showDeleteHistoryModal}
+          title="Delete Conversation from History?"
+          message="Delete this conversation from your history? This will only remove it for you. Your swap partner will still be able to access their copy."
+          confirmText="Delete for Me"
+          cancelText="Cancel"
+          isDestructive={true}
+          onConfirm={() => {
+            setShowDeleteHistoryModal(false);
+            handleDeleteHistory();
+          }}
+          onCancel={() => setShowDeleteHistoryModal(false)}
+        />
+      )}
+
       {/* Header */}
       <ChatHeader
         swap={swap}
         currentUserId={currentUserId}
         isConnected={isConnected}
         connectionError={connectionError}
+        isReadOnly={isReadOnly}
+        onDeleteHistory={() => setShowDeleteHistoryModal(true)}
+        allSwaps={allSwaps}
+        activeSwapId={swapId}
+        onSwapChange={onSwapChange}
       />
+
+      {/* Completion Request Pending Banner in Active Chat Workspace */}
+      {!isReadOnly && swap?.status === "accepted" && swap?.completionRequestedBy && (
+        <div
+          className={`px-4 py-3 border-b text-xs flex items-center justify-between gap-3 shrink-0 flex-wrap ${
+            String(swap.completionRequestedBy?._id || swap.completionRequestedBy?.id || swap.completionRequestedBy) === String(currentUserId)
+              ? "bg-amber-50 border-amber-200 text-amber-900"
+              : "bg-emerald-50 border-emerald-200 text-emerald-900"
+          }`}
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            {String(swap.completionRequestedBy?._id || swap.completionRequestedBy?.id || swap.completionRequestedBy) === String(currentUserId) ? (
+              <>
+                <Clock className="w-4 h-4 text-amber-600 shrink-0 animate-pulse" />
+                <span className="font-semibold">
+                  Completion request sent. Waiting for partner to confirm.
+                </span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="font-semibold">
+                  {swap.completionRequestedBy?.name || "Your swap partner"} has requested to mark this swap as completed.
+                </span>
+              </>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {String(swap.completionRequestedBy?._id || swap.completionRequestedBy?.id || swap.completionRequestedBy) === String(currentUserId) ? (
+              <button
+                type="button"
+                onClick={handleCancelCompletionFromChat}
+                className="px-3 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded-lg transition-all text-xs cursor-pointer"
+              >
+                Cancel Request
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handleCancelCompletionFromChat}
+                  className="px-3 py-1 bg-zinc-200 hover:bg-zinc-300 text-zinc-800 font-bold rounded-lg transition-all text-xs cursor-pointer"
+                >
+                  Not Yet
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmCompletionFromChat}
+                  className="px-3.5 py-1 bg-[#1B4332] hover:bg-[#143326] text-white font-bold rounded-lg transition-all text-xs cursor-pointer shadow-2xs"
+                >
+                  Confirm Completion
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Read-Only Informational Banner */}
+      {isReadOnly && (
+        <div className="bg-[#E4EEE8] border-b border-[#1B4332]/20 px-4 py-2.5 text-center text-xs font-bold text-[#1B4332] flex items-center justify-center gap-2 shrink-0">
+          <Info className="w-4 h-4 text-[#1B4332] shrink-0" />
+          <span>
+            {swap?.status === "completed"
+              ? `This swap was completed on ${endedDateFormatted}. This conversation is now read-only.`
+              : `This swap ended on ${endedDateFormatted}. This conversation is now read-only.`}
+          </span>
+        </div>
+      )}
 
       {/* Scrollable Message List */}
       <main className="flex-1 flex flex-col min-h-0 w-full">
@@ -502,20 +690,27 @@ export default function ChatPage({ isEmbedded = false }) {
           isDividerDismissed={isDividerDismissed}
           swapId={swapId}
           onMarkMessagesRead={markSwapAsRead}
-          onDeleteMessage={handleDeleteMessage}
-          onSelectReply={handleSelectReply}
+          onDeleteMessage={isReadOnly ? undefined : handleDeleteMessage}
+          onSelectReply={isReadOnly ? undefined : handleSelectReply}
         />
       </main>
 
-      {/* Bottom Message Input Bar */}
-      <MessageInput
-        key={swapId}
-        onSendMessage={handleSendMessage}
-        isSending={isSending}
-        isConnected={isConnected}
-        replyingTo={replyingTo}
-        onCancelReply={() => setReplyingTo(null)}
-      />
+      {/* Bottom Message Input Bar or Read-Only Locked Bar */}
+      {isReadOnly ? (
+        <div className="p-4 bg-white border-t border-[#E6E3DA] text-center text-xs font-semibold text-[#6B6858] flex items-center justify-center gap-2 shrink-0">
+          <Lock className="w-3.5 h-3.5 text-[#6B6858]" />
+          <span>This conversation is read-only because the swap has ended.</span>
+        </div>
+      ) : (
+        <MessageInput
+          key={swapId}
+          onSendMessage={handleSendMessage}
+          isSending={isSending}
+          isConnected={isConnected}
+          replyingTo={replyingTo}
+          onCancelReply={() => setReplyingTo(null)}
+        />
+      )}
     </div>
   );
 }

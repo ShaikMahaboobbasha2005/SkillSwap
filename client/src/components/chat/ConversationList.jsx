@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import NotificationBadge from "../NotificationBadge";
-import { MessageSquareDashed, Sparkles, Search, X } from "lucide-react";
+import { MessageSquareDashed, Sparkles, Search, X, Layers } from "lucide-react";
 
 /**
  * Format timestamp cleanly for conversation list previews
@@ -43,8 +43,8 @@ function formatPreviewTime(dateString) {
 }
 
 export default function ConversationList({
-  conversations = [],
-  activeSwapId,
+  groupedConversations = [],
+  activeUserId,
   loading = false,
   onSelectConversation,
 }) {
@@ -52,21 +52,25 @@ export default function ConversationList({
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
-  const filteredConversations = useMemo(() => {
-    if (!normalizedQuery) return conversations;
+  const filteredGroups = useMemo(() => {
+    if (!normalizedQuery) return groupedConversations;
 
-    return conversations.filter((item) => {
-      const counterpartName = (item.counterpart?.name || "").toLowerCase();
-      const offeredSkill = (item.offeredSkillName || "").toLowerCase();
-      const learnedSkill = (item.learnedSkillName || "").toLowerCase();
+    return groupedConversations.filter((group) => {
+      // Search by counterpart name
+      const counterpartName = (group.counterpart?.name || "").toLowerCase();
+      if (counterpartName.includes(normalizedQuery)) return true;
 
-      return (
-        counterpartName.includes(normalizedQuery) ||
-        offeredSkill.includes(normalizedQuery) ||
-        learnedSkill.includes(normalizedQuery)
-      );
+      // Search across all swap skill names within the group
+      return group.swaps.some((swap) => {
+        const offered = (swap.offeredSkillName || "").toLowerCase();
+        const learned = (swap.learnedSkillName || "").toLowerCase();
+        return (
+          offered.includes(normalizedQuery) ||
+          learned.includes(normalizedQuery)
+        );
+      });
     });
-  }, [conversations, normalizedQuery]);
+  }, [groupedConversations, normalizedQuery]);
 
   if (loading) {
     return (
@@ -87,7 +91,8 @@ export default function ConversationList({
     );
   }
 
-  const hasNoConversationsAtAll = !conversations || conversations.length === 0;
+  const hasNoConversationsAtAll =
+    !groupedConversations || groupedConversations.length === 0;
 
   return (
     <div className="flex-1 flex flex-col min-h-0 w-full overflow-hidden">
@@ -132,34 +137,33 @@ export default function ConversationList({
               Chat becomes available once you have an accepted skill swap.
             </p>
           </div>
-        ) : filteredConversations.length === 0 ? (
+        ) : filteredGroups.length === 0 ? (
           <div className="py-8 flex flex-col items-center justify-center text-center">
             <p className="text-xs font-semibold text-[#6B6858]">
               No conversations found.
             </p>
           </div>
         ) : (
-          filteredConversations.map((item) => {
-            const swapId = item.swapId;
-            const isActive = activeSwapId?.toString() === swapId?.toString();
-            const counterpart = item.counterpart;
+          filteredGroups.map((group) => {
+            const counterpartId = group.counterpartId;
+            const isActive =
+              activeUserId?.toString() === counterpartId?.toString();
+            const counterpart = group.counterpart;
             const counterpartName = counterpart?.name || "Swap Partner";
             const counterpartAvatar = counterpart?.profilePicture;
-            const timeStr = formatPreviewTime(item.lastActivityAt);
-            const lastMsg = item.lastMessage?.isDeleted
+            const timeStr = formatPreviewTime(group.latestActivityAt);
+            const lastMsg = group.latestLastMessage?.isDeleted
               ? "This message was deleted"
-              : item.lastMessage?.content || "No messages yet";
+              : group.latestLastMessage?.content || "No messages yet";
 
-            const skillContext =
-              item.offeredSkillName && item.learnedSkillName
-                ? `${item.offeredSkillName} ↔ ${item.learnedSkillName}`
-                : item.offeredSkillName || item.learnedSkillName || "Skill Swap";
+            const skillContext = group.latestSkillContext || "Skill Swap";
+            const swapCount = group.swaps?.length || 0;
 
             return (
               <Link
-                key={swapId}
-                to={`/swaps/${swapId}/chat`}
-                onClick={() => onSelectConversation?.(swapId)}
+                key={counterpartId}
+                to={`/chats/${counterpartId}`}
+                onClick={() => onSelectConversation?.(counterpartId)}
                 className={`group block p-3 rounded-2xl border transition-all cursor-pointer ${
                   isActive
                     ? "bg-[#E4EEE8] border-[#1B4332]/30 shadow-2xs"
@@ -192,6 +196,16 @@ export default function ConversationList({
                         <span className="truncate">{skillContext}</span>
                       </div>
 
+                      {/* Swap count indicator for multi-swap users */}
+                      {swapCount > 1 && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <Layers className="w-2.5 h-2.5 text-[#6B6858] shrink-0" />
+                          <span className="text-[10px] text-[#6B6858] font-medium">
+                            {swapCount} swaps
+                          </span>
+                        </div>
+                      )}
+
                       <p className="text-[11px] text-[#6B6858] truncate mt-0.5 max-w-[170px]">
                         {lastMsg}
                       </p>
@@ -204,8 +218,11 @@ export default function ConversationList({
                         {timeStr}
                       </span>
                     )}
-                    {item.unreadCount > 0 && (
-                      <NotificationBadge count={item.unreadCount} variant="inline" />
+                    {group.totalUnreadCount > 0 && (
+                      <NotificationBadge
+                        count={group.totalUnreadCount}
+                        variant="inline"
+                      />
                     )}
                   </div>
                 </div>

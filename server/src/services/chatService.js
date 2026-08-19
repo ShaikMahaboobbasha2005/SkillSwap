@@ -15,10 +15,16 @@ const validateSwapId = (swapId) => {
   }
 };
 
-const verifyAcceptedSwapParticipant = async (swapId, userId) => {
+const verifySwapParticipantForChat = async (swapId, userId, options = { requireActive: false }) => {
   validateSwapId(swapId);
 
-  const swapRequest = await SwapRequest.findById(swapId);
+  const swapRequest = await SwapRequest.findById(swapId)
+    .populate("fromUser", USER_POPULATE_FIELDS)
+    .populate("toUser", USER_POPULATE_FIELDS)
+    .populate("offeredSkill", SKILL_POPULATE_FIELDS)
+    .populate("wantedSkill", SKILL_POPULATE_FIELDS)
+    .populate("leftBy", USER_POPULATE_FIELDS);
+
   if (!swapRequest) {
     const error = new Error("Swap request not found.");
     error.statusCode = 404;
@@ -26,15 +32,8 @@ const verifyAcceptedSwapParticipant = async (swapId, userId) => {
     throw error;
   }
 
-  if (swapRequest.status !== "accepted") {
-    const error = new Error("Chat is only available for accepted swap requests.");
-    error.statusCode = 403;
-    error.code = "SWAP_NOT_ACCEPTED";
-    throw error;
-  }
-
-  const isSender = swapRequest.fromUser.toString() === userId.toString();
-  const isReceiver = swapRequest.toUser.toString() === userId.toString();
+  const isSender = swapRequest.fromUser._id.toString() === userId.toString();
+  const isReceiver = swapRequest.toUser._id.toString() === userId.toString();
 
   if (!isSender && !isReceiver) {
     const error = new Error("Access denied. You are not a participant in this swap request.");
@@ -43,11 +42,42 @@ const verifyAcceptedSwapParticipant = async (swapId, userId) => {
     throw error;
   }
 
+  // Security Rule 6: Check if conversation has been deleted from history by current user
+  if (
+    Array.isArray(swapRequest.chatDeletedFor) &&
+    swapRequest.chatDeletedFor.some((id) => id.toString() === userId.toString())
+  ) {
+    const error = new Error("Conversation removed from your history or not found.");
+    error.statusCode = 404;
+    error.code = "CHAT_DELETED";
+    throw error;
+  }
+
+  const ALLOWED_READ_STATUSES = ["accepted", "completed", "left"];
+  if (!ALLOWED_READ_STATUSES.includes(swapRequest.status)) {
+    const error = new Error("Chat history is not available for this swap request status.");
+    error.statusCode = 403;
+    error.code = "SWAP_NOT_ACCEPTED";
+    throw error;
+  }
+
+  // Backend write protection: Message posting requires active accepted status
+  if (options.requireActive && swapRequest.status !== "accepted") {
+    const error = new Error("This swap has ended and the conversation is now read-only.");
+    error.statusCode = 403;
+    error.code = "READ_ONLY";
+    throw error;
+  }
+
   return swapRequest;
 };
 
+const verifyAcceptedSwapParticipant = async (swapId, userId) => {
+  return await verifySwapParticipantForChat(swapId, userId, { requireActive: true });
+};
+
 const getMessagesBySwapId = async (swapId, userId, queryParams = {}) => {
-  await verifyAcceptedSwapParticipant(swapId, userId);
+  const swapRequest = await verifySwapParticipantForChat(swapId, userId, { requireActive: false });
 
   const page = Math.max(1, parseInt(queryParams.page, 10) || 1);
   const limit = Math.max(1, Math.min(100, parseInt(queryParams.limit, 10) || 50));
@@ -75,6 +105,8 @@ const getMessagesBySwapId = async (swapId, userId, queryParams = {}) => {
 
   return {
     messages,
+    swapRequest,
+    isReadOnly: swapRequest.status !== "accepted",
     total,
     page,
     limit,
@@ -83,7 +115,7 @@ const getMessagesBySwapId = async (swapId, userId, queryParams = {}) => {
 };
 
 const saveMessage = async ({ swapId, senderId, content, replyTo = null, status = "sent" }) => {
-  await verifyAcceptedSwapParticipant(swapId, senderId);
+  await verifySwapParticipantForChat(swapId, senderId, { requireActive: true });
 
   const trimmedContent = (content || "").trim();
   if (!trimmedContent) {
@@ -154,10 +186,11 @@ const saveMessage = async ({ swapId, senderId, content, replyTo = null, status =
 };
 
 const getConversations = async (userId) => {
-  // Find all accepted swap requests involving the current user
+  // Find all active accepted swap requests where user has not deleted chat from history
   const acceptedSwaps = await SwapRequest.find({
     status: "accepted",
     $or: [{ fromUser: userId }, { toUser: userId }],
+    chatDeletedFor: { $ne: userId },
   })
     .populate("fromUser", USER_POPULATE_FIELDS)
     .populate("toUser", USER_POPULATE_FIELDS)
@@ -222,6 +255,7 @@ const getUnreadConversationCount = async (userId) => {
   const acceptedSwaps = await SwapRequest.find({
     status: "accepted",
     $or: [{ fromUser: userId }, { toUser: userId }],
+    chatDeletedFor: { $ne: userId },
   }).select("_id");
 
   const swapIds = acceptedSwaps.map((s) => s._id);
@@ -242,6 +276,7 @@ const getUnreadCounts = async (userId) => {
   const acceptedSwaps = await SwapRequest.find({
     status: "accepted",
     $or: [{ fromUser: userId }, { toUser: userId }],
+    chatDeletedFor: { $ne: userId },
   }).select("_id");
 
   const swapIds = acceptedSwaps.map((s) => s._id);
@@ -479,9 +514,52 @@ const markMessagesAsDeliveredForUser = async (userId) => {
   return { modifiedCount: result.modifiedCount, deliveredAt: now };
 };
 
+const deleteChatHistoryForUser = async (swapId, userId) => {
+  validateSwapId(swapId);
+
+  const swapRequest = await SwapRequest.findById(swapId);
+  if (!swapRequest) {
+    const error = new Error("Swap request not found.");
+    error.statusCode = 404;
+    error.code = "SWAP_NOT_FOUND";
+    throw error;
+  }
+
+  const isSender = swapRequest.fromUser.toString() === userId.toString();
+  const isReceiver = swapRequest.toUser.toString() === userId.toString();
+
+  if (!isSender && !isReceiver) {
+    const error = new Error("Access denied. You are not a participant in this swap request.");
+    error.statusCode = 403;
+    error.code = "FORBIDDEN";
+    throw error;
+  }
+
+  // Security Rule 6: Per-user history deletion is only allowed for archived/ended swaps
+  const ARCHIVED_STATUSES = ["completed", "left", "cancelled"];
+  if (!ARCHIVED_STATUSES.includes(swapRequest.status)) {
+    const error = new Error("Active chats cannot be deleted from history until the swap is completed or left.");
+    error.statusCode = 400;
+    error.code = "ACTIVE_CHAT_NOT_DELETABLE";
+    throw error;
+  }
+
+  // Idempotent $addToSet: Adds userId to chatDeletedFor array without duplication
+  await SwapRequest.findByIdAndUpdate(swapId, {
+    $addToSet: { chatDeletedFor: userId },
+  });
+
+  return {
+    success: true,
+    message: "Conversation deleted from your history.",
+    swapId,
+  };
+};
+
 module.exports = {
   validateSwapId,
   verifyAcceptedSwapParticipant,
+  verifySwapParticipantForChat,
   getMessagesBySwapId,
   saveMessage,
   getConversations,
@@ -490,5 +568,6 @@ module.exports = {
   getTotalUnreadCount,
   markMessagesAsRead,
   deleteMessage,
+  deleteChatHistoryForUser,
   markMessagesAsDeliveredForUser,
 };

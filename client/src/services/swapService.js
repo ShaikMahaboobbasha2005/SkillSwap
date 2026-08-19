@@ -96,7 +96,67 @@ export const cancelSwap = async (id) => {
 };
 
 /**
- * Fetch swap statistics summary (counts for pending, accepted, rejected, cancelled).
+ * Complete an accepted swap request (Participant only).
+ * @param {string} id - Swap request ID
+ * @returns {Promise<Object>} API response data
+ */
+export const completeSwap = async (id) => {
+  const response = await api.patch(`/swaps/${id}/complete`);
+  return response.data;
+};
+
+/**
+ * Request completion of an accepted swap request.
+ * @param {string} id - Swap request ID
+ * @returns {Promise<Object>} API response data
+ */
+export const requestCompletion = async (id) => {
+  const response = await api.patch(`/swaps/${id}/request-completion`);
+  return response.data;
+};
+
+/**
+ * Confirm completion of an accepted swap request.
+ * @param {string} id - Swap request ID
+ * @returns {Promise<Object>} API response data
+ */
+export const confirmCompletion = async (id) => {
+  const response = await api.patch(`/swaps/${id}/confirm-completion`);
+  return response.data;
+};
+
+/**
+ * Cancel/Decline a pending completion request for an accepted swap.
+ * @param {string} id - Swap request ID
+ * @returns {Promise<Object>} API response data
+ */
+export const cancelCompletionRequest = async (id) => {
+  const response = await api.patch(`/swaps/${id}/cancel-completion-request`);
+  return response.data;
+};
+
+/**
+ * Leave an ongoing accepted swap request (Participant only).
+ * @param {string} id - Swap request ID
+ * @returns {Promise<Object>} API response data
+ */
+export const leaveSwap = async (id) => {
+  const response = await api.patch(`/swaps/${id}/leave`);
+  return response.data;
+};
+
+/**
+ * Fetch swap history for the current user (completed, left, cancelled).
+ * @param {Object} [params] - { page, limit, status }
+ * @returns {Promise<Object>} API response data
+ */
+export const getSwapHistory = async (params = {}) => {
+  const response = await api.get("/swaps/history", { params: cleanParams(params) });
+  return response.data;
+};
+
+/**
+ * Fetch swap statistics summary (counts for pending, accepted, rejected, cancelled, completed, left).
  * @returns {Promise<Object>} API response data
  */
 export const getSwapStats = async () => {
@@ -113,6 +173,12 @@ const swapService = {
   acceptSwap,
   rejectSwap,
   cancelSwap,
+  completeSwap,
+  requestCompletion,
+  confirmCompletion,
+  cancelCompletionRequest,
+  leaveSwap,
+  getSwapHistory,
   getSwapStats,
 };
 

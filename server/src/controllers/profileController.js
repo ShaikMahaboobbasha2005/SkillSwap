@@ -44,12 +44,13 @@ const uploadImage = async (req, res, next) => {
       });
     }
 
-    const imageUrl = await uploadToCloudinary(req.file.buffer, req.file.mimetype);
+    const { url, publicId } = await uploadToCloudinary(req.file.buffer, req.file.mimetype);
 
     res.status(200).json({
       success: true,
       data: {
-        url: imageUrl,
+        url,
+        publicId,
       },
     });
   } catch (error) {

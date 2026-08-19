@@ -27,7 +27,7 @@ if (isCloudinaryConfigured()) {
  * Upload buffer directly to Cloudinary
  * @param {Buffer} fileBuffer
  * @param {String} mimeType
- * @returns {Promise<String>} Cloudinary secure URL
+ * @returns {Promise<{url: String, publicId: String}>} Cloudinary secure URL and public_id
  */
 const uploadToCloudinary = (fileBuffer, mimeType = "image/jpeg") => {
   return new Promise((resolve, reject) => {
@@ -51,7 +51,10 @@ const uploadToCloudinary = (fileBuffer, mimeType = "image/jpeg") => {
           uploadErr.statusCode = 500;
           return reject(uploadErr);
         }
-        resolve(result.secure_url);
+        resolve({
+          url: result.secure_url,
+          publicId: result.public_id,
+        });
       }
     );
 
@@ -59,8 +62,84 @@ const uploadToCloudinary = (fileBuffer, mimeType = "image/jpeg") => {
   });
 };
 
+/**
+ * Safely delete an asset from Cloudinary using its public_id.
+ * Non-blocking, returns success status object.
+ *
+ * @param {String} publicId
+ * @param {Object} options
+ * @returns {Promise<{success: boolean, result?: any, error?: any}>}
+ */
+const deleteFromCloudinary = (publicId, options = {}) => {
+  return new Promise((resolve) => {
+    if (!publicId || typeof publicId !== "string" || !isCloudinaryConfigured()) {
+      return resolve({ success: false, message: "Cloudinary not configured or invalid publicId" });
+    }
+
+    cloudinary.uploader.destroy(
+      publicId,
+      { resource_type: "image", invalidate: true, ...options },
+      (error, result) => {
+        if (error) {
+          console.error(`[Cloudinary Cleanup Error] Failed to destroy publicId '${publicId}':`, error.message);
+          return resolve({ success: false, error });
+        }
+        if (result?.result !== "ok") {
+          console.warn(`[Cloudinary Cleanup Warning] Destroy '${publicId}' returned result:`, result?.result);
+        } else {
+          console.log(`[Cloudinary Cleanup Success] Destroyed asset '${publicId}'`);
+        }
+        resolve({ success: true, result });
+      }
+    );
+  });
+};
+
+/**
+ * Safely extracts public_id from a Cloudinary URL for legacy records.
+ * Returns null if the URL is non-Cloudinary, shared default, or ambiguous.
+ *
+ * @param {String} url
+ * @returns {String|null}
+ */
+const extractPublicIdFromUrl = (url) => {
+  if (!url || typeof url !== "string") return null;
+  const lowerUrl = url.toLowerCase();
+
+  // Never attempt deletion on static, default, or placeholder assets
+  if (
+    lowerUrl.includes("default") ||
+    lowerUrl.includes("placeholder") ||
+    lowerUrl.includes("ui-avatars")
+  ) {
+    return null;
+  }
+
+  // Must unambiguously belong to Cloudinary and the skillswap/profiles/ folder
+  if (!lowerUrl.includes("cloudinary.com") || !lowerUrl.includes("skillswap/profiles/")) {
+    return null;
+  }
+
+  try {
+    const profileIdx = url.indexOf("skillswap/profiles/");
+    if (profileIdx === -1) return null;
+
+    const pathAfterFolder = url.substring(profileIdx);
+    const cleanPath = pathAfterFolder.split("?")[0].split("#")[0];
+    const lastDotIdx = cleanPath.lastIndexOf(".");
+    if (lastDotIdx === -1) return null;
+
+    const publicId = cleanPath.substring(0, lastDotIdx);
+    return publicId || null;
+  } catch (err) {
+    return null;
+  }
+};
+
 module.exports = {
   cloudinary,
   isCloudinaryConfigured,
   uploadToCloudinary,
+  deleteFromCloudinary,
+  extractPublicIdFromUrl,
 };

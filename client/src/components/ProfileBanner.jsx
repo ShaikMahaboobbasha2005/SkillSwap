@@ -73,9 +73,13 @@ export default function ProfileBanner({
       }
 
       const newBannerUrl = uploadRes.data.url;
+      const newBannerPublicId = uploadRes.data.publicId || "";
 
       // 2. Save profile immediately
-      const updateRes = await updateOwnProfile({ profileBanner: newBannerUrl });
+      const updateRes = await updateOwnProfile({
+        profileBanner: newBannerUrl,
+        profileBannerPublicId: newBannerPublicId,
+      });
       if (updateRes.success) {
         if (onBannerUpdated) onBannerUpdated(updateRes.data);
         if (showToast) showToast("Profile banner updated successfully", "success");
@@ -94,7 +98,10 @@ export default function ProfileBanner({
     setUploading(true);
     setMenuOpen(false);
     try {
-      const updateRes = await updateOwnProfile({ profileBanner: "" });
+      const updateRes = await updateOwnProfile({
+        profileBanner: "",
+        profileBannerPublicId: "",
+      });
       if (updateRes.success) {
         if (onBannerUpdated) onBannerUpdated(updateRes.data);
         if (showToast) showToast("Banner removed", "info");
