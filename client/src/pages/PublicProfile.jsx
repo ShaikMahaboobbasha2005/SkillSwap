@@ -7,6 +7,7 @@ import ProfileBanner from "../components/ProfileBanner";
 import CompactProfileStats from "../components/profile/CompactProfileStats";
 import AvatarLightboxModal from "../components/profile/AvatarLightboxModal";
 import ReviewsSection from "../components/profile/ReviewsSection";
+import PortfolioSection from "../components/profile/PortfolioSection";
 import SkillsSection from "../components/skills/SkillsSection";
 import SwapRequestModal from "../components/swaps/SwapRequestModal";
 import useAuth from "../hooks/useAuth";
@@ -246,28 +247,18 @@ export default function PublicProfile() {
           }}
         />
 
+        {/* PORTFOLIO SECTION */}
+        <PortfolioSection
+          isOwner={false}
+          userId={profile._id}
+          userName={profile.name}
+        />
+
         {/* REVIEWS & RATINGS SECTION */}
         <ReviewsSection
           userId={profile._id}
           avgRating={profile?.avgRating || 0}
         />
-
-        {/* PORTFOLIO PLACEHOLDER CARD */}
-        <div className="bg-white rounded-2xl border border-[#E6E3DA] p-6 text-center shadow-xs hover:shadow-md transition-all">
-          <div className="max-w-md mx-auto py-2 flex flex-col items-center">
-            <div className="w-12 h-12 rounded-2xl bg-[#E4EEE8] border border-[#1B4332]/20 flex items-center justify-center text-xl text-[#1B4332] mb-3 shadow-2xs">
-              🎨
-            </div>
-            <h3 className="text-sm font-bold text-[#16160F]">Portfolio Grid</h3>
-            <p className="text-xs text-[#6B6858] mt-1 max-w-sm">
-              Showcase photos, project media, and proof of work demonstrating your skill expertise.
-            </p>
-            <div className="mt-4 px-4 py-1.5 bg-[#F7F6F2] border border-[#E6E3DA] text-[11px] font-bold text-[#1B4332] rounded-full tracking-wide inline-flex items-center gap-1.5 shadow-2xs">
-              <span>✨</span>
-              <span>Portfolio Grid — Coming Soon</span>
-            </div>
-          </div>
-        </div>
 
       </main>
 

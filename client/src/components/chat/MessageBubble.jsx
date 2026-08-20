@@ -83,9 +83,11 @@ export default function MessageBubble({
     }
   };
 
+  const hasAvailableActions = Boolean(onSelectReply || (isMine && onDeleteMessage));
+
   // Mobile Touch Gesture Handlers
   const handleTouchStart = (e) => {
-    if (isDeleted) return;
+    if (isDeleted || !hasAvailableActions) return;
     const touch = e.touches[0];
     if (!touch) return;
 
@@ -113,7 +115,7 @@ export default function MessageBubble({
   };
 
   const handleTouchMove = (e) => {
-    if (isDeleted || isGestureCancelledRef.current) return;
+    if (isDeleted || !hasAvailableActions || isGestureCancelledRef.current) return;
     const touch = e.touches[0];
     if (!touch) return;
 
@@ -147,7 +149,7 @@ export default function MessageBubble({
 
   const handleTouchEnd = () => {
     clearLongPressTimer();
-    if (isDeleted) return;
+    if (isDeleted || !hasAvailableActions) return;
 
     if (dragX >= 50 && !isGestureCancelledRef.current) {
       if (typeof onSelectReply === "function") {
@@ -173,7 +175,7 @@ export default function MessageBubble({
 
   // Render Desktop contextual action control (⋮ button + dropdown) - HIDDEN ON MOBILE (sm:block)
   const renderDesktopActionMenu = () => {
-    if (isDeleted) return null;
+    if (isDeleted || !hasAvailableActions) return null;
 
     return (
       <div className="hidden sm:block relative shrink-0" ref={menuRef}>

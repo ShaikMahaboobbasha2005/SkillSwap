@@ -75,7 +75,7 @@ Avatar:  fully circular
 
 **Cards** (Linear) — flat surface, 1px `border` token, consistent internal padding, no heavy drop shadows; hover state is a subtle border-color shift, not elevation.
 
-**Profile Page** (GitHub + LinkedIn layout) — pfp + name + location at top, stats row (avg rating, completed swaps) beneath, skills-offered/wanted as tag lists, portfolio grid at the bottom.
+**Profile Page** (GitHub + LinkedIn layout) — pfp + name + location at top, stats row (avg rating, completed swaps) beneath, independent collapsible skills-offered/wanted sections (initially displaying first 2 cards with header chevron and dynamic `+X more skills` / `Show less` toggles when ≥3 skills), portfolio preview section (`PortfolioSection`), and reviews & ratings list (`ReviewsSection`).
 
 **Search** (Airbnb layout) — persistent filter bar at top (skill search input), result cards in a responsive grid below, card shows pfp, name, location, top skills, rating.
 

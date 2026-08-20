@@ -10,8 +10,10 @@ import Home from "./pages/Home";
 import DiscoverPage from "./pages/DiscoverPage";
 import OwnProfile from "./pages/OwnProfile";
 import PublicProfile from "./pages/PublicProfile";
+import PortfolioPage from "./pages/PortfolioPage";
 import SwapRequestsPage from "./pages/SwapRequestsPage";
 import ChatsPage from "./pages/ChatsPage";
+import ChatPage from "./pages/ChatPage";
 
 function App() {
   return (
@@ -21,10 +23,12 @@ function App() {
         <SocketProvider>
           <SwapProvider>
             <Routes>
-              {/* Public Auth Routes */}
+              {/* Public Auth & User Routes */}
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/users/:id" element={<PublicProfile />} />
+              <Route path="/portfolio/user/:userId" element={<PortfolioPage />} />
+              <Route path="/portfolio/:userId" element={<PortfolioPage />} />
 
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
@@ -33,8 +37,9 @@ function App() {
                 <Route path="/swaps" element={<SwapRequestsPage />} />
                 <Route path="/chats" element={<ChatsPage />} />
                 <Route path="/chats/:userId" element={<ChatsPage />} />
-                <Route path="/swaps/:swapId/chat" element={<ChatsPage />} />
+                <Route path="/swaps/:swapId/chat" element={<ChatPage />} />
                 <Route path="/profile" element={<OwnProfile />} />
+                <Route path="/portfolio" element={<PortfolioPage />} />
               </Route>
 
               {/* Fallback route */}

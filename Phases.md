@@ -113,7 +113,7 @@
       - Clicking `[ Not Yet ]` or `[ Cancel Request ]` clears `completionRequestedBy` while keeping swap status `"accepted"`.
     - Created MongoDB `Notification` model, service, controllers, and `/api/notifications` routes.
     - Active chats page (`/chats`) filtered strictly to `accepted` swaps where `chatDeletedFor` does not include user.
-    - Archived read-only chat access (`/swaps/:swapId/chat`) for `completed` and `left` swaps with read-only banner ("This swap was completed/ended on [date]"), disabled message composer/write actions, and backend write protection.
+    - Archived read-only chat access (`/swaps/:swapId/chat`) as a standalone conversation (without active chats sidebar) for `completed` and `left` swaps with read-only banner ("This swap was completed/ended on [date]"), disabled message composer/write actions, back navigation to Swap History, and backend write protection.
     - Swap History API (`GET /api/swaps/history`) with sub-filtering (`completed`, `left`, `cancelled`) and pagination.
     - Per-user history deletion (`DELETE /api/chat/:swapId/history` appending `userId` to `chatDeletedFor`).
     - Swap Requests UI with 3 main tabs (`[ Incoming Requests ] [ Outgoing Requests ] [ Swap History ]`), responsive 2-column desktop/tablet grid layout (`grid-cols-1 md:grid-cols-2`), priority status sorting (`accepted` → `pending` → `completed` → `rejected` → `cancelled`), per-user list hiding (`hiddenFor` array via `PATCH /api/swaps/:id/hide` with confirmation modal), status sub-filters synced to URL (`?tab=history&status=...`), and status badges (`StatusBadge`).
@@ -144,12 +144,25 @@
 
 ## Phase 9 — Portfolio & Media
 - **Goal:** Enable portfolio uploads to display user work samples.
-- **Features:**
-  - Cloudinary uploads integration
-  - Image and short video support
-  - Interactive portfolio grid
-  - Full-screen media viewer / lightbox
-- **Done =** Users can showcase their work.
+- **Sub-Phases:**
+  - **Phase 9.1 — Portfolio Backend & Cloudinary Foundation (Completed):**
+    - Created `Portfolio` Mongoose model (`user`, `media: { url, publicId, type, thumbnailUrl, duration }`, `caption`, `skill`, `moderationStatus`, `reportCount`).
+    - Cloudinary configuration extended with `uploadPortfolioToCloudinary` for images (`skillswap/portfolio/images`) and videos (`skillswap/portfolio/videos`).
+    - Multer middleware `handlePortfolioUploadMiddleware` configured for images (jpg, jpeg, png, webp ≤ 10MB) and videos (mp4, webm ≤ 50MB).
+    - Portfolio limits enforced: max 20 images, 10 videos, 30 total items per user.
+    - Video duration validation enforced: max 60 seconds with immediate Cloudinary media cleanup on violation.
+    - Full CRUD API routes mounted at `/api/portfolio` (`POST /`, `GET /user/:userId`, `GET /:id`, `PATCH /:id`, `DELETE /:id`).
+    - Ownership verification, linked skill ownership check, and moderation-ready schema fields.
+  - **Phase 9.2 — Portfolio Frontend & Grid (Completed):**
+    - Created `PortfolioSection.jsx` compact profile preview with up to 3 thumbnails, video play badges, and "View all →" entry point on own and public profiles.
+    - Created dedicated `PortfolioPage.jsx` route (`/portfolio` and `/portfolio/user/:userId`) with 3-column desktop / 2-column mobile grid, filter tabs (`All`, `Images`, `Videos`), and header info.
+    - Created `PortfolioCard.jsx` with square aspect ratio, video play badges, linked skill pill overlays, and hover owner actions.
+    - Created full-screen `PortfolioLightbox.jsx` media viewer with native video controls, previous/next keyboard and click navigation, caption display, and body scroll lock.
+    - Created `PortfolioUploadModal.jsx` with drag-and-drop file upload, client-side format/size/duration and portfolio count checks, optional caption (500 chars), and optional skill link.
+    - Created `PortfolioEditModal.jsx` for caption and linked skill editing.
+    - Implemented permanent delete with `ConfirmModal` and clear explanation.
+    - Preserved independent collapsible skills sections on Profile pages.
+- **Done =** Users can showcase their work with image and video media uploads, view work samples in full-screen lightbox, and manage portfolio items.
 
 ## Phase 10 — Smart Recommendations
 - **Goal:** Enhance candidate matching using an intelligent AI recommendation layer.

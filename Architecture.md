@@ -77,7 +77,8 @@ Client → `/auth/login` → controller verifies credentials → issues JWT → 
 `matchingService` runs rule-based overlap (skills-offered ∩ target's skills-wanted, and vice versa) → returns a candidate list → `aiRecommendationService` re-scores and re-orders that same candidate list by compatibility → combined ranked result returned to client. AI never runs independently of the traditional match set — it's a ranking layer on top, not a replacement.
 
 **Swap Request → Chat**
-Swap request accepted → a `chatRoom` is created/linked between the two users → Socket.io room joined by both clients → messages persist to `Message` collection and broadcast in real time.
+- **Active Chats (`/chats` & `/chats/:userId`):** Swap request accepted → appears in active conversations list (`/chats`). Multi-swap conversations with the same counterpart are grouped by counterpart user ID with the `SwapSelector` dropdown. Socket.io room (`swap:<swapId>`) joined for real-time messaging, read receipts, and live typing.
+- **Historical Read-Only Chats (`/swaps/:swapId/chat`):** When a swap is `completed` or `left`, it is archived and removed from active `/chats`. Historical conversations remain directly accessible via `/swaps/:swapId/chat` as a standalone read-only view without the active conversation sidebar. Write operations and message composers are disabled while full message history, date separators, counterpart details, and history deletion (`chatDeletedFor`) remain accessible.
 
 **Session Completion → Rating**
 Either user marks the swap complete → triggers a notification to the other party → both users can submit a rating tied to that swap → `User.avgRating` and `User.completedSwaps` are recalculated (not manually editable fields).

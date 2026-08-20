@@ -23,7 +23,8 @@ const verifySwapParticipantForChat = async (swapId, userId, options = { requireA
     .populate("toUser", USER_POPULATE_FIELDS)
     .populate("offeredSkill", SKILL_POPULATE_FIELDS)
     .populate("wantedSkill", SKILL_POPULATE_FIELDS)
-    .populate("leftBy", USER_POPULATE_FIELDS);
+    .populate("leftBy", USER_POPULATE_FIELDS)
+    .populate("completionRequestedBy", USER_POPULATE_FIELDS);
 
   if (!swapRequest) {
     const error = new Error("Swap request not found.");
@@ -32,8 +33,11 @@ const verifySwapParticipantForChat = async (swapId, userId, options = { requireA
     throw error;
   }
 
-  const isSender = swapRequest.fromUser._id.toString() === userId.toString();
-  const isReceiver = swapRequest.toUser._id.toString() === userId.toString();
+  const fromUserId = (swapRequest.fromUser?._id || swapRequest.fromUser)?.toString();
+  const toUserId = (swapRequest.toUser?._id || swapRequest.toUser)?.toString();
+
+  const isSender = fromUserId && fromUserId === userId.toString();
+  const isReceiver = toUserId && toUserId === userId.toString();
 
   if (!isSender && !isReceiver) {
     const error = new Error("Access denied. You are not a participant in this swap request.");

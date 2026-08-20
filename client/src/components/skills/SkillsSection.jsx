@@ -3,6 +3,7 @@ import SkillCard from "./SkillCard";
 import SkillModal from "./SkillModal";
 import DeleteSkillDialog from "./DeleteSkillDialog";
 import EmptyState from "../EmptyState";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import {
   getOwnSkills,
   getUserActiveSkills,
@@ -16,6 +17,7 @@ export default function SkillsSection({
   isOwner = false,
   showToast,
   onSkillsCountChanged,
+  onSkillsLoaded,
 }) {
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,6 +51,7 @@ export default function SkillsSection({
       if (res && res.success && Array.isArray(res.data)) {
         setSkills(res.data);
         notifySkillsCount(res.data);
+        if (onSkillsLoaded) onSkillsLoaded(res.data);
       }
     } catch (err) {
       console.error("Failed to load skills:", err);
@@ -97,6 +100,7 @@ export default function SkillsSection({
           const updatedSkills = skills.map((s) => (s._id === res.data._id ? res.data : s));
           setSkills(updatedSkills);
           notifySkillsCount(updatedSkills);
+          if (onSkillsLoaded) onSkillsLoaded(updatedSkills);
           if (showToast) showToast("Skill updated successfully", "success");
           setShowModal(false);
           setSelectedSkill(null);
@@ -108,6 +112,7 @@ export default function SkillsSection({
           const updatedSkills = [res.data, ...skills];
           setSkills(updatedSkills);
           notifySkillsCount(updatedSkills);
+          if (onSkillsLoaded) onSkillsLoaded(updatedSkills);
           if (showToast) showToast("Skill added successfully", "success");
           setShowModal(false);
           setSelectedSkill(null);
@@ -136,6 +141,7 @@ export default function SkillsSection({
         const updatedSkills = skills.filter((s) => s._id !== skillToDelete._id);
         setSkills(updatedSkills);
         notifySkillsCount(updatedSkills);
+        if (onSkillsLoaded) onSkillsLoaded(updatedSkills);
         if (showToast) showToast("Skill deleted successfully", "info");
       }
     } catch (err) {
@@ -148,8 +154,22 @@ export default function SkillsSection({
     }
   };
 
+  // Independent expand/collapse state
+  const [offeredExpanded, setOfferedExpanded] = useState(false);
+  const [wantedExpanded, setWantedExpanded] = useState(false);
+
   const offeredSkills = skills.filter((s) => s.type === "Offer");
   const wantedSkills = skills.filter((s) => s.type === "Learn");
+
+  const visibleOfferedSkills = offeredExpanded || offeredSkills.length <= 2
+    ? offeredSkills
+    : offeredSkills.slice(0, 2);
+  const hiddenOfferedCount = offeredSkills.length - 2;
+
+  const visibleWantedSkills = wantedExpanded || wantedSkills.length <= 2
+    ? wantedSkills
+    : wantedSkills.slice(0, 2);
+  const hiddenWantedCount = wantedSkills.length - 2;
 
   if (loading) {
     return (
@@ -233,6 +253,21 @@ export default function SkillsSection({
                     <span>+ Add</span>
                   </button>
                 )}
+                {offeredSkills.length >= 3 && (
+                  <button
+                    type="button"
+                    onClick={() => setOfferedExpanded((prev) => !prev)}
+                    className="h-7 w-7 rounded-lg text-[#6B6858] hover:text-[#16160F] hover:bg-[#F7F6F2] border border-transparent hover:border-[#E6E3DA] transition-all flex items-center justify-center cursor-pointer"
+                    title={offeredExpanded ? "Show fewer skills" : "Show all skills"}
+                    aria-label={offeredExpanded ? "Collapse skills offered" : "Expand skills offered"}
+                  >
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        offeredExpanded ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                )}
               </div>
             </div>
             <p className="text-[11px] text-[#6B6858] mb-2">Skills available to teach and mentor other members</p>
@@ -243,16 +278,40 @@ export default function SkillsSection({
             )}
 
             {offeredSkills.length > 0 ? (
-              <div className="grid grid-cols-1 gap-3 animate-fadeIn">
-                {offeredSkills.map((skill) => (
-                  <SkillCard
-                    key={skill._id}
-                    skill={skill}
-                    isOwner={isOwner}
-                    onEdit={handleOpenEditModal}
-                    onDelete={handleOpenDeleteDialog}
-                  />
-                ))}
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 gap-3 transition-all duration-300">
+                  {visibleOfferedSkills.map((skill) => (
+                    <SkillCard
+                      key={skill._id}
+                      skill={skill}
+                      isOwner={isOwner}
+                      onEdit={handleOpenEditModal}
+                      onDelete={handleOpenDeleteDialog}
+                    />
+                  ))}
+                </div>
+
+                {offeredSkills.length >= 3 && (
+                  <div className="pt-1 text-center">
+                    <button
+                      type="button"
+                      onClick={() => setOfferedExpanded((prev) => !prev)}
+                      className="text-xs font-semibold text-[#1B4332] hover:text-[#143326] hover:underline transition-all cursor-pointer py-1 inline-flex items-center gap-1"
+                    >
+                      {offeredExpanded ? (
+                        <>
+                          <span>Show less</span>
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        </>
+                      ) : (
+                        <>
+                          <span>+{hiddenOfferedCount} more {hiddenOfferedCount === 1 ? "skill" : "skills"}</span>
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <EmptyState
@@ -300,6 +359,21 @@ export default function SkillsSection({
                     <span>+ Add</span>
                   </button>
                 )}
+                {wantedSkills.length >= 3 && (
+                  <button
+                    type="button"
+                    onClick={() => setWantedExpanded((prev) => !prev)}
+                    className="h-7 w-7 rounded-lg text-[#6B6858] hover:text-[#16160F] hover:bg-[#F7F6F2] border border-transparent hover:border-[#E6E3DA] transition-all flex items-center justify-center cursor-pointer"
+                    title={wantedExpanded ? "Show fewer skills" : "Show all skills"}
+                    aria-label={wantedExpanded ? "Collapse skills wanted" : "Expand skills wanted"}
+                  >
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        wantedExpanded ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                )}
               </div>
             </div>
             <p className="text-[11px] text-[#6B6858] mb-2">Skills looking to learn from community mentors</p>
@@ -310,16 +384,40 @@ export default function SkillsSection({
             )}
 
             {wantedSkills.length > 0 ? (
-              <div className="grid grid-cols-1 gap-3 animate-fadeIn">
-                {wantedSkills.map((skill) => (
-                  <SkillCard
-                    key={skill._id}
-                    skill={skill}
-                    isOwner={isOwner}
-                    onEdit={handleOpenEditModal}
-                    onDelete={handleOpenDeleteDialog}
-                  />
-                ))}
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 gap-3 transition-all duration-300">
+                  {visibleWantedSkills.map((skill) => (
+                    <SkillCard
+                      key={skill._id}
+                      skill={skill}
+                      isOwner={isOwner}
+                      onEdit={handleOpenEditModal}
+                      onDelete={handleOpenDeleteDialog}
+                    />
+                  ))}
+                </div>
+
+                {wantedSkills.length >= 3 && (
+                  <div className="pt-1 text-center">
+                    <button
+                      type="button"
+                      onClick={() => setWantedExpanded((prev) => !prev)}
+                      className="text-xs font-semibold text-[#1B4332] hover:text-[#143326] hover:underline transition-all cursor-pointer py-1 inline-flex items-center gap-1"
+                    >
+                      {wantedExpanded ? (
+                        <>
+                          <span>Show less</span>
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        </>
+                      ) : (
+                        <>
+                          <span>+{hiddenWantedCount} more {hiddenWantedCount === 1 ? "skill" : "skills"}</span>
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <EmptyState

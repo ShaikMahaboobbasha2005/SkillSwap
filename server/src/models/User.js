@@ -70,6 +70,33 @@ const userSchema = new Schema(
       default: "",
       index: true,
     },
+    socialLinks: {
+      linkedin: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+      github: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+      instagram: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+      youtube: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+      website: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+    },
     role: {
       type: String,
       enum: ["user", "admin"],

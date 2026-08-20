@@ -1,0 +1,413 @@
+import { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import PortfolioCard from "../components/portfolio/PortfolioCard";
+import PortfolioLightbox from "../components/portfolio/PortfolioLightbox";
+import PortfolioUploadModal from "../components/portfolio/PortfolioUploadModal";
+import PortfolioEditModal from "../components/portfolio/PortfolioEditModal";
+import ConfirmModal from "../components/ConfirmModal";
+import ToastNotification from "../components/ToastNotification";
+import portfolioService from "../services/portfolioService";
+import { getPublicProfile, getOwnProfile } from "../services/profileService";
+import useAuth from "../hooks/useAuth";
+import {
+  ArrowLeft,
+  Plus,
+  Image as ImageIcon,
+  Film,
+  LayoutGrid,
+  AlertCircle,
+  RefreshCw,
+  FolderGit2,
+} from "lucide-react";
+
+export default function PortfolioPage() {
+  const { userId: paramUserId, id: paramId } = useParams();
+  const navigate = useNavigate();
+  const { user: authUser } = useAuth();
+
+  const currentUserId = authUser?._id || authUser?.id || "";
+  // If param is present, use it; otherwise default to logged in user ID
+  const targetUserId = paramUserId || paramId || currentUserId;
+  const isOwner = Boolean(currentUserId && targetUserId && String(currentUserId) === String(targetUserId));
+
+  const [profileData, setProfileData] = useState(null);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all"); // "all" | "image" | "video"
+
+  // Modals state
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [deleteTargetItem, setDeleteTargetItem] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  // Lightbox state
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(-1);
+
+  // Toast notification state
+  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+  };
+
+  // Fetch Target User Profile Header Info
+  const fetchUserInfo = useCallback(async () => {
+    if (!targetUserId) return;
+    try {
+      if (isOwner) {
+        const res = await getOwnProfile();
+        if (res?.success && res.data) setProfileData(res.data);
+      } else {
+        const res = await getPublicProfile(targetUserId);
+        if (res?.success && res.data) setProfileData(res.data);
+      }
+    } catch (err) {
+      console.warn("Failed to load user profile info for portfolio:", err?.message);
+    }
+  }, [targetUserId, isOwner]);
+
+  // Fetch Portfolio Items
+  const fetchPortfolio = useCallback(async () => {
+    if (!targetUserId) return;
+    setLoading(true);
+    setError("");
+
+    try {
+      const params = {};
+      if (typeFilter === "image" || typeFilter === "video") {
+        params.type = typeFilter;
+      }
+
+      const res = await portfolioService.getUserPortfolio(targetUserId, params);
+      const portfolioList = Array.isArray(res?.data?.portfolio)
+        ? res.data.portfolio
+        : Array.isArray(res?.data)
+        ? res.data
+        : [];
+      setItems(portfolioList);
+    } catch (err) {
+      console.error("Failed to load portfolio items:", err);
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Failed to load portfolio. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [targetUserId, typeFilter]);
+
+  useEffect(() => {
+    fetchUserInfo();
+  }, [fetchUserInfo]);
+
+  useEffect(() => {
+    fetchPortfolio();
+  }, [fetchPortfolio]);
+
+  // Lightbox selection
+  const handleOpenLightbox = (item) => {
+    const idx = items.findIndex((i) => (i._id || i.id) === (item._id || item.id));
+    setLightboxIndex(idx >= 0 ? idx : 0);
+    setLightboxOpen(true);
+  };
+
+  const handleLightboxSelectIndex = (newIndex) => {
+    if (newIndex >= 0 && newIndex < items.length) {
+      setLightboxIndex(newIndex);
+    }
+  };
+
+  // Upload success handler
+  const handleUploadSuccess = (newItem) => {
+    setItems((prev) => [newItem, ...prev]);
+    showToast("Portfolio item uploaded successfully!", "success");
+  };
+
+  // Edit success handler
+  const handleEditSuccess = (updatedItem) => {
+    setItems((prev) =>
+      prev.map((i) =>
+        (i._id || i.id) === (updatedItem._id || updatedItem.id) ? updatedItem : i
+      )
+    );
+    showToast("Portfolio item updated successfully!", "success");
+  };
+
+  // Delete confirm handler
+  const handleDeleteConfirm = async () => {
+    if (!deleteTargetItem || deleting) return;
+    setDeleting(true);
+
+    const itemId = deleteTargetItem._id || deleteTargetItem.id;
+
+    try {
+      await portfolioService.deletePortfolioItem(itemId);
+      setItems((prev) => prev.filter((i) => (i._id || i.id) !== itemId));
+      showToast("Portfolio item deleted successfully.", "info");
+      setDeleteTargetItem(null);
+    } catch (err) {
+      console.error("Failed to delete portfolio item:", err);
+      showToast(
+        err.response?.data?.message || err.message || "Failed to delete portfolio item.",
+        "error"
+      );
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // Compute counts for limits & display
+  const imageCount = items.filter((i) => i.media?.type === "image").length;
+  const videoCount = items.filter((i) => i.media?.type === "video").length;
+
+  const targetName = profileData?.name || (isOwner ? "My" : "User");
+  const targetAvatar = profileData?.profilePicture || "";
+  const targetLocation = profileData?.location || "";
+  const backProfileUrl = isOwner ? "/profile" : `/users/${targetUserId}`;
+
+  return (
+    <div className="min-h-screen bg-[#F7F6F2] flex flex-col font-sans">
+      <Navbar />
+
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+        <ToastNotification toast={toast} onClose={() => setToast({ show: false, message: "", type: "success" })} />
+
+        {/* Top Navigation & Header Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-2xl border border-[#E6E3DA] p-5 sm:p-6 shadow-xs">
+          <div className="flex items-center gap-4">
+            <Link
+              to={backProfileUrl}
+              className="w-10 h-10 rounded-xl bg-[#F7F6F2] hover:bg-[#E4EEE8] text-[#16160F] hover:text-[#1B4332] border border-[#E6E3DA] flex items-center justify-center transition-all cursor-pointer shrink-0 shadow-2xs"
+              title="Back to Profile"
+              aria-label="Back to Profile"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-[#1B4332] text-white font-bold text-base flex items-center justify-center overflow-hidden border-2 border-white shadow-xs shrink-0">
+                {targetAvatar ? (
+                  <img src={targetAvatar} alt={targetName} className="w-full h-full object-cover" />
+                ) : (
+                  targetName.charAt(0).toUpperCase()
+                )}
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-lg sm:text-xl font-black text-[#16160F] tracking-tight">
+                    {isOwner ? "My Portfolio" : `${targetName}'s Portfolio`}
+                  </h1>
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#E4EEE8] text-[#1B4332] border border-[#1B4332]/20">
+                    {items.length} {items.length === 1 ? "item" : "items"}
+                  </span>
+                </div>
+                <p className="text-xs text-[#6B6858] mt-0.5">
+                  {targetLocation ? `${targetLocation} &middot; ` : ""}Work samples & project media
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Owner Action Button */}
+          {isOwner && (
+            <button
+              type="button"
+              onClick={() => setUploadModalOpen(true)}
+              className="h-10 px-5 text-xs font-bold text-white bg-[#1B4332] hover:bg-[#143326] rounded-xl transition-all active:scale-[0.98] shadow-2xs cursor-pointer inline-flex items-center justify-center gap-2 shrink-0 self-start sm:self-auto"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Upload Media</span>
+            </button>
+          )}
+        </div>
+
+        {/* Filter Tabs Bar */}
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5 p-1 bg-[#E6E3DA]/50 rounded-xl">
+            <button
+              type="button"
+              onClick={() => setTypeFilter("all")}
+              className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                typeFilter === "all"
+                  ? "bg-white text-[#16160F] shadow-xs"
+                  : "text-[#6B6858] hover:text-[#16160F]"
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>All</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTypeFilter("image")}
+              className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                typeFilter === "image"
+                  ? "bg-white text-[#16160F] shadow-xs"
+                  : "text-[#6B6858] hover:text-[#16160F]"
+              }`}
+            >
+              <ImageIcon className="w-3.5 h-3.5" />
+              <span>Images</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTypeFilter("video")}
+              className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 ${
+                typeFilter === "video"
+                  ? "bg-white text-[#16160F] shadow-xs"
+                  : "text-[#6B6858] hover:text-[#16160F]"
+              }`}
+            >
+              <Film className="w-3.5 h-3.5" />
+              <span>Videos</span>
+            </button>
+          </div>
+
+          {/* Quick Counter Info */}
+          {isOwner && (
+            <div className="text-[11px] text-[#6B6858] font-medium hidden sm:block">
+              {imageCount}/20 images &middot; {videoCount}/10 videos
+            </div>
+          )}
+        </div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 animate-pulse">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div
+                key={index}
+                className="aspect-square rounded-2xl bg-[#E6E3DA]/60 border border-[#E6E3DA]"
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Error State */}
+        {!loading && error && (
+          <div className="bg-white rounded-2xl border border-red-200 p-8 text-center shadow-xs space-y-4 max-w-md mx-auto my-8">
+            <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 border border-red-200 flex items-center justify-center mx-auto text-xl font-bold">
+              <AlertCircle className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-[#16160F]">Failed to load portfolio</h3>
+              <p className="text-xs text-[#6B6858] mt-1">{error}</p>
+            </div>
+            <button
+              type="button"
+              onClick={fetchPortfolio}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#1B4332] text-white text-xs font-semibold rounded-xl hover:bg-[#143326] transition-all cursor-pointer shadow-2xs"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Try Again</span>
+            </button>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && items.length === 0 && (
+          <div className="bg-white rounded-2xl border border-[#E6E3DA] p-10 text-center shadow-xs space-y-4 max-w-lg mx-auto my-6">
+            <div className="w-14 h-14 rounded-2xl bg-[#E4EEE8] text-[#1B4332] border border-[#1B4332]/20 flex items-center justify-center mx-auto shadow-2xs">
+              <FolderGit2 className="w-7 h-7" />
+            </div>
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-[#16160F]">
+                {typeFilter !== "all"
+                  ? `No ${typeFilter}s found`
+                  : isOwner
+                  ? "Your portfolio is empty"
+                  : "No portfolio items yet"}
+              </h3>
+              <p className="text-xs text-[#6B6858] mt-1 max-w-sm mx-auto leading-relaxed">
+                {isOwner
+                  ? "Upload photos, short videos, project screenshots, or certificates to showcase your expertise."
+                  : `${targetName} has not added any ${typeFilter !== "all" ? typeFilter + " " : ""}portfolio media yet.`}
+              </p>
+            </div>
+
+            {isOwner && (
+              <button
+                type="button"
+                onClick={() => setUploadModalOpen(true)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1B4332] text-white text-xs font-bold rounded-xl hover:bg-[#143326] transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Upload Your First Work</span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Portfolio Media Grid (3-column desktop/tablet, 2-column mobile) */}
+        {!loading && !error && items.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 animate-fadeIn">
+            {items.map((item) => (
+              <PortfolioCard
+                key={item._id || item.id}
+                item={item}
+                isOwner={isOwner}
+                onSelect={handleOpenLightbox}
+                onEdit={(i) => setEditingItem(i)}
+                onDelete={(i) => setDeleteTargetItem(i)}
+              />
+            ))}
+          </div>
+        )}
+      </main>
+
+      {/* Lightbox Modal */}
+      <PortfolioLightbox
+        isOpen={lightboxOpen}
+        item={lightboxIndex >= 0 ? items[lightboxIndex] : null}
+        items={items}
+        onClose={() => setLightboxOpen(false)}
+        onSelectIndex={handleLightboxSelectIndex}
+      />
+
+      {/* Upload Media Modal (Owner Only) */}
+      {isOwner && (
+        <PortfolioUploadModal
+          isOpen={uploadModalOpen}
+          onClose={() => setUploadModalOpen(false)}
+          onSuccess={handleUploadSuccess}
+          currentImageCount={imageCount}
+          currentVideoCount={videoCount}
+        />
+      )}
+
+      {/* Edit Portfolio Item Modal (Owner Only) */}
+      {isOwner && editingItem && (
+        <PortfolioEditModal
+          isOpen={Boolean(editingItem)}
+          item={editingItem}
+          onClose={() => setEditingItem(null)}
+          onSuccess={handleEditSuccess}
+        />
+      )}
+
+      {/* Delete Confirmation Modal (Owner Only) */}
+      {isOwner && (
+        <ConfirmModal
+          isOpen={Boolean(deleteTargetItem)}
+          title="Delete Portfolio Item?"
+          message="Are you sure you want to delete this portfolio item? This will permanently remove the media asset."
+          confirmText="Delete Media"
+          cancelText="Cancel"
+          isDestructive={true}
+          isProcessing={deleting}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => {
+            if (!deleting) setDeleteTargetItem(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}

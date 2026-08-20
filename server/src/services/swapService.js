@@ -217,8 +217,17 @@ const getSwapRequests = async (userId, queryParams = {}) => {
     filter.$or = [{ fromUser: userId }, { toUser: userId }];
   }
 
-  if (status) {
-    filter.status = status;
+  const ALLOWED_ACTIVE_STATUSES = ["pending", "accepted"];
+
+  if (status && status.toLowerCase() !== "all") {
+    const normalizedStatus = status.toLowerCase();
+    if (ALLOWED_ACTIVE_STATUSES.includes(normalizedStatus)) {
+      filter.status = normalizedStatus;
+    } else {
+      filter.status = { $in: ALLOWED_ACTIVE_STATUSES };
+    }
+  } else {
+    filter.status = { $in: ALLOWED_ACTIVE_STATUSES };
   }
 
   const [swapRequestsRaw, total] = await Promise.all([
@@ -655,7 +664,7 @@ const getSwapHistory = async (userId, queryParams = {}) => {
   const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
   const skip = (pageNum - 1) * limitNum;
 
-  const ALLOWED_HISTORY_STATUSES = ["completed", "left", "cancelled"];
+  const ALLOWED_HISTORY_STATUSES = ["completed", "left", "rejected", "cancelled"];
 
   const filter = {
     $or: [{ fromUser: userId }, { toUser: userId }],
@@ -711,23 +720,19 @@ const getSwapStats = async (userId) => {
     completedOutgoing,
     leftIncoming,
     leftOutgoing,
-    totalIncoming,
-    totalOutgoing,
   ] = await Promise.all([
-    SwapRequest.countDocuments({ toUser: userId, status: "pending" }),
-    SwapRequest.countDocuments({ fromUser: userId, status: "pending" }),
-    SwapRequest.countDocuments({ toUser: userId, status: "accepted" }),
-    SwapRequest.countDocuments({ fromUser: userId, status: "accepted" }),
-    SwapRequest.countDocuments({ toUser: userId, status: "rejected" }),
-    SwapRequest.countDocuments({ fromUser: userId, status: "rejected" }),
-    SwapRequest.countDocuments({ toUser: userId, status: "cancelled" }),
-    SwapRequest.countDocuments({ fromUser: userId, status: "cancelled" }),
-    SwapRequest.countDocuments({ toUser: userId, status: "completed" }),
-    SwapRequest.countDocuments({ fromUser: userId, status: "completed" }),
-    SwapRequest.countDocuments({ toUser: userId, status: "left" }),
-    SwapRequest.countDocuments({ fromUser: userId, status: "left" }),
-    SwapRequest.countDocuments({ toUser: userId }),
-    SwapRequest.countDocuments({ fromUser: userId }),
+    SwapRequest.countDocuments({ toUser: userId, status: "pending", hiddenFor: { $ne: userId } }),
+    SwapRequest.countDocuments({ fromUser: userId, status: "pending", hiddenFor: { $ne: userId } }),
+    SwapRequest.countDocuments({ toUser: userId, status: "accepted", hiddenFor: { $ne: userId } }),
+    SwapRequest.countDocuments({ fromUser: userId, status: "accepted", hiddenFor: { $ne: userId } }),
+    SwapRequest.countDocuments({ toUser: userId, status: "rejected", chatDeletedFor: { $ne: userId } }),
+    SwapRequest.countDocuments({ fromUser: userId, status: "rejected", chatDeletedFor: { $ne: userId } }),
+    SwapRequest.countDocuments({ toUser: userId, status: "cancelled", chatDeletedFor: { $ne: userId } }),
+    SwapRequest.countDocuments({ fromUser: userId, status: "cancelled", chatDeletedFor: { $ne: userId } }),
+    SwapRequest.countDocuments({ toUser: userId, status: "completed", chatDeletedFor: { $ne: userId } }),
+    SwapRequest.countDocuments({ fromUser: userId, status: "completed", chatDeletedFor: { $ne: userId } }),
+    SwapRequest.countDocuments({ toUser: userId, status: "left", chatDeletedFor: { $ne: userId } }),
+    SwapRequest.countDocuments({ fromUser: userId, status: "left", chatDeletedFor: { $ne: userId } }),
   ]);
 
   const accepted = acceptedIncoming + acceptedOutgoing;
@@ -735,6 +740,10 @@ const getSwapStats = async (userId) => {
   const cancelled = cancelledIncoming + cancelledOutgoing;
   const completed = completedIncoming + completedOutgoing;
   const left = leftIncoming + leftOutgoing;
+
+  const totalIncomingActive = pendingIncoming + acceptedIncoming;
+  const totalOutgoingActive = pendingOutgoing + acceptedOutgoing;
+  const totalHistory = completed + left + rejected + cancelled;
 
   return {
     pendingIncoming,
@@ -744,8 +753,9 @@ const getSwapStats = async (userId) => {
     cancelled,
     completed,
     left,
-    totalIncoming,
-    totalOutgoing,
+    totalIncoming: totalIncomingActive,
+    totalOutgoing: totalOutgoingActive,
+    totalHistory,
 
     // Tab-contextual breakdowns
     incoming: {
@@ -755,7 +765,7 @@ const getSwapStats = async (userId) => {
       cancelled: cancelledIncoming,
       completed: completedIncoming,
       left: leftIncoming,
-      total: totalIncoming,
+      total: totalIncomingActive,
     },
     outgoing: {
       pending: pendingOutgoing,
@@ -764,7 +774,7 @@ const getSwapStats = async (userId) => {
       cancelled: cancelledOutgoing,
       completed: completedOutgoing,
       left: leftOutgoing,
-      total: totalOutgoing,
+      total: totalOutgoingActive,
     },
   };
 };

@@ -63,6 +63,66 @@ const uploadToCloudinary = (fileBuffer, mimeType = "image/jpeg") => {
 };
 
 /**
+ * Upload portfolio media (image or video) directly to Cloudinary
+ * @param {Buffer} fileBuffer
+ * @param {String} mimeType
+ * @param {"image"|"video"} mediaType
+ * @returns {Promise<{url: String, publicId: String, duration: Number|null, thumbnailUrl: String}>}
+ */
+const uploadPortfolioToCloudinary = (fileBuffer, mimeType, mediaType = "image") => {
+  return new Promise((resolve, reject) => {
+    if (!isCloudinaryConfigured()) {
+      const err = new Error(
+        "Cloudinary is not configured on the server. Please set valid CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET environment variables."
+      );
+      err.statusCode = 500;
+      return reject(err);
+    }
+
+    const isVideo = mediaType === "video" || mimeType.startsWith("video/");
+    const folder = isVideo ? "skillswap/portfolio/videos" : "skillswap/portfolio/images";
+    const resourceType = isVideo ? "video" : "image";
+
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder,
+        resource_type: resourceType,
+      },
+      (error, result) => {
+        if (error) {
+          console.error("Cloudinary Portfolio Upload Error:", error);
+          const uploadErr = new Error("Failed to upload portfolio media to Cloudinary: " + error.message);
+          uploadErr.statusCode = 500;
+          return reject(uploadErr);
+        }
+
+        let thumbnailUrl = "";
+        if (isVideo) {
+          try {
+            thumbnailUrl = cloudinary.url(result.public_id, {
+              resource_type: "video",
+              format: "jpg",
+              transformation: [{ width: 600, crop: "limit" }],
+            });
+          } catch (e) {
+            thumbnailUrl = result.secure_url.replace(/\.[^/.]+$/, ".jpg");
+          }
+        }
+
+        resolve({
+          url: result.secure_url,
+          publicId: result.public_id,
+          duration: result.duration ? Math.round(result.duration * 100) / 100 : null,
+          thumbnailUrl,
+        });
+      }
+    );
+
+    uploadStream.end(fileBuffer);
+  });
+};
+
+/**
  * Safely delete an asset from Cloudinary using its public_id.
  * Non-blocking, returns success status object.
  *
@@ -140,6 +200,7 @@ module.exports = {
   cloudinary,
   isCloudinaryConfigured,
   uploadToCloudinary,
+  uploadPortfolioToCloudinary,
   deleteFromCloudinary,
   extractPublicIdFromUrl,
 };

@@ -284,14 +284,13 @@ export default function SwapRequestsPage() {
     { label: "All", value: "" },
     { label: "Pending", value: "pending" },
     { label: "Accepted", value: "accepted" },
-    { label: "Rejected", value: "rejected" },
-    { label: "Cancelled", value: "cancelled" },
   ];
 
   const statusOptionsHistory = [
     { label: "All", value: "" },
     { label: "Completed", value: "completed" },
     { label: "Left", value: "left" },
+    { label: "Rejected", value: "rejected" },
     { label: "Cancelled", value: "cancelled" },
   ];
 
@@ -410,23 +409,23 @@ export default function SwapRequestsPage() {
           <div className="bg-white border border-[#E6E3DA] rounded-2xl p-4 shadow-xs flex items-center gap-3">
             <div
               className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${
-                isIncoming
-                  ? "bg-red-50 text-red-600 border-red-200"
-                  : "bg-zinc-100 text-zinc-700 border-zinc-200"
+                isHistory
+                  ? "bg-zinc-100 text-zinc-700 border-zinc-200"
+                  : isIncoming
+                  ? "bg-amber-50 text-amber-800 border-amber-200"
+                  : "bg-emerald-50 text-emerald-800 border-emerald-200"
               }`}
             >
-              {isIncoming ? <XCircle className="w-5 h-5" /> : <Ban className="w-5 h-5" />}
+              {isHistory ? <Ban className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
             </div>
             <div className="min-w-0">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B6858] block">
-                {isHistory ? "Cancelled" : isIncoming ? "Rejected" : "Cancelled"}
+                {isHistory ? "Cancelled / Rejected" : isIncoming ? "Awaiting Response" : "Awaiting Partner"}
               </span>
               <span className="text-lg font-black text-[#16160F]">
                 {isHistory
-                  ? stats.cancelled ?? 0
-                  : isIncoming
-                  ? (stats.incoming?.rejected ?? stats.rejected ?? 0)
-                  : (stats.outgoing?.cancelled ?? stats.cancelled ?? 0)}
+                  ? (stats.cancelled ?? 0) + (stats.rejected ?? 0)
+                  : pendingCount}
               </span>
             </div>
           </div>
@@ -450,8 +449,8 @@ export default function SwapRequestsPage() {
                 {isHistory
                   ? totalHistory
                   : isIncoming
-                  ? (stats.incoming?.total ?? stats.totalIncoming ?? 0)
-                  : (stats.outgoing?.total ?? stats.totalOutgoing ?? 0)}
+                  ? (stats.incoming?.total ?? (pendingCount + acceptedCount))
+                  : (stats.outgoing?.total ?? (pendingCount + acceptedCount))}
               </span>
             </div>
           </div>

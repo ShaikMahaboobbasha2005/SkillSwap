@@ -24,6 +24,7 @@ export default function MessageList({
   initialUnreadCount = 0,
   isDividerDismissed = false,
   swapId,
+  isReadOnly = false,
   onMarkMessagesRead,
   onDeleteMessage,
   onSelectReply,
@@ -311,7 +312,9 @@ export default function MessageList({
           No messages yet
         </h3>
         <p className="text-xs text-[#6B6858] max-w-xs">
-          Start the conversation about your skill swap. Send a friendly message below!
+          {isReadOnly
+            ? "No messages were exchanged during this swap."
+            : "Start the conversation about your skill swap. Send a friendly message below!"}
         </p>
       </div>
     );

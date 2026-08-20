@@ -481,7 +481,7 @@ export default function SwapRequestCard({
               )}
 
               <Link
-                to={`/swaps/${swapId}/chat`}
+                to={counterpartId ? `/chats/${counterpartId}` : "/chats"}
                 className="h-8 px-4 text-xs font-semibold text-white bg-[#1B4332] hover:bg-[#143326] rounded-xl transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
               >
                 <MessageSquare className="w-3.5 h-3.5" />

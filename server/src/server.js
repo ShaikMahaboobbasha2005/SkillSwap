@@ -14,6 +14,7 @@ const swapRoutes = require("./routes/swapRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const ratingRoutes = require("./routes/ratingRoutes");
+const portfolioRoutes = require("./routes/portfolioRoutes");
 const initSockets = require("./sockets/socketHandler");
 const errorHandler = require("./middleware/errorHandler");
 
@@ -69,6 +70,7 @@ app.use("/api/swaps", swapRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/ratings", ratingRoutes);
+app.use("/api/portfolio", portfolioRoutes);
 
 // Initialize Socket.io Connection & Event Handlers
 initSockets(io);

@@ -39,11 +39,11 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
 | POST | `/api/swaps` | Protected | Send a swap request to another user |
-| GET | `/api/swaps` | Protected | List current user's swap requests (supports `?page=`, `?limit=`, `?type=incoming|outgoing|all`, `?status=pending|accepted|rejected|cancelled`) |
-| GET | `/api/swaps/history` | Protected | Get swap history for logged-in user (status `completed`, `left`, `cancelled`, excluding `chatDeletedFor` items; supports `?status=`, `?page=`, `?limit=`) |
-| GET | `/api/swaps/incoming` | Protected | Get incoming swap requests for logged-in user |
-| GET | `/api/swaps/outgoing` | Protected | Get outgoing swap requests for logged-in user |
-| GET | `/api/swaps/stats` | Protected | Get lightweight dashboard swap statistics (counts for `pending`, `accepted`, `rejected`, `cancelled`, `completed`, `left`) |
+| GET | `/api/swaps` | Protected | List current user's active swap requests (status `pending`, `accepted`; supports `?page=`, `?limit=`, `?type=incoming\|outgoing\|all`, `?status=pending\|accepted`) |
+| GET | `/api/swaps/history` | Protected | Get swap history for logged-in user (terminal status `completed`, `left`, `rejected`, `cancelled`, excluding `chatDeletedFor` items; supports `?status=`, `?page=`, `?limit=`) |
+| GET | `/api/swaps/incoming` | Protected | Get active incoming swap requests for logged-in user (status `pending`, `accepted`) |
+| GET | `/api/swaps/outgoing` | Protected | Get active outgoing swap requests for logged-in user (status `pending`, `accepted`) |
+| GET | `/api/swaps/stats` | Protected | Get lightweight dashboard swap statistics (counts for `pending`, `accepted`, `rejected`, `cancelled`, `completed`, `left`, active totals, and total history) |
 | GET | `/api/swaps/:id` | Protected | Get swap request details (must be a participant) |
 | PATCH | `/api/swaps/:id/accept` | Protected | Accept a pending swap request (Receiver only) |
 | PATCH | `/api/swaps/:id/reject` | Protected | Reject a pending swap request (Receiver only) |
@@ -124,6 +124,15 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 |---|---|---|---|
 | GET | `/api/notifications` | Protected | Get current user's notifications. Supports optional `?page=&limit=` (e.g. `?page=1&limit=20`) |
 | PATCH | `/api/notifications/:id/read` | Protected | Mark a notification as read |
+
+## Portfolio
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/api/portfolio` | Protected | Upload and create a portfolio item (multipart/form-data with `media` file, optional `caption` [max 500 chars], optional `skillId`). Enforces format validation (images: jpg, jpeg, png, webp ≤ 10MB; videos: mp4, webm ≤ 50MB), limits (max 20 images, 10 videos, 30 total items), video duration limit (≤ 60s with automatic cleanup if exceeded), and skill ownership validation. Returns `201 Created` with created portfolio item populated with user and skill. |
+| GET | `/api/portfolio/user/:userId` | Public | Get all active portfolio items for a user, sorted newest first (`createdAt: -1`). Supports optional `?type=image\|video` filter. Populates linked skill (`name category level type`). Returns `{ success: true, data: { portfolio: [...], total: Number } }`. |
+| GET | `/api/portfolio/:id` | Public | Get a single active portfolio item by ID with populated `user` (`name profilePicture location avgRating completedSwaps`) and `skill`. Returns `404 Not Found` if nonexistent or not active. |
+| PATCH | `/api/portfolio/:id` | Protected | Update caption (max 500 chars) and/or linked skill for an owned portfolio item. Validates ownership (`403 Forbidden` if not owner) and skill ownership. Media itself cannot be modified. Returns `200 OK` with updated item. |
+| DELETE | `/api/portfolio/:id` | Protected | Permanently delete an owned portfolio item and its Cloudinary media asset. Validates ownership (`403 Forbidden` if not owner). Returns `200 OK`. |
 
 **Ownership & Validation Rules:**
 - `POST /api/swaps`: Enforces self-request prevention (400), target/skill existence and active status (400/404), ownership (400), and bidirectional duplicate active/pending swap prevention (409 Conflict). Returns error if an active (`accepted`) or `pending` swap already exists for the same skill pair between the two users regardless of request direction.

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
 import useAuth from "../hooks/useAuth";
 import useSocket from "../hooks/useSocket";
 import swapService from "../services/swapService";
@@ -515,42 +516,43 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
     const msgSwapId =
       typeof m.swapRequest === "object" ? m.swapRequest._id : m.swapRequest;
     return msgSwapId?.toString() === swapId?.toString();
-  });
-
-  // Render Page-Level Permanent Access Errors
+  });  // Render Page-Level Permanent Access Errors
   if (pageError) {
     return (
-      <div className="min-h-screen bg-[#F7F6F2] text-[#16160F] flex flex-col items-center justify-center p-4 sm:p-6">
-        <div className="max-w-md w-full bg-white border border-[#E6E3DA] rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-sm">
-          <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-800 border border-amber-200 flex items-center justify-center mx-auto shrink-0">
-            {pageError.code === "FORBIDDEN" ? (
-              <ShieldAlert className="w-6 h-6" />
-            ) : (
-              <AlertCircle className="w-6 h-6" />
-            )}
-          </div>
+      <div className="h-[100dvh] max-h-[100dvh] bg-[#F7F6F2] text-[#16160F] font-sans antialiased flex flex-col overflow-hidden">
+        {!isEmbedded && <Navbar />}
+        <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="max-w-md w-full bg-white border border-[#E6E3DA] rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-800 border border-amber-200 flex items-center justify-center mx-auto shrink-0">
+              {pageError.code === "FORBIDDEN" ? (
+                <ShieldAlert className="w-6 h-6" />
+              ) : (
+                <AlertCircle className="w-6 h-6" />
+              )}
+            </div>
 
-          <div className="space-y-1">
-            <h2 className="text-lg sm:text-xl font-extrabold text-[#16160F]">
-              {pageError.code === "SWAP_NOT_ACCEPTED"
-                ? "Chat Not Available"
-                : pageError.code === "FORBIDDEN"
-                ? "Access Denied"
-                : "Swap Not Found"}
-            </h2>
-            <p className="text-xs sm:text-sm text-[#6B6858] leading-relaxed">
-              {pageError.message}
-            </p>
-          </div>
+            <div className="space-y-1">
+              <h2 className="text-lg sm:text-xl font-extrabold text-[#16160F]">
+                {pageError.code === "SWAP_NOT_ACCEPTED"
+                  ? "Chat Not Available"
+                  : pageError.code === "FORBIDDEN"
+                  ? "Access Denied"
+                  : "Swap Not Found"}
+              </h2>
+              <p className="text-xs sm:text-sm text-[#6B6858] leading-relaxed">
+                {pageError.message}
+              </p>
+            </div>
 
-          <div className="pt-2">
-            <Link
-              to="/swaps?tab=history"
-              className="w-full py-2.5 px-4 rounded-xl bg-[#1B4332] hover:bg-[#143326] text-white font-bold text-xs sm:text-sm transition-all inline-flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to Swap History</span>
-            </Link>
+            <div className="pt-2">
+              <Link
+                to="/swaps?tab=history"
+                className="w-full py-2.5 px-4 rounded-xl bg-[#1B4332] hover:bg-[#143326] text-white font-bold text-xs sm:text-sm transition-all inline-flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to Swap History</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -571,8 +573,8 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
       })
     : "an earlier date";
 
-  return (
-    <div className="flex-1 flex flex-col h-full bg-[#F7F6F2] text-[#16160F] font-sans antialiased overflow-hidden">
+  const chatContent = (
+    <div className="flex-1 flex flex-col h-full min-h-0 bg-[#F7F6F2] text-[#16160F] font-sans antialiased overflow-hidden">
       {/* Toast Notification Container */}
       <ToastNotification
         toast={toast}
@@ -689,6 +691,7 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
           initialUnreadCount={initialUnreadCount}
           isDividerDismissed={isDividerDismissed}
           swapId={swapId}
+          isReadOnly={isReadOnly}
           onMarkMessagesRead={markSwapAsRead}
           onDeleteMessage={isReadOnly ? undefined : handleDeleteMessage}
           onSelectReply={isReadOnly ? undefined : handleSelectReply}
@@ -711,6 +714,19 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
           onCancelReply={() => setReplyingTo(null)}
         />
       )}
+    </div>
+  );
+
+  if (isEmbedded) {
+    return chatContent;
+  }
+
+  return (
+    <div className="h-[100dvh] max-h-[100dvh] bg-[#F7F6F2] text-[#16160F] font-sans antialiased flex flex-col overflow-hidden">
+      <Navbar />
+      <div className="flex-1 flex flex-col min-h-0 w-full bg-white overflow-hidden">
+        {chatContent}
+      </div>
     </div>
   );
 }
