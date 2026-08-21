@@ -24,13 +24,23 @@ const updateOwnProfile = async (userId, updateData) => {
   if (updateData.profileBannerPublicId !== undefined) allowedFields.profileBannerPublicId = updateData.profileBannerPublicId;
   if (updateData.location !== undefined) allowedFields.location = updateData.location;
   if (updateData.socialLinks !== undefined) {
-    allowedFields.socialLinks = {
-      linkedin: updateData.socialLinks.linkedin ? String(updateData.socialLinks.linkedin).trim() : "",
-      github: updateData.socialLinks.github ? String(updateData.socialLinks.github).trim() : "",
-      instagram: updateData.socialLinks.instagram ? String(updateData.socialLinks.instagram).trim() : "",
-      youtube: updateData.socialLinks.youtube ? String(updateData.socialLinks.youtube).trim() : "",
-      website: updateData.socialLinks.website ? String(updateData.socialLinks.website).trim() : "",
-    };
+    if (updateData.socialLinks === null) {
+      allowedFields.socialLinks = {
+        linkedin: "",
+        github: "",
+        instagram: "",
+        youtube: "",
+        website: "",
+      };
+    } else {
+      allowedFields.socialLinks = {
+        linkedin: updateData.socialLinks.linkedin ? String(updateData.socialLinks.linkedin).trim() : "",
+        github: updateData.socialLinks.github ? String(updateData.socialLinks.github).trim() : "",
+        instagram: updateData.socialLinks.instagram ? String(updateData.socialLinks.instagram).trim() : "",
+        youtube: updateData.socialLinks.youtube ? String(updateData.socialLinks.youtube).trim() : "",
+        website: updateData.socialLinks.website ? String(updateData.socialLinks.website).trim() : "",
+      };
+    }
   }
 
   // Pre-fetch existing user state to capture current profile image assets
@@ -148,7 +158,7 @@ const getUserPublicProfile = async (targetUserId) => {
   }
 
   const user = await User.findById(targetUserId).select(
-    "name email profilePicture profileBanner location avgRating completedSwaps portfolio createdAt"
+    "name email profilePicture profileBanner location socialLinks avgRating completedSwaps portfolio createdAt"
   );
 
   if (!user) {

@@ -14,6 +14,8 @@ import ReviewsSection from "../components/profile/ReviewsSection";
 import PortfolioSection from "../components/profile/PortfolioSection";
 import ConfirmModal from "../components/ConfirmModal";
 import SkillsSection from "../components/skills/SkillsSection";
+import SocialLinksRow from "../components/profile/SocialLinksRow";
+import { Linkedin, Github, Instagram, Youtube, Globe } from "../components/profile/SocialIcons";
 import { Eye, Camera, Edit3, MapPin, Calendar, Trash2 } from "lucide-react";
 
 export default function OwnProfile() {
@@ -69,7 +71,68 @@ export default function OwnProfile() {
     name: "",
     location: "",
     bio: "",
+    socialLinks: {
+      linkedin: "",
+      github: "",
+      instagram: "",
+      youtube: "",
+      website: "",
+    },
   });
+
+  const [socialErrors, setSocialErrors] = useState({
+    linkedin: "",
+    github: "",
+    instagram: "",
+    youtube: "",
+    website: "",
+  });
+
+  const validatePlatformUrl = (platform, url) => {
+    if (!url || !url.trim()) return "";
+    const trimmed = url.trim();
+    try {
+      const parsed = new URL(trimmed);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        return "URL must start with http:// or https://";
+      }
+      const host = parsed.hostname.toLowerCase();
+      switch (platform) {
+        case "linkedin":
+          if (host !== "linkedin.com" && !host.endsWith(".linkedin.com")) {
+            return "Please enter a valid LinkedIn URL (e.g. https://linkedin.com/in/username)";
+          }
+          break;
+        case "github":
+          if (host !== "github.com" && !host.endsWith(".github.com")) {
+            return "Please enter a valid GitHub URL (e.g. https://github.com/username)";
+          }
+          break;
+        case "instagram":
+          if (host !== "instagram.com" && !host.endsWith(".instagram.com")) {
+            return "Please enter a valid Instagram URL (e.g. https://instagram.com/username)";
+          }
+          break;
+        case "youtube":
+          if (
+            host !== "youtube.com" &&
+            !host.endsWith(".youtube.com") &&
+            host !== "youtu.be" &&
+            !host.endsWith(".youtu.be")
+          ) {
+            return "Please enter a valid YouTube URL (e.g. https://youtube.com/@channel)";
+          }
+          break;
+        case "website":
+          break;
+        default:
+          break;
+      }
+      return "";
+    } catch {
+      return "Please enter a valid web URL (e.g. https://example.com)";
+    }
+  };
 
   // Avatar Crop state
   const [selectedAvatarFile, setSelectedAvatarFile] = useState(null);
@@ -115,6 +178,20 @@ export default function OwnProfile() {
           name: res.data.name || "",
           location: res.data.location || "",
           bio: storedBio,
+          socialLinks: {
+            linkedin: res.data.socialLinks?.linkedin || "",
+            github: res.data.socialLinks?.github || "",
+            instagram: res.data.socialLinks?.instagram || "",
+            youtube: res.data.socialLinks?.youtube || "",
+            website: res.data.socialLinks?.website || "",
+          },
+        });
+        setSocialErrors({
+          linkedin: "",
+          github: "",
+          instagram: "",
+          youtube: "",
+          website: "",
         });
       }
     } catch (err) {
@@ -140,6 +217,20 @@ export default function OwnProfile() {
           name: profile.name || "",
           location: profile.location || "",
           bio: storedBio,
+          socialLinks: {
+            linkedin: profile.socialLinks?.linkedin || "",
+            github: profile.socialLinks?.github || "",
+            instagram: profile.socialLinks?.instagram || "",
+            youtube: profile.socialLinks?.youtube || "",
+            website: profile.socialLinks?.website || "",
+          },
+        });
+        setSocialErrors({
+          linkedin: "",
+          github: "",
+          instagram: "",
+          youtube: "",
+          website: "",
         });
         setSelectedAvatarFile(null);
         setAvatarPreviewUrl("");
@@ -157,8 +248,22 @@ export default function OwnProfile() {
         name: profile.name || "",
         location: profile.location || "",
         bio: storedBio,
+        socialLinks: {
+          linkedin: profile.socialLinks?.linkedin || "",
+          github: profile.socialLinks?.github || "",
+          instagram: profile.socialLinks?.instagram || "",
+          youtube: profile.socialLinks?.youtube || "",
+          website: profile.socialLinks?.website || "",
+        },
       });
     }
+    setSocialErrors({
+      linkedin: "",
+      github: "",
+      instagram: "",
+      youtube: "",
+      website: "",
+    });
     setSelectedAvatarFile(null);
     setAvatarPreviewUrl("");
     setRawAvatarImageSrc(null);
@@ -266,17 +371,64 @@ export default function OwnProfile() {
     }
   };
 
+  const handleSocialLinkChange = (platform, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      socialLinks: {
+        ...prev.socialLinks,
+        [platform]: value,
+      },
+    }));
+    const err = validatePlatformUrl(platform, value);
+    setSocialErrors((prev) => ({
+      ...prev,
+      [platform]: err,
+    }));
+  };
+
   // Determine if form fields are modified
   const storedBio = profile ? localStorage.getItem(`skillswap_bio_${profile._id}`) || "" : "";
   const isNameModified = Boolean(profile && formData.name.trim() !== (profile.name || "").trim());
   const isLocationModified = Boolean(profile && formData.location.trim() !== (profile.location || "").trim());
   const isBioModified = Boolean(formData.bio.trim() !== storedBio.trim());
 
-  const isFormDirty = isNameModified || isLocationModified || isBioModified;
+  const isFieldSocialModified = (platform) => {
+    if (!profile) return false;
+    const currentVal = (formData.socialLinks?.[platform] || "").trim();
+    const initialVal = (profile.socialLinks?.[platform] || "").trim();
+    return currentVal !== initialVal;
+  };
+
+  const isSocialLinksModified = Boolean(
+    profile &&
+      ["linkedin", "github", "instagram", "youtube", "website"].some((p) =>
+        isFieldSocialModified(p)
+      )
+  );
+
+  const hasSocialErrors = Object.values(socialErrors).some((err) => Boolean(err));
+  const isFormDirty =
+    (isNameModified || isLocationModified || isBioModified || isSocialLinksModified) &&
+    !hasSocialErrors;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isFormDirty || saving) return;
+    if (!isFormDirty || saving || hasSocialErrors) return;
+
+    // Run final validation on all social links
+    const currentErrors = {
+      linkedin: validatePlatformUrl("linkedin", formData.socialLinks.linkedin),
+      github: validatePlatformUrl("github", formData.socialLinks.github),
+      instagram: validatePlatformUrl("instagram", formData.socialLinks.instagram),
+      youtube: validatePlatformUrl("youtube", formData.socialLinks.youtube),
+      website: validatePlatformUrl("website", formData.socialLinks.website),
+    };
+
+    if (Object.values(currentErrors).some((err) => Boolean(err))) {
+      setSocialErrors(currentErrors);
+      setError("Please fix the validation errors in your social links before saving.");
+      return;
+    }
 
     setSaving(true);
     setError("");
@@ -285,6 +437,13 @@ export default function OwnProfile() {
       const updatedData = {
         name: formData.name.trim(),
         location: formData.location.trim(),
+        socialLinks: {
+          linkedin: formData.socialLinks.linkedin.trim(),
+          github: formData.socialLinks.github.trim(),
+          instagram: formData.socialLinks.instagram.trim(),
+          youtube: formData.socialLinks.youtube.trim(),
+          website: formData.socialLinks.website.trim(),
+        },
       };
 
       const res = await updateOwnProfile(updatedData);
@@ -536,23 +695,26 @@ export default function OwnProfile() {
                 </div>
               </div>
 
+              {/* Read-Only Bio Presentation */}
+              {!isEditing && (
+                <div className="pt-1">
+                  <p className="text-xs sm:text-sm text-[#16160F]/95 leading-relaxed font-normal max-w-2xl">
+                    {formData.bio || "No bio added yet. Click 'Edit Profile' to introduce yourself and describe your skill swap interests."}
+                  </p>
+                </div>
+              )}
+
+              {/* Social Links Row (Below Bio/Location, Above Stats) */}
+              <SocialLinksRow socialLinks={profile?.socialLinks} className="pt-1" />
+
               {/* INTEGRATED COMPACT STATISTICS SUMMARY BAR */}
               <CompactProfileStats
                 rating={profile?.avgRating || 0.0}
                 completedSwaps={profile?.completedSwaps || 0}
                 totalSkills={skillsMeta.total}
                 portfolioCount="0 items"
-                className="mt-4"
+                className="mt-3"
               />
-
-              {/* Read-Only Bio Presentation */}
-              {!isEditing && (
-                <div className="pt-2">
-                  <p className="text-xs sm:text-sm text-[#16160F]/95 leading-relaxed font-normal max-w-2xl">
-                    {formData.bio || "No bio added yet. Click 'Edit Profile' to introduce yourself and describe your skill swap interests."}
-                  </p>
-                </div>
-              )}
             </div>
 
             {/* EDIT MODE FORM (APPEARS BELOW HEADER IDENTITY) */}
@@ -629,6 +791,151 @@ export default function OwnProfile() {
                     }`}
                     placeholder="Tell other swappers about your experience, background, and learning goals..."
                   />
+                </div>
+
+                {/* SOCIAL LINKS FORM SECTION */}
+                <div className="pt-3 border-t border-[#E6E3DA] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-[#16160F]">Social Links</span>
+                      <p className="text-[11px] text-[#6B6858]">Add your profiles (full URLs) to display as icons on your profile</p>
+                    </div>
+                    {isSocialLinksModified && (
+                      <span className="text-[10px] font-semibold text-[#1B4332] bg-[#E4EEE8] px-2 py-0.5 rounded-full">Modified</span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {/* LinkedIn */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#16160F] mb-1">LinkedIn URL</label>
+                      <div className="relative flex items-center">
+                        <div className="absolute left-3 text-[#6B6858] pointer-events-none">
+                          <Linkedin className="w-4 h-4" />
+                        </div>
+                        <input
+                          type="url"
+                          value={formData.socialLinks.linkedin}
+                          onChange={(e) => handleSocialLinkChange("linkedin", e.target.value)}
+                          placeholder="https://www.linkedin.com/in/example"
+                          className={`w-full h-10 pl-9 pr-3.5 text-xs bg-[#F7F6F2] border rounded-xl focus:outline-none focus:border-[#1B4332] text-[#16160F] transition-colors ${
+                            socialErrors.linkedin
+                              ? "border-red-500 bg-red-50/30"
+                              : isFieldSocialModified("linkedin")
+                              ? "border-[#1B4332] bg-[#E4EEE8]/30 font-medium"
+                              : "border-[#E6E3DA]"
+                          }`}
+                        />
+                      </div>
+                      {socialErrors.linkedin && (
+                        <p className="text-[10px] text-red-600 font-medium mt-1">{socialErrors.linkedin}</p>
+                      )}
+                    </div>
+
+                    {/* GitHub */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#16160F] mb-1">GitHub URL</label>
+                      <div className="relative flex items-center">
+                        <div className="absolute left-3 text-[#6B6858] pointer-events-none">
+                          <Github className="w-4 h-4" />
+                        </div>
+                        <input
+                          type="url"
+                          value={formData.socialLinks.github}
+                          onChange={(e) => handleSocialLinkChange("github", e.target.value)}
+                          placeholder="https://github.com/example"
+                          className={`w-full h-10 pl-9 pr-3.5 text-xs bg-[#F7F6F2] border rounded-xl focus:outline-none focus:border-[#1B4332] text-[#16160F] transition-colors ${
+                            socialErrors.github
+                              ? "border-red-500 bg-red-50/30"
+                              : isFieldSocialModified("github")
+                              ? "border-[#1B4332] bg-[#E4EEE8]/30 font-medium"
+                              : "border-[#E6E3DA]"
+                          }`}
+                        />
+                      </div>
+                      {socialErrors.github && (
+                        <p className="text-[10px] text-red-600 font-medium mt-1">{socialErrors.github}</p>
+                      )}
+                    </div>
+
+                    {/* Instagram */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#16160F] mb-1">Instagram URL</label>
+                      <div className="relative flex items-center">
+                        <div className="absolute left-3 text-[#6B6858] pointer-events-none">
+                          <Instagram className="w-4 h-4" />
+                        </div>
+                        <input
+                          type="url"
+                          value={formData.socialLinks.instagram}
+                          onChange={(e) => handleSocialLinkChange("instagram", e.target.value)}
+                          placeholder="https://www.instagram.com/example"
+                          className={`w-full h-10 pl-9 pr-3.5 text-xs bg-[#F7F6F2] border rounded-xl focus:outline-none focus:border-[#1B4332] text-[#16160F] transition-colors ${
+                            socialErrors.instagram
+                              ? "border-red-500 bg-red-50/30"
+                              : isFieldSocialModified("instagram")
+                              ? "border-[#1B4332] bg-[#E4EEE8]/30 font-medium"
+                              : "border-[#E6E3DA]"
+                          }`}
+                        />
+                      </div>
+                      {socialErrors.instagram && (
+                        <p className="text-[10px] text-red-600 font-medium mt-1">{socialErrors.instagram}</p>
+                      )}
+                    </div>
+
+                    {/* YouTube */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#16160F] mb-1">YouTube URL</label>
+                      <div className="relative flex items-center">
+                        <div className="absolute left-3 text-[#6B6858] pointer-events-none">
+                          <Youtube className="w-4 h-4" />
+                        </div>
+                        <input
+                          type="url"
+                          value={formData.socialLinks.youtube}
+                          onChange={(e) => handleSocialLinkChange("youtube", e.target.value)}
+                          placeholder="https://www.youtube.com/@example"
+                          className={`w-full h-10 pl-9 pr-3.5 text-xs bg-[#F7F6F2] border rounded-xl focus:outline-none focus:border-[#1B4332] text-[#16160F] transition-colors ${
+                            socialErrors.youtube
+                              ? "border-red-500 bg-red-50/30"
+                              : isFieldSocialModified("youtube")
+                              ? "border-[#1B4332] bg-[#E4EEE8]/30 font-medium"
+                              : "border-[#E6E3DA]"
+                          }`}
+                        />
+                      </div>
+                      {socialErrors.youtube && (
+                        <p className="text-[10px] text-red-600 font-medium mt-1">{socialErrors.youtube}</p>
+                      )}
+                    </div>
+
+                    {/* Personal Website */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-[11px] font-bold text-[#16160F] mb-1">Personal Website URL</label>
+                      <div className="relative flex items-center">
+                        <div className="absolute left-3 text-[#6B6858] pointer-events-none">
+                          <Globe className="w-4 h-4" />
+                        </div>
+                        <input
+                          type="url"
+                          value={formData.socialLinks.website}
+                          onChange={(e) => handleSocialLinkChange("website", e.target.value)}
+                          placeholder="https://example.com"
+                          className={`w-full h-10 pl-9 pr-3.5 text-xs bg-[#F7F6F2] border rounded-xl focus:outline-none focus:border-[#1B4332] text-[#16160F] transition-colors ${
+                            socialErrors.website
+                              ? "border-red-500 bg-red-50/30"
+                              : isFieldSocialModified("website")
+                              ? "border-[#1B4332] bg-[#E4EEE8]/30 font-medium"
+                              : "border-[#E6E3DA]"
+                          }`}
+                        />
+                      </div>
+                      {socialErrors.website && (
+                        <p className="text-[10px] text-red-600 font-medium mt-1">{socialErrors.website}</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Profile Photo Upload Dropzone */}

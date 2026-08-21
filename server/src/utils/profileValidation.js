@@ -35,6 +35,7 @@ const createPlatformValidator = (platformName, allowedHostnames) => {
         message: `Please enter a valid ${platformName} URL (e.g. https://${allowedHostnames[0]}/...)`,
       }
     )
+    .nullable()
     .optional()
     .or(z.literal(""));
 };
@@ -54,6 +55,7 @@ const websiteValidator = z
       message: "Please enter a valid website URL starting with http:// or https://",
     }
   )
+  .nullable()
   .optional()
   .or(z.literal(""));
 
@@ -66,6 +68,7 @@ const socialLinksSchema = z
     website: websiteValidator,
   })
   .strict("Unrecognized fields inside socialLinks are not allowed")
+  .nullable()
   .optional();
 
 const updateProfileSchema = z.object({

@@ -10,6 +10,7 @@ import ReviewsSection from "../components/profile/ReviewsSection";
 import PortfolioSection from "../components/profile/PortfolioSection";
 import SkillsSection from "../components/skills/SkillsSection";
 import SwapRequestModal from "../components/swaps/SwapRequestModal";
+import SocialLinksRow from "../components/profile/SocialLinksRow";
 import useAuth from "../hooks/useAuth";
 import { Eye, MapPin, Calendar } from "lucide-react";
 
@@ -225,13 +226,16 @@ export default function PublicProfile() {
                 </div>
               </div>
 
+              {/* Social Links Row */}
+              <SocialLinksRow socialLinks={profile.socialLinks} className="pt-1" />
+
               {/* INTEGRATED COMPACT STATISTICS SUMMARY BAR */}
               <CompactProfileStats
                 rating={profile.avgRating || 0.0}
                 completedSwaps={profile.completedSwaps || 0}
                 totalSkills={totalSkills}
                 portfolioCount="0 items"
-                className="mt-4"
+                className="mt-3"
               />
             </div>
 
