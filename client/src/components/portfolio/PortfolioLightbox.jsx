@@ -1,11 +1,14 @@
 import { useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { X, ChevronLeft, ChevronRight, Tag, Calendar, User } from "lucide-react";
+import { Link } from "react-router-dom";
+import { X, ChevronLeft, ChevronRight, Tag, Calendar } from "lucide-react";
+import ReactionPicker from "./ReactionPicker";
 
 /**
  * PortfolioLightbox Component
  *
- * Full-screen media viewer for images and short videos with keyboard & swipe navigation.
+ * Full-screen media viewer for images and short videos with keyboard & swipe navigation,
+ * real author profile attribution, and the new SkillSwap reaction burst & appreciation system.
  *
  * @param {Object} props
  * @param {boolean} props.isOpen - Whether lightbox is visible
@@ -13,6 +16,8 @@ import { X, ChevronLeft, ChevronRight, Tag, Calendar, User } from "lucide-react"
  * @param {Array} props.items - All portfolio items for next/prev navigation
  * @param {Function} props.onClose - Close callback
  * @param {Function} props.onSelectIndex - Change active index callback
+ * @param {Function} props.onReact - Reaction toggle callback
+ * @param {Function} props.onViewReactions - View reactions modal callback
  */
 export default function PortfolioLightbox({
   isOpen,
@@ -20,6 +25,8 @@ export default function PortfolioLightbox({
   items = [],
   onClose,
   onSelectIndex,
+  onReact,
+  onViewReactions,
 }) {
   const currentIndex = item && items ? items.findIndex((i) => (i._id || i.id) === (item._id || item.id)) : -1;
   const hasPrev = currentIndex > 0;
@@ -68,8 +75,13 @@ export default function PortfolioLightbox({
   const mediaUrl = item.media.url;
   const caption = item.caption || "";
   const skillName = item.skill?.name || "";
-  const authorName = item.user?.name || "Community Member";
-  const authorAvatar = item.user?.profilePicture || "";
+
+  // Author details (support populated user object or direct owner fields)
+  const authorObj = item.user && typeof item.user === "object" ? item.user : null;
+  const authorName = authorObj?.name?.trim() || item.ownerName?.trim() || "Unknown User";
+  const authorAvatar = authorObj?.profilePicture || item.ownerAvatar || "";
+  const authorId = authorObj?._id || authorObj?.id || (typeof item.user === "string" ? item.user : null);
+
   const formattedDate = item.createdAt
     ? new Date(item.createdAt).toLocaleDateString("en-US", {
         month: "short",
@@ -80,16 +92,21 @@ export default function PortfolioLightbox({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[99999] bg-black/92 backdrop-blur-md flex flex-col justify-between animate-fadeIn text-white select-none"
+      className="fixed inset-0 z-[99999] bg-black/94 backdrop-blur-md flex flex-col justify-between animate-fadeIn text-white select-none"
       role="dialog"
       aria-modal="true"
       aria-label="Portfolio Media Viewer"
     >
       {/* Top Controls Header */}
       <div className="w-full flex items-center justify-between p-4 sm:p-5 bg-gradient-to-b from-black/80 to-transparent z-20 shrink-0">
-        {/* Author / Date Info */}
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-[#1B4332] text-white font-bold text-xs flex items-center justify-center overflow-hidden border border-white/20 shrink-0">
+        {/* Author / Date Info (Clickable profile navigation) */}
+        <Link
+          to={authorId ? `/profile/${authorId}` : "#"}
+          onClick={() => onClose?.()}
+          className="flex items-center gap-3 group cursor-pointer"
+          title={`View ${authorName}'s profile`}
+        >
+          <div className="w-10 h-10 rounded-full bg-[#1B4332] text-white font-bold text-sm flex items-center justify-center overflow-hidden border border-white/20 shrink-0 group-hover:ring-2 group-hover:ring-[#3FA873] transition-all shadow-md">
             {authorAvatar ? (
               <img src={authorAvatar} alt={authorName} className="w-full h-full object-cover" />
             ) : (
@@ -97,7 +114,9 @@ export default function PortfolioLightbox({
             )}
           </div>
           <div>
-            <h3 className="text-xs sm:text-sm font-bold text-white leading-tight">{authorName}</h3>
+            <h3 className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300 transition-colors leading-tight">
+              {authorName}
+            </h3>
             {formattedDate && (
               <p className="text-[11px] text-white/60 flex items-center gap-1 mt-0.5">
                 <Calendar className="w-3 h-3 text-white/40" />
@@ -105,7 +124,7 @@ export default function PortfolioLightbox({
               </p>
             )}
           </div>
-        </div>
+        </Link>
 
         {/* Counter and Close button */}
         <div className="flex items-center gap-3">
@@ -117,7 +136,7 @@ export default function PortfolioLightbox({
           <button
             type="button"
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-all cursor-pointer border border-white/15"
+            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-all cursor-pointer border border-white/15 active:scale-95"
             title="Close (Esc)"
             aria-label="Close media viewer"
           >
@@ -153,14 +172,14 @@ export default function PortfolioLightbox({
               controls
               autoPlay
               playsInline
-              className="max-h-[72vh] max-w-[92vw] sm:max-w-[85vw] rounded-xl shadow-2xl object-contain bg-black"
+              className="max-h-[64vh] max-w-[92vw] sm:max-w-[85vw] rounded-xl shadow-2xl object-contain bg-black"
             />
           ) : (
             <img
               key={mediaUrl}
               src={mediaUrl}
               alt={caption || "Portfolio media"}
-              className="max-h-[72vh] max-w-[92vw] sm:max-w-[85vw] rounded-xl shadow-2xl object-contain"
+              className="max-h-[64vh] max-w-[92vw] sm:max-w-[85vw] rounded-xl shadow-2xl object-contain"
             />
           )}
         </div>
@@ -182,22 +201,34 @@ export default function PortfolioLightbox({
         )}
       </div>
 
-      {/* Bottom Caption & Linked Skill Footer */}
-      {(caption || skillName) && (
-        <div className="w-full bg-gradient-to-t from-black/90 via-black/70 to-transparent p-4 sm:p-5 z-20 shrink-0 max-w-4xl mx-auto space-y-2">
-          {skillName && (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-[#1B4332] text-emerald-100 border border-emerald-500/30">
+      {/* Bottom Caption, Linked Skill & SkillSwap Reaction System Footer */}
+      <div className="w-full bg-gradient-to-t from-black/95 via-black/80 to-transparent p-4 sm:p-5 z-20 shrink-0 max-w-4xl mx-auto space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          {/* Skill Tag */}
+          {skillName ? (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#1B4332] text-emerald-100 border border-emerald-500/30">
               <Tag className="w-3 h-3 text-emerald-300" />
               <span>Skill: {skillName}</span>
             </span>
+          ) : (
+            <div />
           )}
-          {caption && (
-            <p className="text-xs sm:text-sm text-white/90 leading-relaxed font-medium">
-              {caption}
-            </p>
-          )}
+
+          {/* SkillSwap Reaction Interaction System */}
+          <ReactionPicker
+            item={item}
+            onReact={onReact}
+            onViewReactions={onViewReactions}
+            context="lightbox"
+          />
         </div>
-      )}
+
+        {caption && (
+          <p className="text-xs sm:text-sm text-white/90 leading-relaxed font-medium">
+            {caption}
+          </p>
+        )}
+      </div>
     </div>,
     document.body
   );

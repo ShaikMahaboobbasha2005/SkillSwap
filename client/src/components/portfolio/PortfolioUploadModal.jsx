@@ -14,21 +14,24 @@ const ALLOWED_VIDEO_EXTS = [".mp4", ".webm"];
 /**
  * PortfolioUploadModal Component
  *
- * Modal for uploading images and short videos to the user's portfolio.
+ * Modal for configuring and validating portfolio uploads.
+ * Dispatches an optimistic upload payload to the parent container.
  *
  * @param {Object} props
  * @param {boolean} props.isOpen - Whether modal is open
  * @param {Function} props.onClose - Close modal callback
- * @param {Function} props.onSuccess - Upload success callback (receives createdItem)
+ * @param {Function} props.onStartUpload - Callback invoked when upload begins
  * @param {number} [props.currentImageCount=0] - Current number of active portfolio images
  * @param {number} [props.currentVideoCount=0] - Current number of active portfolio videos
+ * @param {boolean} [props.isUploadingActive=false] - Whether an upload is currently running
  */
 export default function PortfolioUploadModal({
   isOpen,
   onClose,
-  onSuccess,
+  onStartUpload,
   currentImageCount = 0,
   currentVideoCount = 0,
+  isUploadingActive = false,
 }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -37,15 +40,16 @@ export default function PortfolioUploadModal({
   const [caption, setCaption] = useState("");
   const [selectedSkillId, setSelectedSkillId] = useState("");
   const [userSkills, setUserSkills] = useState([]);
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [isDragOver, setIsDragOver] = useState(false);
 
   const fileInputRef = useRef(null);
+  const uploadStartedRef = useRef(false);
 
   // Fetch user's active skills for optional linking
   useEffect(() => {
     if (isOpen) {
+      uploadStartedRef.current = false;
       getOwnSkills()
         .then((res) => {
           if (res?.success && Array.isArray(res.data)) {
@@ -58,9 +62,12 @@ export default function PortfolioUploadModal({
     }
   }, [isOpen]);
 
-  // Reset form on modal open/close
+  // Reset form on modal open/close (revokes object URL only if upload was NOT initiated)
   useEffect(() => {
     if (!isOpen) {
+      if (!uploadStartedRef.current && previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
       setSelectedFile(null);
       setPreviewUrl("");
       setMediaType("image");
@@ -68,18 +75,9 @@ export default function PortfolioUploadModal({
       setCaption("");
       setSelectedSkillId("");
       setError("");
-      setUploading(false);
+      uploadStartedRef.current = false;
     }
   }, [isOpen]);
-
-  // Clean up object URLs on unmount/change
-  useEffect(() => {
-    return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
 
   const handleFileValidationAndSet = (file) => {
     setError("");
@@ -126,6 +124,11 @@ export default function PortfolioUploadModal({
     }
 
     // 3. Create Preview and Read Video Duration
+    // Revoke previous preview if changing file before submit
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
     const objectUrl = URL.createObjectURL(file);
     setSelectedFile(file);
     setPreviewUrl(objectUrl);
@@ -158,9 +161,9 @@ export default function PortfolioUploadModal({
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!selectedFile || uploading) return;
+    if (!selectedFile || isUploadingActive) return;
 
     // Final checks
     if (mediaType === "video" && videoDuration && videoDuration > MAX_VIDEO_DURATION_SEC) {
@@ -168,45 +171,42 @@ export default function PortfolioUploadModal({
       return;
     }
 
-    setUploading(true);
-    setError("");
-
-    try {
-      const formData = new FormData();
-      formData.append("media", selectedFile);
-      if (caption.trim()) {
-        formData.append("caption", caption.trim());
-      }
-      if (selectedSkillId) {
-        formData.append("skillId", selectedSkillId);
-      }
-
-      const res = await createPortfolioItem(formData);
-      if (res?.success && res?.data) {
-        onSuccess?.(res.data);
-        onClose?.();
-      }
-    } catch (err) {
-      console.error("Failed to upload portfolio media:", err);
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          "Failed to upload portfolio item. Please check file format and restrictions."
-      );
-    } finally {
-      setUploading(false);
+    const formData = new FormData();
+    formData.append("media", selectedFile);
+    if (caption.trim()) {
+      formData.append("caption", caption.trim());
     }
+    if (selectedSkillId) {
+      formData.append("skillId", selectedSkillId);
+    }
+
+    const selectedSkill = userSkills.find((s) => s._id === selectedSkillId) || null;
+
+    uploadStartedRef.current = true;
+
+    onStartUpload?.({
+      selectedFile,
+      previewUrl,
+      mediaType,
+      videoDuration,
+      caption: caption.trim(),
+      selectedSkillId,
+      skill: selectedSkill,
+      formData,
+    });
+
+    onClose?.();
   };
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={uploading ? undefined : onClose}
+      onClose={onClose}
       maxWidth="max-w-lg"
       title="Upload to Portfolio"
-      showCloseButton={!uploading}
-      closeOnBackdrop={!uploading}
-      closeOnEsc={!uploading}
+      showCloseButton={true}
+      closeOnBackdrop={true}
+      closeOnEsc={true}
     >
       <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
         {/* Error Alert */}
@@ -285,21 +285,19 @@ export default function PortfolioUploadModal({
             )}
 
             {/* Remove File Button */}
-            {!uploading && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedFile(null);
-                  setPreviewUrl("");
-                  setError("");
-                }}
-                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center transition-all cursor-pointer shadow-md"
-                title="Change File"
-                aria-label="Remove selected file"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedFile(null);
+                setPreviewUrl("");
+                setError("");
+              }}
+              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 hover:bg-black text-white flex items-center justify-center transition-all cursor-pointer shadow-md"
+              title="Change File"
+              aria-label="Remove selected file"
+            >
+              <X className="w-4 h-4" />
+            </button>
 
             {/* Media Type & Duration Tag */}
             <div className="absolute bottom-2 left-2 flex items-center gap-1.5 pointer-events-none">
@@ -336,9 +334,8 @@ export default function PortfolioUploadModal({
             maxLength={500}
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
-            disabled={uploading}
             placeholder="Describe your work, tools used, or project context..."
-            className="w-full px-3.5 py-2.5 text-xs text-[#16160F] bg-white border border-[#E6E3DA] rounded-xl focus:outline-none focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] placeholder:text-[#6B6858]/60 resize-none transition-all disabled:opacity-50"
+            className="w-full px-3.5 py-2.5 text-xs text-[#16160F] bg-white border border-[#E6E3DA] rounded-xl focus:outline-none focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] placeholder:text-[#6B6858]/60 resize-none transition-all"
           />
         </div>
 
@@ -352,8 +349,7 @@ export default function PortfolioUploadModal({
             id="portfolio-skill"
             value={selectedSkillId}
             onChange={(e) => setSelectedSkillId(e.target.value)}
-            disabled={uploading}
-            className="w-full px-3.5 py-2.5 text-xs text-[#16160F] bg-white border border-[#E6E3DA] rounded-xl focus:outline-none focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] transition-all disabled:opacity-50 cursor-pointer"
+            className="w-full px-3.5 py-2.5 text-xs text-[#16160F] bg-white border border-[#E6E3DA] rounded-xl focus:outline-none focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] transition-all cursor-pointer"
           >
             <option value="">No linked skill</option>
             {userSkills.map((skill) => (
@@ -369,22 +365,22 @@ export default function PortfolioUploadModal({
           <button
             type="button"
             onClick={onClose}
-            disabled={uploading}
-            className="px-4 py-2 text-xs font-semibold text-[#16160F] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] rounded-xl transition-all cursor-pointer disabled:opacity-50"
+            className="px-4 py-2 text-xs font-semibold text-[#16160F] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] rounded-xl transition-all cursor-pointer"
           >
             Cancel
           </button>
 
           <button
             type="submit"
-            disabled={!selectedFile || uploading || (mediaType === "video" && videoDuration > MAX_VIDEO_DURATION_SEC)}
+            disabled={
+              !selectedFile ||
+              isUploadingActive ||
+              (mediaType === "video" && videoDuration > MAX_VIDEO_DURATION_SEC)
+            }
             className="px-5 py-2 text-xs font-bold text-white bg-[#1B4332] hover:bg-[#143326] rounded-xl transition-all active:scale-[0.98] shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1.5"
           >
-            {uploading ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Uploading...</span>
-              </>
+            {isUploadingActive ? (
+              <span>Upload in progress...</span>
             ) : (
               <span>Upload Media</span>
             )}

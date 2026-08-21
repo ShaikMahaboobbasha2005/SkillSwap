@@ -14,6 +14,13 @@ MongoDB Atlas (free tier), accessed via Mongoose. Collections below map directly
   profileBanner: String,              // Cloudinary URL
   profileBannerPublicId: String,      // Cloudinary public_id for safe deletion
   location: String,                   // city only, e.g. "Bangalore" — no exact address
+  socialLinks: {                      // optional full URLs, default ""
+    linkedin: String,
+    github: String,
+    instagram: String,
+    youtube: String,
+    website: String
+  },
   role: String,                // "user" | "admin" — reserved for future use (e.g. admin panel); guests are unauthenticated visitors and are never stored as a User document
   skillsOffered: [ObjectId],   // ref: Skill
   skillsWanted: [ObjectId],    // ref: Skill
@@ -150,6 +157,13 @@ A shared lookup collection — users reference `Skill._id` in `skillsOffered`/`s
   skill: ObjectId,       // ref: Skill (optional linked skill owned by user)
   moderationStatus: String, // "active" | "flagged" | "hidden" | "removed" (default: "active")
   reportCount: Number,   // default: 0
+  reactions: [           // subdocument array for user reactions (1 active reaction per user)
+    {
+      user: ObjectId,    // ref: User (required)
+      type: String,      // enum: ["like", "impressive", "great_work", "creative"] (required)
+      createdAt: Date    // timestamp (default: Date.now)
+    }
+  ],
   createdAt: Date,
   updatedAt: Date
 }
@@ -168,7 +182,7 @@ A shared lookup collection — users reference `Skill._id` in `skillsOffered`/`s
 `User.avgRating` and `User.completedSwaps` are server-managed statistics that can never be modified directly by client requests:
 - `User.avgRating`: Recalculated server-side in `ratingService.js` using MongoDB aggregation (`Rating.aggregate({ ratedUser: userId })`) whenever a `Rating` document is successfully persisted. Based strictly on ratings RECEIVED by that user, rounded to 1 decimal place (`Math.round(average * 10) / 10`). Defaults to `0` if 0 ratings received. Submitting a rating updates only the rated user's reputation.
 - `User.completedSwaps`: Incremented server-side once for both participants when two-party completion confirmation succeeds in `swapService.js`. Never modified by rating submissions.
-- `PUT /api/profile` / `PUT /api/users/me` strictly whitelist-filters editable profile fields (`name`, `profilePicture`, `profileBanner`, `location`), protecting `avgRating` and `completedSwaps` from manual client-side manipulation.
+- `PUT /api/profile` / `PUT /api/users/me` strictly whitelist-filters editable profile fields (`name`, `profilePicture`, `profileBanner`, `location`, `socialLinks`), protecting `avgRating` and `completedSwaps` from manual client-side manipulation.
 
 ## 11. Notes on Scalability
 - Referencing `Skill` by ObjectId instead of storing skill names as free text avoids duplication and keeps matching queries exact-match rather than fuzzy-string

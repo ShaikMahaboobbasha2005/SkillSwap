@@ -41,13 +41,15 @@ export const getPortfolioItem = async (id) => {
 /**
  * Create a new portfolio item (multipart/form-data with media file).
  * @param {FormData} formData - FormData containing media, optional caption, optional skillId
+ * @param {Function} [onUploadProgress] - Optional Axios upload progress callback
  * @returns {Promise<Object>} API response { success: true, message: string, data: {} }
  */
-export const createPortfolioItem = async (formData) => {
+export const createPortfolioItem = async (formData, onUploadProgress) => {
   const response = await api.post("/portfolio", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
+    onUploadProgress,
   });
   return response.data;
 };
@@ -73,12 +75,35 @@ export const deletePortfolioItem = async (id) => {
   return response.data;
 };
 
+/**
+ * Add, change, or remove reaction on a portfolio item (toggle).
+ * @param {string} id - Portfolio item ID
+ * @param {string} type - "like" | "impressive" | "great_work" | "creative"
+ * @returns {Promise<Object>} API response { success: true, message: string, data: { action, reactionSummary, currentUserReaction } }
+ */
+export const togglePortfolioReaction = async (id, type) => {
+  const response = await api.post(`/portfolio/${id}/reaction`, { type });
+  return response.data;
+};
+
+/**
+ * Get all users who reacted to a portfolio item.
+ * @param {string} id - Portfolio item ID
+ * @returns {Promise<Object>} API response { success: true, data: { reactions: [], total: number } }
+ */
+export const getPortfolioReactions = async (id) => {
+  const response = await api.get(`/portfolio/${id}/reactions`);
+  return response.data;
+};
+
 const portfolioService = {
   getUserPortfolio,
   getPortfolioItem,
   createPortfolioItem,
   updatePortfolioItem,
   deletePortfolioItem,
+  togglePortfolioReaction,
+  getPortfolioReactions,
 };
 
 export default portfolioService;

@@ -108,18 +108,77 @@ const createPortfolioItem = async (userId, file, body = {}) => {
 
   await newPortfolio.save();
 
-  return await Portfolio.findById(newPortfolio._id)
+  const savedItem = await Portfolio.findById(newPortfolio._id)
     .populate("user", USER_POPULATE_FIELDS)
     .populate("skill", SKILL_POPULATE_FIELDS);
+
+  return formatPortfolioItem(savedItem, userId);
+};
+
+/**
+ * Format reaction summary and current user reaction state
+ * @param {Array} reactions - Reactions array
+ * @param {string|null} currentUserId - Authenticated user ID if present
+ * @returns {{reactionSummary: Object, currentUserReaction: string|null}}
+ */
+const formatReactionSummary = (reactions = [], currentUserId = null) => {
+  const summary = {
+    like: 0,
+    impressive: 0,
+    great_work: 0,
+    creative: 0,
+    total: 0,
+  };
+
+  let currentUserReaction = null;
+
+  if (Array.isArray(reactions)) {
+    for (const r of reactions) {
+      if (r && r.type && summary.hasOwnProperty(r.type)) {
+        summary[r.type] += 1;
+        summary.total += 1;
+      }
+      if (
+        currentUserId &&
+        r &&
+        r.user &&
+        (r.user._id ? r.user._id.toString() : r.user.toString()) === currentUserId.toString()
+      ) {
+        currentUserReaction = r.type;
+      }
+    }
+  }
+
+  return {
+    reactionSummary: summary,
+    currentUserReaction,
+  };
+};
+
+/**
+ * Helper to attach formatted reaction summary to portfolio document
+ * @param {Object} item - Mongoose portfolio document or object
+ * @param {string|null} currentUserId - Authenticated user ID if present
+ * @returns {Object}
+ */
+const formatPortfolioItem = (item, currentUserId = null) => {
+  if (!item) return null;
+  const obj = typeof item.toObject === "function" ? item.toObject() : { ...item };
+  const { reactionSummary, currentUserReaction } = formatReactionSummary(obj.reactions, currentUserId);
+  obj.reactionSummary = reactionSummary;
+  obj.currentUserReaction = currentUserReaction;
+  delete obj.reactions;
+  return obj;
 };
 
 /**
  * Get all active portfolio items for a specific user
  * @param {string} targetUserId - Target user ID
  * @param {Object} queryParams - Query parameters (e.g. ?type=image|video)
+ * @param {string|null} currentUserId - Current authenticated user ID if any
  * @returns {Promise<{portfolio: Array, total: number}>}
  */
-const getUserPortfolio = async (targetUserId, queryParams = {}) => {
+const getUserPortfolio = async (targetUserId, queryParams = {}, currentUserId = null) => {
   validateObjectId(targetUserId, "user ID");
 
   const targetUser = await User.findById(targetUserId);
@@ -146,20 +205,24 @@ const getUserPortfolio = async (targetUserId, queryParams = {}) => {
 
   const portfolio = await Portfolio.find(filter)
     .sort({ createdAt: -1 })
+    .populate("user", USER_POPULATE_FIELDS)
     .populate("skill", SKILL_POPULATE_FIELDS);
 
+  const formattedPortfolio = portfolio.map((item) => formatPortfolioItem(item, currentUserId));
+
   return {
-    portfolio,
-    total: portfolio.length,
+    portfolio: formattedPortfolio,
+    total: formattedPortfolio.length,
   };
 };
 
 /**
  * Get a single portfolio item by ID
  * @param {string} portfolioId - Portfolio item ID
+ * @param {string|null} currentUserId - Current authenticated user ID if any
  * @returns {Promise<Object>}
  */
-const getPortfolioItemById = async (portfolioId) => {
+const getPortfolioItemById = async (portfolioId, currentUserId = null) => {
   validateObjectId(portfolioId, "portfolio ID");
 
   const item = await Portfolio.findOne({
@@ -175,7 +238,7 @@ const getPortfolioItemById = async (portfolioId) => {
     throw error;
   }
 
-  return item;
+  return formatPortfolioItem(item, currentUserId);
 };
 
 /**
@@ -230,9 +293,11 @@ const updatePortfolioItem = async (portfolioId, userId, body = {}) => {
 
   await item.save();
 
-  return await Portfolio.findById(item._id)
+  const updatedItem = await Portfolio.findById(item._id)
     .populate("user", USER_POPULATE_FIELDS)
     .populate("skill", SKILL_POPULATE_FIELDS);
+
+  return formatPortfolioItem(updatedItem, userId);
 };
 
 /**
@@ -284,10 +349,125 @@ const deletePortfolioItem = async (portfolioId, userId) => {
   };
 };
 
+/**
+ * Toggle / update reaction on a portfolio item (1 reaction per user rule)
+ * @param {string} portfolioId - Portfolio item ID
+ * @param {string} userId - Authenticated user ID
+ * @param {string} reactionType - "like" | "impressive" | "great_work" | "creative"
+ * @returns {Promise<{action: string, reactionSummary: Object, currentUserReaction: string|null}>}
+ */
+const toggleReaction = async (portfolioId, userId, reactionType) => {
+  validateObjectId(portfolioId, "portfolio ID");
+  validateObjectId(userId, "user ID");
+
+  const allowedTypes = ["like", "impressive", "great_work", "creative"];
+  if (!allowedTypes.includes(reactionType)) {
+    const error = new Error("Invalid reaction type. Allowed values: like, impressive, great_work, creative");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const item = await Portfolio.findOne({
+    _id: portfolioId,
+    moderationStatus: "active",
+  });
+
+  if (!item) {
+    const error = new Error("Portfolio item not found.");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (!Array.isArray(item.reactions)) {
+    item.reactions = [];
+  }
+
+  const existingIndex = item.reactions.findIndex(
+    (r) => r.user && r.user.toString() === userId.toString()
+  );
+
+  let action = "added";
+
+  if (existingIndex >= 0) {
+    if (item.reactions[existingIndex].type === reactionType) {
+      // Same reaction clicked -> remove it
+      item.reactions.splice(existingIndex, 1);
+      action = "removed";
+    } else {
+      // Different reaction clicked -> update type
+      item.reactions[existingIndex].type = reactionType;
+      item.reactions[existingIndex].createdAt = new Date();
+      action = "updated";
+    }
+  } else {
+    // New reaction -> push
+    item.reactions.push({
+      user: userId,
+      type: reactionType,
+      createdAt: new Date(),
+    });
+    action = "added";
+  }
+
+  await item.save();
+
+  const { reactionSummary, currentUserReaction } = formatReactionSummary(item.reactions, userId);
+
+  return {
+    action,
+    reactionSummary,
+    currentUserReaction,
+  };
+};
+
+/**
+ * Get all users who reacted to a portfolio item with sanitized public user fields
+ * @param {string} portfolioId - Portfolio item ID
+ * @returns {Promise<{reactions: Array, total: number}>}
+ */
+const getPortfolioReactions = async (portfolioId) => {
+  validateObjectId(portfolioId, "portfolio ID");
+
+  const item = await Portfolio.findOne({
+    _id: portfolioId,
+    moderationStatus: "active",
+  }).populate("reactions.user", "_id name profilePicture location");
+
+  if (!item) {
+    const error = new Error("Portfolio item not found.");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const sanitizedReactions = (item.reactions || [])
+    .filter((r) => r.user && r.user._id)
+    .map((r) => ({
+      _id: r._id,
+      type: r.type,
+      createdAt: r.createdAt,
+      user: {
+        _id: r.user._id,
+        name: r.user.name ? r.user.name.trim() : "Unknown User",
+        profilePicture: r.user.profilePicture || "",
+        location: r.user.location || "",
+      },
+    }))
+    .reverse(); // Newest reactions first
+
+  return {
+    reactions: sanitizedReactions,
+    total: sanitizedReactions.length,
+  };
+};
+
 module.exports = {
   createPortfolioItem,
   getUserPortfolio,
   getPortfolioItemById,
   updatePortfolioItem,
   deletePortfolioItem,
+  toggleReaction,
+  getPortfolioReactions,
+  formatReactionSummary,
+  formatPortfolioItem,
 };

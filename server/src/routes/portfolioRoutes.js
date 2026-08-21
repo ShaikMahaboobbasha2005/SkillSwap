@@ -2,9 +2,13 @@ const express = require("express");
 const router = express.Router();
 const portfolioController = require("../controllers/portfolioController");
 const authMiddleware = require("../middleware/authMiddleware");
+const { optionalAuthMiddleware } = require("../middleware/authMiddleware");
 const { handlePortfolioUploadMiddleware } = require("../middleware/uploadMiddleware");
 const validateRequest = require("../middleware/validateRequest");
-const { updatePortfolioSchema } = require("../utils/portfolioValidation");
+const {
+  updatePortfolioSchema,
+  portfolioReactionSchema,
+} = require("../utils/portfolioValidation");
 
 // Protected: Create portfolio item (multipart/form-data with media file)
 router.post(
@@ -14,11 +18,34 @@ router.post(
   portfolioController.createPortfolioItem
 );
 
-// Public: Get user's active portfolio items (supports optional ?type=image|video)
-router.get("/user/:userId", portfolioController.getUserPortfolio);
+// Protected: Add / change / remove reaction on a portfolio item
+router.post(
+  "/:id/reaction",
+  authMiddleware,
+  validateRequest(portfolioReactionSchema),
+  portfolioController.toggleReaction
+);
 
-// Public: Get single active portfolio item by ID
-router.get("/:id", portfolioController.getPortfolioItemById);
+// Public / Optional Auth: Get all users who reacted to a portfolio item
+router.get(
+  "/:id/reactions",
+  optionalAuthMiddleware,
+  portfolioController.getPortfolioReactions
+);
+
+// Public / Optional Auth: Get user's active portfolio items (supports optional ?type=image|video)
+router.get(
+  "/user/:userId",
+  optionalAuthMiddleware,
+  portfolioController.getUserPortfolio
+);
+
+// Public / Optional Auth: Get single active portfolio item by ID
+router.get(
+  "/:id",
+  optionalAuthMiddleware,
+  portfolioController.getPortfolioItemById
+);
 
 // Protected: Update portfolio item (caption, skillId)
 router.patch(

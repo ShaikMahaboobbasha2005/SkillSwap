@@ -41,8 +41,15 @@ const portfolioTypeFilterSchema = z.object({
     .optional(),
 });
 
+const portfolioReactionSchema = z.object({
+  type: z.enum(["like", "impressive", "great_work", "creative"], {
+    errorMap: () => ({ message: "Invalid reaction type. Allowed values: like, impressive, great_work, creative" }),
+  }),
+});
+
 module.exports = {
   createPortfolioSchema,
   updatePortfolioSchema,
   portfolioTypeFilterSchema,
+  portfolioReactionSchema,
 };

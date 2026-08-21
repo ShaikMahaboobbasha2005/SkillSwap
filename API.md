@@ -13,8 +13,10 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 ## Users / Profile
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/api/users/:id` | Public | View a user's profile (name, pfp, location, rating, completed swaps, skills, portfolio) |
-| PUT | `/api/users/me` | Protected | Edit own profile: name, profile picture, location |
+| GET | `/api/users/:id` | Public | View a user's profile (name, pfp, banner, location, socialLinks, rating, completed swaps, skills, portfolio) |
+| GET | `/api/profile/me` | Protected | Get current user's own profile |
+| PUT | `/api/users/me` / `/api/profile/me` | Protected | Edit own profile: name, profile picture, banner, location, socialLinks (`linkedin`, `github`, `instagram`, `youtube`, `website` validated URLs) |
+| POST | `/api/profile/upload-image` | Protected | Upload profile photo or banner image (via Cloudinary) |
 | POST | `/api/users/me/portfolio` | Protected | Upload an image/video to portfolio (via Cloudinary) |
 | DELETE | `/api/users/me/portfolio/:mediaId` | Protected | Remove a portfolio item |
 
@@ -128,9 +130,11 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 ## Portfolio
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| POST | `/api/portfolio` | Protected | Upload and create a portfolio item (multipart/form-data with `media` file, optional `caption` [max 500 chars], optional `skillId`). Enforces format validation (images: jpg, jpeg, png, webp ≤ 10MB; videos: mp4, webm ≤ 50MB), limits (max 20 images, 10 videos, 30 total items), video duration limit (≤ 60s with automatic cleanup if exceeded), and skill ownership validation. Returns `201 Created` with created portfolio item populated with user and skill. |
-| GET | `/api/portfolio/user/:userId` | Public | Get all active portfolio items for a user, sorted newest first (`createdAt: -1`). Supports optional `?type=image\|video` filter. Populates linked skill (`name category level type`). Returns `{ success: true, data: { portfolio: [...], total: Number } }`. |
-| GET | `/api/portfolio/:id` | Public | Get a single active portfolio item by ID with populated `user` (`name profilePicture location avgRating completedSwaps`) and `skill`. Returns `404 Not Found` if nonexistent or not active. |
+| POST | `/api/portfolio` | Protected | Upload and create a portfolio item (multipart/form-data with `media` file, optional `caption` [max 500 chars], optional `skillId`). Enforces format validation (images: jpg, jpeg, png, webp ≤ 10MB; videos: mp4, webm ≤ 50MB), limits (max 20 images, 10 videos, 30 total items), video duration limit (≤ 60s with automatic cleanup if exceeded), and skill ownership validation. Returns `201 Created` with created portfolio item populated with user and skill, plus `reactionSummary` and `currentUserReaction`. |
+| GET | `/api/portfolio/user/:userId` | Public / Optional Auth | Get all active portfolio items for a user, sorted newest first (`createdAt: -1`). Supports optional `?type=image\|video` filter. Populates linked skill (`name category level type`). Returns `{ success: true, data: { portfolio: [...], total: Number } }` with `reactionSummary` ({ like, impressive, great_work, creative, total }) and `currentUserReaction` for each item. |
+| GET | `/api/portfolio/:id` | Public / Optional Auth | Get a single active portfolio item by ID with populated `user` (`name profilePicture location avgRating completedSwaps`) and `skill`, plus `reactionSummary` and `currentUserReaction`. Returns `404 Not Found` if nonexistent or not active. |
+| POST | `/api/portfolio/:id/reaction` | Protected | Add, change, or remove reaction on a portfolio item (1 reaction per user rule). Body: `{ type: "like" \| "impressive" \| "great_work" \| "creative" }`. Toggles reaction off if same type is clicked again; updates reaction type if different. Returns `{ success: true, message: String, data: { action: "added" \| "updated" \| "removed", reactionSummary: Object, currentUserReaction: String\|null } }`. |
+| GET | `/api/portfolio/:id/reactions` | Public / Optional Auth | Get list of users who reacted to a portfolio item. Populates only sanitized public user fields (`_id`, `name`, `profilePicture`). Never exposes emails or private data. Returns `{ success: true, data: { reactions: [{ _id, type, createdAt, user: { _id, name, profilePicture } }], total: Number } }`. |
 | PATCH | `/api/portfolio/:id` | Protected | Update caption (max 500 chars) and/or linked skill for an owned portfolio item. Validates ownership (`403 Forbidden` if not owner) and skill ownership. Media itself cannot be modified. Returns `200 OK` with updated item. |
 | DELETE | `/api/portfolio/:id` | Protected | Permanently delete an owned portfolio item and its Cloudinary media asset. Validates ownership (`403 Forbidden` if not owner). Returns `200 OK`. |
 

@@ -75,7 +75,7 @@ Avatar:  fully circular
 
 **Cards** (Linear) — flat surface, 1px `border` token, consistent internal padding, no heavy drop shadows; hover state is a subtle border-color shift, not elevation.
 
-**Profile Page** (GitHub + LinkedIn layout) — pfp + name + location at top, stats row (avg rating, completed swaps) beneath, independent collapsible skills-offered/wanted sections (initially displaying first 2 cards with header chevron and dynamic `+X more skills` / `Show less` toggles when ≥3 skills), portfolio preview section (`PortfolioSection`), and reviews & ratings list (`ReviewsSection`).
+**Profile Page** (GitHub + LinkedIn layout) — pfp + banner + name + location at top, short bio, clean horizontal social links icon button row (`SocialLinksRow` featuring accessible LinkedIn, GitHub, Instagram, YouTube, and Website icon buttons with Pine Green `#1B4332` hover states and safe `_blank` navigation), stats row (avg rating, completed swaps) beneath, independent collapsible skills-offered/wanted sections (initially displaying first 2 cards with header chevron and dynamic `+X more skills` / `Show less` toggles when ≥3 skills), portfolio preview section (`PortfolioSection`), and reviews & ratings list (`ReviewsSection`). If a user has no social links, no empty icon placeholders are rendered.
 
 **Search** (Airbnb layout) — persistent filter bar at top (skill search input), result cards in a responsive grid below, card shows pfp, name, location, top skills, rating.
 
@@ -83,7 +83,13 @@ Avatar:  fully circular
 
 **Navbar & Profile Dropdown** — Sticky top bar with logo, main links (Home, Discover, Swap Requests, Chats with real-time numeric badges), and clean avatar trigger. Desktop profile dropdown is simplified to My Profile, Settings (placeholder), divider, and Logout (red styling). Mobile drawer retains full primary navigation including Swap Requests and Chats.
 
-**Portfolio** (Instagram layout) — 3-column grid on desktop/tablet, 2-column on mobile, square thumbnails, tap opens a lightbox with caption and linked skill tag.
+**Portfolio** (Instagram layout) — 3-column grid on desktop/tablet, 2-column on mobile, square thumbnails, tap opens a lightbox with caption and linked skill tag. Optimistic upload cards render immediately upon selection with local preview, semi-transparent backdrop overlay (`bg-black/65`), live percentage text (`Uploading... X%`), and smooth progress bar using Pine accent token (`#3FA873`). Transitions to `Processing video...` / `Processing media...` when bytes reach 100% until Cloudinary confirms. Failed uploads render an `Upload failed` overlay with accessible `[ Retry ]` (Pine Green `#1B4332`) and `[ Remove ]` buttons.
+
+**Portfolio Reactions** — Confirmed portfolio items display a minimal, subtle reaction indicator on thumbnail bottom-left (e.g. `🔥 👍 12`) when total reactions > 0. Inside `PortfolioLightbox`, users interact with an elegant, modern **Appreciate system**:
+- **Default State**: Compact `✨ Appreciate` trigger button with Pine accent (`#1B4332`), or active selected chip (`🔥 Impressive`) with soft Pine glow.
+- **Reaction Burst**: Clicking the trigger playfully expands a staggered animated burst of 4 reactions (`👍 Like`, `🔥 Impressive`, `👏 Great Work`, `💡 Creative`) with scale-up, bounce pop, and smooth collapse upon selection.
+- **Reaction Summary**: When total reactions > 0, renders below the trigger as overlapping circular reaction bubbles (`◯🔥 ◯👍 ◯👏  12 reactions →`) that gently spread apart on hover.
+- **Who Reacted Modal**: Clicking the reaction summary opens `PortfolioReactionsModal` as an overlay above the active lightbox, displaying filter tabs (`All`, `🔥`, `👍`, `👏`, `💡`) and clickable user rows with real avatars, usernames, subtitles (location), and reaction badges that navigate directly to user profiles. Temporary uploading and failed cards are strictly isolated from reactions.
 
 **Forms & Modals** (Notion layout) — minimal borders, label above field, inline validation messages, grouped sections with subtle dividers rather than boxed panels. Request Skill Swap modal allows selecting any active offered skill belonging to the recipient user alongside requester's offered skill, preserving initial pre-selected skill as default.
 

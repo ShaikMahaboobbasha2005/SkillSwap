@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FolderGit2, ArrowRight, Play, Tag, Plus } from "lucide-react";
 import portfolioService from "../../services/portfolioService";
 import PortfolioLightbox from "../portfolio/PortfolioLightbox";
+import PortfolioReactionsModal from "../portfolio/PortfolioReactionsModal";
+import useAuth from "../../hooks/useAuth";
 
 /**
  * PortfolioSection Component
@@ -23,10 +25,14 @@ export default function PortfolioSection({
   initialItems,
 }) {
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
   const [items, setItems] = useState(Array.isArray(initialItems) ? initialItems : []);
   const [loading, setLoading] = useState(!initialItems && Boolean(userId));
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(-1);
+  const [reactionsModalItem, setReactionsModalItem] = useState(null);
+
+  const pendingReactionIdsRef = useRef(new Set());
 
   const fetchPreviewItems = useCallback(async () => {
     if (!userId) return;
@@ -51,6 +57,84 @@ export default function PortfolioSection({
       fetchPreviewItems();
     }
   }, [userId, initialItems, fetchPreviewItems]);
+
+  const handleToggleReaction = useCallback(
+    async (targetItem, reactionType) => {
+      if (!authUser) {
+        return;
+      }
+
+      const itemId = targetItem._id || targetItem.id;
+      if (!itemId) return;
+
+      if (pendingReactionIdsRef.current.has(itemId)) return;
+      pendingReactionIdsRef.current.add(itemId);
+
+      const prevItem = items.find((i) => (i._id || i.id) === itemId);
+      const prevReaction = prevItem?.currentUserReaction || null;
+      const prevSummary = prevItem?.reactionSummary || {
+        like: 0,
+        impressive: 0,
+        great_work: 0,
+        creative: 0,
+        total: 0,
+      };
+
+      const nextSummary = { ...prevSummary };
+      let nextReaction = null;
+
+      if (prevReaction === reactionType) {
+        nextSummary[reactionType] = Math.max(0, (nextSummary[reactionType] || 0) - 1);
+        nextSummary.total = Math.max(0, (nextSummary.total || 0) - 1);
+        nextReaction = null;
+      } else if (prevReaction) {
+        nextSummary[prevReaction] = Math.max(0, (nextSummary[prevReaction] || 0) - 1);
+        nextSummary[reactionType] = (nextSummary[reactionType] || 0) + 1;
+        nextReaction = reactionType;
+      } else {
+        nextSummary[reactionType] = (nextSummary[reactionType] || 0) + 1;
+        nextSummary.total = (nextSummary.total || 0) + 1;
+        nextReaction = reactionType;
+      }
+
+      setItems((prev) =>
+        prev.map((i) =>
+          (i._id || i.id) === itemId
+            ? { ...i, reactionSummary: nextSummary, currentUserReaction: nextReaction }
+            : i
+        )
+      );
+
+      try {
+        const res = await portfolioService.togglePortfolioReaction(itemId, reactionType);
+        if (res?.success && res?.data) {
+          setItems((prev) =>
+            prev.map((i) =>
+              (i._id || i.id) === itemId
+                ? {
+                    ...i,
+                    reactionSummary: res.data.reactionSummary,
+                    currentUserReaction: res.data.currentUserReaction,
+                  }
+                : i
+            )
+          );
+        }
+      } catch (err) {
+        console.error("Failed to toggle reaction in preview:", err);
+        setItems((prev) =>
+          prev.map((i) =>
+            (i._id || i.id) === itemId
+              ? { ...i, reactionSummary: prevSummary, currentUserReaction: prevReaction }
+              : i
+          )
+        );
+      } finally {
+        pendingReactionIdsRef.current.delete(itemId);
+      }
+    },
+    [authUser, items]
+  );
 
   const targetPortfolioUrl = isOwner ? "/portfolio" : `/portfolio/user/${userId}`;
   const previewList = items.slice(0, 3);
@@ -183,6 +267,16 @@ export default function PortfolioSection({
         items={previewList}
         onClose={() => setLightboxOpen(false)}
         onSelectIndex={(newIdx) => setLightboxIndex(newIdx)}
+        onReact={handleToggleReaction}
+        onViewReactions={(i) => setReactionsModalItem(i)}
+      />
+
+      {/* Reactions Modal */}
+      <PortfolioReactionsModal
+        isOpen={Boolean(reactionsModalItem)}
+        item={reactionsModalItem}
+        onClose={() => setReactionsModalItem(null)}
+        onCloseLightbox={() => setLightboxOpen(false)}
       />
     </section>
   );

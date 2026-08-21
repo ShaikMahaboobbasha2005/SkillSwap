@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import PortfolioCard from "../components/portfolio/PortfolioCard";
 import PortfolioLightbox from "../components/portfolio/PortfolioLightbox";
 import PortfolioUploadModal from "../components/portfolio/PortfolioUploadModal";
 import PortfolioEditModal from "../components/portfolio/PortfolioEditModal";
+import PortfolioReactionsModal from "../components/portfolio/PortfolioReactionsModal";
 import ConfirmModal from "../components/ConfirmModal";
 import ToastNotification from "../components/ToastNotification";
 import portfolioService from "../services/portfolioService";
@@ -19,6 +20,7 @@ import {
   AlertCircle,
   RefreshCw,
   FolderGit2,
+  Loader2,
 } from "lucide-react";
 
 export default function PortfolioPage() {
@@ -42,6 +44,7 @@ export default function PortfolioPage() {
   const [editingItem, setEditingItem] = useState(null);
   const [deleteTargetItem, setDeleteTargetItem] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [reactionsModalItem, setReactionsModalItem] = useState(null);
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -49,6 +52,23 @@ export default function PortfolioPage() {
 
   // Toast notification state
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+
+  // Blob URLs tracker for unmount cleanup
+  const activeBlobUrlsRef = useRef(new Set());
+  // Concurrency guard for rapid reaction clicks
+  const pendingReactionIdsRef = useRef(new Set());
+
+  useEffect(() => {
+    const urls = activeBlobUrlsRef.current;
+    return () => {
+      urls.forEach((url) => {
+        if (typeof url === "string" && url.startsWith("blob:")) {
+          URL.revokeObjectURL(url);
+        }
+      });
+      urls.clear();
+    };
+  }, []);
 
   const showToast = (message, type = "success") => {
     setToast({ show: true, message, type });
@@ -88,7 +108,12 @@ export default function PortfolioPage() {
         : Array.isArray(res?.data)
         ? res.data
         : [];
-      setItems(portfolioList);
+      
+      // Preserve any active uploading temporary items during refetch
+      setItems((prev) => {
+        const tempItems = prev.filter((i) => i.isUploading || i.uploadStatus === "failed");
+        return [...tempItems, ...portfolioList];
+      });
     } catch (err) {
       console.error("Failed to load portfolio items:", err);
       setError(
@@ -109,23 +134,273 @@ export default function PortfolioPage() {
     fetchPortfolio();
   }, [fetchPortfolio]);
 
+  // Execute Upload API call with live Axios onUploadProgress
+  const executeUpload = useCallback(async (tempItem) => {
+    try {
+      const res = await portfolioService.createPortfolioItem(
+        tempItem.formData,
+        (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setItems((prev) =>
+              prev.map((i) =>
+                i._id === tempItem._id
+                  ? {
+                      ...i,
+                      uploadProgress: percent,
+                      uploadStatus: percent >= 100 ? "processing" : "uploading",
+                    }
+                  : i
+              )
+            );
+          }
+        }
+      );
+
+      if (res?.success && res?.data) {
+        const realItem = res.data;
+
+        // Revoke temporary blob URL
+        if (tempItem.media?.url && tempItem.media.url.startsWith("blob:")) {
+          URL.revokeObjectURL(tempItem.media.url);
+          activeBlobUrlsRef.current.delete(tempItem.media.url);
+        }
+
+        // Replace temporary item with real server item
+        setItems((prev) =>
+          prev.map((i) => (i._id === tempItem._id ? realItem : i))
+        );
+
+        showToast("Portfolio item uploaded successfully!", "success");
+      }
+    } catch (err) {
+      console.error("Failed to upload portfolio media:", err);
+      const errMsg =
+        err.response?.data?.message ||
+        err.message ||
+        "Upload failed. Please check network and file restrictions.";
+
+      setItems((prev) =>
+        prev.map((i) =>
+          i._id === tempItem._id
+            ? {
+                ...i,
+                isUploading: false,
+                uploadStatus: "failed",
+                errorMessage: errMsg,
+              }
+            : i
+        )
+      );
+
+      showToast("Failed to upload portfolio item.", "error");
+    }
+  }, []);
+
+  // Optimistic Start Upload Handler
+  const handleStartUpload = useCallback(
+    (payload) => {
+      const tempId = `temp-upload-${Date.now()}`;
+      const tempItem = {
+        _id: tempId,
+        id: tempId,
+        isUploading: true,
+        uploadProgress: 0,
+        uploadStatus: "uploading",
+        errorMessage: "",
+        media: {
+          type: payload.mediaType,
+          url: payload.previewUrl,
+          thumbnailUrl: payload.previewUrl,
+          duration: payload.videoDuration,
+        },
+        caption: payload.caption || "",
+        skill: payload.skill || null,
+        file: payload.selectedFile,
+        formData: payload.formData,
+        reactionSummary: {
+          like: 0,
+          impressive: 0,
+          great_work: 0,
+          creative: 0,
+          total: 0,
+        },
+        currentUserReaction: null,
+        createdAt: new Date().toISOString(),
+      };
+
+      if (payload.previewUrl && payload.previewUrl.startsWith("blob:")) {
+        activeBlobUrlsRef.current.add(payload.previewUrl);
+      }
+
+      // Prepend temporary card to portfolio grid
+      setItems((prev) => [tempItem, ...prev]);
+
+      // Execute upload asynchronously
+      executeUpload(tempItem);
+    },
+    [executeUpload]
+  );
+
+  // Retry Failed Upload Handler
+  const handleRetryUpload = useCallback(
+    (tempItem) => {
+      setItems((prev) =>
+        prev.map((i) =>
+          i._id === tempItem._id
+            ? {
+                ...i,
+                isUploading: true,
+                uploadProgress: 0,
+                uploadStatus: "uploading",
+                errorMessage: "",
+              }
+            : i
+        )
+      );
+
+      executeUpload(tempItem);
+    },
+    [executeUpload]
+  );
+
+  // Remove Failed Upload Handler
+  const handleRemoveTempItem = useCallback((tempItem) => {
+    if (tempItem.media?.url && tempItem.media.url.startsWith("blob:")) {
+      URL.revokeObjectURL(tempItem.media.url);
+      activeBlobUrlsRef.current.delete(tempItem.media.url);
+    }
+    setItems((prev) => prev.filter((i) => i._id !== tempItem._id));
+  }, []);
+
+  // Toggle Reaction Handler with Optimistic UI and Rollback
+  const handleToggleReaction = useCallback(
+    async (targetItem, reactionType) => {
+      if (!authUser) {
+        showToast("Please log in to react to portfolio items.", "error");
+        return;
+      }
+
+      if (targetItem?.isUploading || targetItem?.uploadStatus === "failed") {
+        return;
+      }
+
+      const itemId = targetItem._id || targetItem.id;
+      if (!itemId) return;
+
+      // Prevent concurrent duplicate requests for the same item
+      if (pendingReactionIdsRef.current.has(itemId)) {
+        return;
+      }
+      pendingReactionIdsRef.current.add(itemId);
+
+      // Snapshot previous item state for rollback
+      const prevItem = items.find((i) => (i._id || i.id) === itemId);
+      const prevReaction = prevItem?.currentUserReaction || null;
+      const prevSummary = prevItem?.reactionSummary || {
+        like: 0,
+        impressive: 0,
+        great_work: 0,
+        creative: 0,
+        total: 0,
+      };
+
+      // Calculate next optimistic summary
+      const nextSummary = { ...prevSummary };
+      let nextReaction = null;
+
+      if (prevReaction === reactionType) {
+        // Toggle OFF (remove)
+        nextSummary[reactionType] = Math.max(0, (nextSummary[reactionType] || 0) - 1);
+        nextSummary.total = Math.max(0, (nextSummary.total || 0) - 1);
+        nextReaction = null;
+      } else if (prevReaction) {
+        // Change from prevReaction to reactionType
+        nextSummary[prevReaction] = Math.max(0, (nextSummary[prevReaction] || 0) - 1);
+        nextSummary[reactionType] = (nextSummary[reactionType] || 0) + 1;
+        nextReaction = reactionType;
+      } else {
+        // Add new reaction
+        nextSummary[reactionType] = (nextSummary[reactionType] || 0) + 1;
+        nextSummary.total = (nextSummary.total || 0) + 1;
+        nextReaction = reactionType;
+      }
+
+      // Optimistic update
+      setItems((prev) =>
+        prev.map((i) =>
+          (i._id || i.id) === itemId
+            ? {
+                ...i,
+                reactionSummary: nextSummary,
+                currentUserReaction: nextReaction,
+              }
+            : i
+        )
+      );
+
+      try {
+        const res = await portfolioService.togglePortfolioReaction(itemId, reactionType);
+        if (res?.success && res?.data) {
+          // Sync with authoritative server summary
+          setItems((prev) =>
+            prev.map((i) =>
+              (i._id || i.id) === itemId
+                ? {
+                    ...i,
+                    reactionSummary: res.data.reactionSummary,
+                    currentUserReaction: res.data.currentUserReaction,
+                  }
+                : i
+            )
+          );
+        }
+      } catch (err) {
+        console.error("Failed to toggle reaction:", err);
+        // Rollback state on failure
+        setItems((prev) =>
+          prev.map((i) =>
+            (i._id || i.id) === itemId
+              ? {
+                  ...i,
+                  reactionSummary: prevSummary,
+                  currentUserReaction: prevReaction,
+                }
+              : i
+          )
+        );
+        showToast(
+          err.response?.data?.message || err.message || "Failed to update reaction.",
+          "error"
+        );
+      } finally {
+        pendingReactionIdsRef.current.delete(itemId);
+      }
+    },
+    [authUser, items]
+  );
+
+  // Filter completed non-temporary items for Lightbox
+  const completedItems = items.filter(
+    (i) => !i.isUploading && i.uploadStatus !== "failed"
+  );
+
   // Lightbox selection
   const handleOpenLightbox = (item) => {
-    const idx = items.findIndex((i) => (i._id || i.id) === (item._id || item.id));
+    if (item.isUploading || item.uploadStatus === "failed") return;
+    const idx = completedItems.findIndex(
+      (i) => (i._id || i.id) === (item._id || item.id)
+    );
     setLightboxIndex(idx >= 0 ? idx : 0);
     setLightboxOpen(true);
   };
 
   const handleLightboxSelectIndex = (newIndex) => {
-    if (newIndex >= 0 && newIndex < items.length) {
+    if (newIndex >= 0 && newIndex < completedItems.length) {
       setLightboxIndex(newIndex);
     }
-  };
-
-  // Upload success handler
-  const handleUploadSuccess = (newItem) => {
-    setItems((prev) => [newItem, ...prev]);
-    showToast("Portfolio item uploaded successfully!", "success");
   };
 
   // Edit success handler
@@ -161,9 +436,24 @@ export default function PortfolioPage() {
     }
   };
 
+  // Check if an upload is currently active
+  const isUploadingActive = items.some(
+    (i) => i.isUploading && i.uploadStatus !== "failed"
+  );
+
+  // Filter visible items according to type tab
+  const visibleItems = items.filter((item) => {
+    if (typeFilter === "all") return true;
+    return item.media?.type === typeFilter;
+  });
+
   // Compute counts for limits & display
-  const imageCount = items.filter((i) => i.media?.type === "image").length;
-  const videoCount = items.filter((i) => i.media?.type === "video").length;
+  const imageCount = items.filter(
+    (i) => i.media?.type === "image" && i.uploadStatus !== "failed"
+  ).length;
+  const videoCount = items.filter(
+    (i) => i.media?.type === "video" && i.uploadStatus !== "failed"
+  ).length;
 
   const targetName = profileData?.name || (isOwner ? "My" : "User");
   const targetAvatar = profileData?.profilePicture || "";
@@ -204,8 +494,14 @@ export default function PortfolioPage() {
                     {isOwner ? "My Portfolio" : `${targetName}'s Portfolio`}
                   </h1>
                   <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#E4EEE8] text-[#1B4332] border border-[#1B4332]/20">
-                    {items.length} {items.length === 1 ? "item" : "items"}
+                    {completedItems.length} {completedItems.length === 1 ? "item" : "items"}
                   </span>
+                  {isUploadingActive && (
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+                      <Loader2 className="w-3 h-3 animate-spin text-emerald-600" />
+                      <span>Uploading...</span>
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs text-[#6B6858] mt-0.5">
                   {targetLocation ? `${targetLocation} &middot; ` : ""}Work samples & project media
@@ -219,10 +515,24 @@ export default function PortfolioPage() {
             <button
               type="button"
               onClick={() => setUploadModalOpen(true)}
-              className="h-10 px-5 text-xs font-bold text-white bg-[#1B4332] hover:bg-[#143326] rounded-xl transition-all active:scale-[0.98] shadow-2xs cursor-pointer inline-flex items-center justify-center gap-2 shrink-0 self-start sm:self-auto"
+              disabled={isUploadingActive}
+              className={`h-10 px-5 text-xs font-bold rounded-xl transition-all shadow-2xs inline-flex items-center justify-center gap-2 shrink-0 self-start sm:self-auto ${
+                isUploadingActive
+                  ? "bg-[#1B4332]/70 text-white cursor-not-allowed opacity-80"
+                  : "text-white bg-[#1B4332] hover:bg-[#143326] cursor-pointer active:scale-[0.98]"
+              }`}
             >
-              <Plus className="w-4 h-4" />
-              <span>Upload Media</span>
+              {isUploadingActive ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Uploading Media...</span>
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  <span>Upload Media</span>
+                </>
+              )}
             </button>
           )}
         </div>
@@ -312,7 +622,7 @@ export default function PortfolioPage() {
         )}
 
         {/* Empty State */}
-        {!loading && !error && items.length === 0 && (
+        {!loading && !error && visibleItems.length === 0 && (
           <div className="bg-white rounded-2xl border border-[#E6E3DA] p-10 text-center shadow-xs space-y-4 max-w-lg mx-auto my-6">
             <div className="w-14 h-14 rounded-2xl bg-[#E4EEE8] text-[#1B4332] border border-[#1B4332]/20 flex items-center justify-center mx-auto shadow-2xs">
               <FolderGit2 className="w-7 h-7" />
@@ -336,7 +646,8 @@ export default function PortfolioPage() {
               <button
                 type="button"
                 onClick={() => setUploadModalOpen(true)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1B4332] text-white text-xs font-bold rounded-xl hover:bg-[#143326] transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
+                disabled={isUploadingActive}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1B4332] text-white text-xs font-bold rounded-xl hover:bg-[#143326] transition-all cursor-pointer shadow-2xs active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Plus className="w-4 h-4" />
                 <span>Upload Your First Work</span>
@@ -346,9 +657,9 @@ export default function PortfolioPage() {
         )}
 
         {/* Portfolio Media Grid (3-column desktop/tablet, 2-column mobile) */}
-        {!loading && !error && items.length > 0 && (
+        {!loading && !error && visibleItems.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 animate-fadeIn">
-            {items.map((item) => (
+            {visibleItems.map((item) => (
               <PortfolioCard
                 key={item._id || item.id}
                 item={item}
@@ -356,19 +667,25 @@ export default function PortfolioPage() {
                 onSelect={handleOpenLightbox}
                 onEdit={(i) => setEditingItem(i)}
                 onDelete={(i) => setDeleteTargetItem(i)}
+                onRetry={handleRetryUpload}
+                onRemoveTemp={handleRemoveTempItem}
+                onReact={handleToggleReaction}
+                onViewReactions={(i) => setReactionsModalItem(i)}
               />
             ))}
           </div>
         )}
       </main>
 
-      {/* Lightbox Modal */}
+      {/* Lightbox Modal (operates only on completed items) */}
       <PortfolioLightbox
         isOpen={lightboxOpen}
-        item={lightboxIndex >= 0 ? items[lightboxIndex] : null}
-        items={items}
+        item={lightboxIndex >= 0 ? completedItems[lightboxIndex] : null}
+        items={completedItems}
         onClose={() => setLightboxOpen(false)}
         onSelectIndex={handleLightboxSelectIndex}
+        onReact={handleToggleReaction}
+        onViewReactions={(i) => setReactionsModalItem(i)}
       />
 
       {/* Upload Media Modal (Owner Only) */}
@@ -376,9 +693,10 @@ export default function PortfolioPage() {
         <PortfolioUploadModal
           isOpen={uploadModalOpen}
           onClose={() => setUploadModalOpen(false)}
-          onSuccess={handleUploadSuccess}
+          onStartUpload={handleStartUpload}
           currentImageCount={imageCount}
           currentVideoCount={videoCount}
+          isUploadingActive={isUploadingActive}
         />
       )}
 
@@ -408,6 +726,18 @@ export default function PortfolioPage() {
           }}
         />
       )}
+
+      {/* View Reactions Modal (Opens above the lightbox) */}
+      <PortfolioReactionsModal
+        isOpen={Boolean(reactionsModalItem)}
+        item={
+          reactionsModalItem
+            ? items.find((i) => (i._id || i.id) === (reactionsModalItem._id || reactionsModalItem.id)) || reactionsModalItem
+            : null
+        }
+        onClose={() => setReactionsModalItem(null)}
+        onCloseLightbox={() => setLightboxOpen(false)}
+      />
     </div>
   );
 }

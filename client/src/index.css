@@ -121,3 +121,33 @@ textarea:focus-visible {
 .transition-linear {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* Reaction Burst & Pop Keyframes */
+@keyframes reactionPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.35) rotate(-6deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+@keyframes bounceShort {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.animate-reactionPop {
+  animation: reactionPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.animate-bounce-short {
+  animation: bounceShort 0.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

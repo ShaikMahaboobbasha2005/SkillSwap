@@ -14,6 +14,7 @@ export default function Modal({
   closeOnEsc = true,
   title = null,
   className = "",
+  zIndex = "z-[9999]",
 }) {
   const isLockedRef = useRef(false);
 
@@ -79,7 +80,7 @@ export default function Modal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-black/65 backdrop-blur-xs animate-fadeIn overflow-y-auto"
+      className={`fixed inset-0 ${zIndex} flex items-center justify-center p-4 sm:p-6 bg-black/65 backdrop-blur-xs animate-fadeIn overflow-y-auto`}
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"

@@ -27,6 +27,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/users/:id" element={<PublicProfile />} />
+              <Route path="/profile/:id" element={<PublicProfile />} />
               <Route path="/portfolio/user/:userId" element={<PortfolioPage />} />
               <Route path="/portfolio/:userId" element={<PortfolioPage />} />
 

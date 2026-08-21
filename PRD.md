@@ -34,10 +34,10 @@ General users — anyone who has a skill to teach and a skill they want to learn
 1. **User Authentication** — signup/login with JWT, no third-party auth
 
 2. **User Profile**
-   - Editable fields: name, profile picture, location (city only — e.g. Bangalore, Anantapur, Hyderabad; no exact address)
+   - Editable fields: name, profile picture, banner, location (city only — e.g. Bangalore, Anantapur, Hyderabad; no exact address), social links (LinkedIn, GitHub, Instagram, YouTube, Personal Website)
    - Auto-calculated fields (not manually entered): average rating, completed swaps count
    - **Portfolio media**: user can upload images or short videos demonstrating a skill (via Cloudinary), displayed as an Instagram-style grid on their profile — builds trust beyond ratings alone
-   - When User A views User B's profile: B's name, pfp, location, rating, completed swaps, skills offered/wanted, and portfolio grid are all visible (read-only)
+   - When User A views User B's profile: B's name, pfp, banner, location, social links, rating, completed swaps, skills offered/wanted, and portfolio grid are all visible (read-only)
 
 3. **Skill Management** — add/edit/remove skills offered and skills wanted
 

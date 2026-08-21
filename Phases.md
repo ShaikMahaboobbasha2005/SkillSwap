@@ -32,6 +32,7 @@
   - Safe Cloudinary asset cleanup for replaced or removed profile pictures and banners (`profilePicturePublicId`, `profileBannerPublicId`)
   - Bio management
   - Location setting
+  - Social Links management (LinkedIn, GitHub, Instagram, YouTube, Personal Website with server-side validation, safe external links, and accessible icon row presentation)
   - Public profile view
   - Placeholder fields for `avgRating` and `completedSwaps`
 - **Architecture Decisions:** Cloudinary deletion triggers strictly post-database update (`findByIdAndUpdate`). Legacy assets without stored `publicId` use unambiguous URL parsing (`skillswap/profiles/`), skipping deletion if ambiguous or default. Before destroying assets, the latest User document is re-read to prevent race conditions during rapid updates. Failed DB updates attempt orphan cleanup on newly uploaded `publicId`s while preserving old active assets. Cleanup failures log silently without rolling back or failing user profile updates.
@@ -156,13 +157,23 @@
   - **Phase 9.2 — Portfolio Frontend & Grid (Completed):**
     - Created `PortfolioSection.jsx` compact profile preview with up to 3 thumbnails, video play badges, and "View all →" entry point on own and public profiles.
     - Created dedicated `PortfolioPage.jsx` route (`/portfolio` and `/portfolio/user/:userId`) with 3-column desktop / 2-column mobile grid, filter tabs (`All`, `Images`, `Videos`), and header info.
-    - Created `PortfolioCard.jsx` with square aspect ratio, video play badges, linked skill pill overlays, and hover owner actions.
+    - Created `PortfolioCard.jsx` with square aspect ratio, video play badges, linked skill pill overlays, hover owner actions, optimistic upload overlay with real-time percentage progress bar, processing state, and failure retry/remove controls.
+    - Implemented optimistic upload lifecycle: dispatches temporary preview card immediately into grid upon validation, tracks real byte progress with Axios `onUploadProgress`, displays `Processing video...` state at 100%, seamlessly replaces with real server item upon completion, and manages blob URL cleanups.
     - Created full-screen `PortfolioLightbox.jsx` media viewer with native video controls, previous/next keyboard and click navigation, caption display, and body scroll lock.
-    - Created `PortfolioUploadModal.jsx` with drag-and-drop file upload, client-side format/size/duration and portfolio count checks, optional caption (500 chars), and optional skill link.
+    - Created `PortfolioUploadModal.jsx` with drag-and-drop file upload, client-side format/size/duration and portfolio count checks, optional caption (500 chars), optional skill link, and non-blocking optimistic delegation.
     - Created `PortfolioEditModal.jsx` for caption and linked skill editing.
     - Implemented permanent delete with `ConfirmModal` and clear explanation.
-    - Preserved independent collapsible skills sections on Profile pages.
-- **Done =** Users can showcase their work with image and video media uploads, view work samples in full-screen lightbox, and manage portfolio items.
+  - **Phase 9.4 — Portfolio Reactions (Completed):**
+    - Added `reactions` subdocument array to Portfolio schema (`user`, `type`, `createdAt`) with strict 1 active reaction per user rule.
+    - Supported 4 lightweight reaction types: `👍 Like`, `🔥 Impressive`, `👏 Great Work`, `💡 Creative`.
+    - Added backend endpoints: `POST /api/portfolio/:id/reaction` (toggle/change/remove) and `GET /api/portfolio/:id/reactions` (sanitized public users list: `_id`, `name`, `profilePicture`).
+    - Added `optionalAuthMiddleware` so public viewers can retrieve portfolio items while authenticated users receive populated `currentUserReaction`.
+    - Implemented instant optimistic reaction updates on frontend with rollback on error and rapid-click concurrency prevention.
+    - Updated `PortfolioCard.jsx` with persistent reaction summary badge on thumbnail (`[ 👍🔥 4 ]`) and 4 quick reaction controls in the action bar with Pine Green active highlighting (`#1B4332`).
+    - Created `PortfolioReactionsModal.jsx` displaying list of users who reacted, category filtering tabs (`All`, `👍 Like`, `🔥 Impressive`, `👏 Great Work`, `💡 Creative`), user avatars, and profile links.
+    - Integrated reaction bar into `PortfolioLightbox.jsx` with synchronized state across grid, lightbox, and profile previews.
+    - Isolated temporary uploading and failed upload cards from reaction interactions.
+- **Done =** Users can showcase their work with image and video media uploads, enjoy optimistic non-blocking uploads with live progress bars, react to portfolio work with 4 emojis, view who reacted in category tabs, and manage portfolio items.
 
 ## Phase 10 — Smart Recommendations
 - **Goal:** Enhance candidate matching using an intelligent AI recommendation layer.

@@ -30,7 +30,8 @@ const getUserPortfolio = async (req, res, next) => {
   try {
     const result = await portfolioService.getUserPortfolio(
       req.params.userId,
-      req.query
+      req.query,
+      req.user?.id || null
     );
 
     res.status(200).json({
@@ -49,7 +50,8 @@ const getUserPortfolio = async (req, res, next) => {
 const getPortfolioItemById = async (req, res, next) => {
   try {
     const portfolioItem = await portfolioService.getPortfolioItemById(
-      req.params.id
+      req.params.id,
+      req.user?.id || null
     );
 
     res.status(200).json({
@@ -103,10 +105,56 @@ const deletePortfolioItem = async (req, res, next) => {
   }
 };
 
+/**
+ * Toggle / add / update reaction on a portfolio item
+ * POST /api/portfolio/:id/reaction
+ */
+const toggleReaction = async (req, res, next) => {
+  try {
+    const result = await portfolioService.toggleReaction(
+      req.params.id,
+      req.user.id,
+      req.body.type
+    );
+
+    res.status(200).json({
+      success: true,
+      message:
+        result.action === "removed"
+          ? "Reaction removed successfully"
+          : result.action === "updated"
+          ? "Reaction updated successfully"
+          : "Reaction added successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get all users who reacted to a portfolio item
+ * GET /api/portfolio/:id/reactions
+ */
+const getPortfolioReactions = async (req, res, next) => {
+  try {
+    const result = await portfolioService.getPortfolioReactions(req.params.id);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createPortfolioItem,
   getUserPortfolio,
   getPortfolioItemById,
   updatePortfolioItem,
   deletePortfolioItem,
+  toggleReaction,
+  getPortfolioReactions,
 };

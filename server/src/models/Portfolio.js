@@ -53,6 +53,24 @@ const portfolioSchema = new Schema(
       type: Number,
       default: 0,
     },
+    reactions: [
+      {
+        user: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        type: {
+          type: String,
+          enum: ["like", "impressive", "great_work", "creative"],
+          required: true,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true,
