@@ -95,6 +95,7 @@ const getMessagesBySwapId = async (swapId, userId, queryParams = {}) => {
     .skip(skip)
     .limit(limit)
     .populate("sender", SENDER_POPULATE_FIELDS)
+    .populate("meetingSession")
     .populate({
       path: "replyTo",
       select: "_id sender content isDeleted createdAt",

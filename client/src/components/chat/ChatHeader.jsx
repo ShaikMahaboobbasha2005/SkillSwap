@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, WifiOff, RefreshCw, Trash2 } from "lucide-react";
+import { ArrowLeft, WifiOff, RefreshCw, Trash2, Video } from "lucide-react";
 import SwapSelector, { getSkillPair } from "./SwapSelector";
 
 /**
  * ChatHeader Component
  *
  * Displays conversation header with counterpart profile info, relative skill exchange summary,
- * back navigation, swap selector (when multiple swaps exist), and connection status indicator.
+ * back navigation, swap selector (when multiple swaps exist), video call action, and connection status indicator.
  */
 export default function ChatHeader({
   swap,
@@ -18,6 +18,7 @@ export default function ChatHeader({
   allSwaps = null,
   activeSwapId = null,
   onSwapChange = null,
+  onOpenVideoMenu = null,
 }) {
   if (!swap) return null;
 
@@ -109,6 +110,19 @@ export default function ChatHeader({
 
         {/* Right Header Actions */}
         <div className="flex items-center gap-2">
+          {/* Video Meeting Action (Only for active accepted swap) */}
+          {!isReadOnly && swap?.status === "accepted" && onOpenVideoMenu && (
+            <button
+              type="button"
+              onClick={onOpenVideoMenu}
+              className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl border border-[#E6E3DA] bg-[#F7F6F2] hover:bg-[#E4EEE8] text-[#16160F] hover:text-[#1B4332] flex items-center justify-center shrink-0 transition-colors cursor-pointer shadow-2xs"
+              title="Start or schedule video session"
+              aria-label="Start or schedule video session"
+            >
+              <Video className="w-4 h-4 text-[#1B4332]" />
+            </button>
+          )}
+
           {/* Read-Only Delete from History Button */}
           {isReadOnly && onDeleteHistory && (
             <button

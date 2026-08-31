@@ -6,6 +6,7 @@ import PortfolioLightbox from "../components/portfolio/PortfolioLightbox";
 import PortfolioUploadModal from "../components/portfolio/PortfolioUploadModal";
 import PortfolioEditModal from "../components/portfolio/PortfolioEditModal";
 import PortfolioReactionsModal from "../components/portfolio/PortfolioReactionsModal";
+import PortfolioReportModal from "../components/portfolio/PortfolioReportModal";
 import ConfirmModal from "../components/ConfirmModal";
 import ToastNotification from "../components/ToastNotification";
 import portfolioService from "../services/portfolioService";
@@ -45,6 +46,7 @@ export default function PortfolioPage() {
   const [deleteTargetItem, setDeleteTargetItem] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [reactionsModalItem, setReactionsModalItem] = useState(null);
+  const [reportModalItem, setReportModalItem] = useState(null);
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -57,10 +59,41 @@ export default function PortfolioPage() {
   const activeBlobUrlsRef = useRef(new Set());
   // Concurrency guard for rapid reaction clicks
   const pendingReactionIdsRef = useRef(new Set());
+  // Pending deletions map (itemId -> { item, actionToken, timerId })
+  const pendingDeletionsRef = useRef(new Map());
+  // Latest edit tokens map (itemId -> actionToken) to prevent race conditions
+  const latestEditTokensRef = useRef(new Map());
 
+  // Cleanup pending deletions and blob URLs on unmount
   useEffect(() => {
     const urls = activeBlobUrlsRef.current;
+    const pendingDeletions = pendingDeletionsRef.current;
+
+    const handleBeforeUnload = () => {
+      // Flush any pending deletions immediately before page unloads
+      pendingDeletions.forEach((val, id) => {
+        clearTimeout(val.timerId);
+        portfolioService.deletePortfolioItem(id).catch((err) => {
+          console.warn("Failed to flush pending deletion on unload:", err);
+        });
+      });
+      pendingDeletions.clear();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
     return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+
+      // Flush pending deletions on component unmount
+      pendingDeletions.forEach((val, id) => {
+        clearTimeout(val.timerId);
+        portfolioService.deletePortfolioItem(id).catch((err) => {
+          console.warn("Failed to flush pending deletion on unmount:", err);
+        });
+      });
+      pendingDeletions.clear();
+
       urls.forEach((url) => {
         if (typeof url === "string" && url.startsWith("blob:")) {
           URL.revokeObjectURL(url);
@@ -70,8 +103,8 @@ export default function PortfolioPage() {
     };
   }, []);
 
-  const showToast = (message, type = "success") => {
-    setToast({ show: true, message, type });
+  const showToast = (message, type = "success", duration = 4000, action = null) => {
+    setToast({ show: true, message, type, duration, action });
   };
 
   // Fetch Target User Profile Header Info
@@ -109,10 +142,13 @@ export default function PortfolioPage() {
         ? res.data
         : [];
       
-      // Preserve any active uploading temporary items during refetch
+      // Preserve any active uploading temporary items during refetch, and exclude pending deleted items
       setItems((prev) => {
         const tempItems = prev.filter((i) => i.isUploading || i.uploadStatus === "failed");
-        return [...tempItems, ...portfolioList];
+        const filteredList = portfolioList.filter(
+          (p) => !pendingDeletionsRef.current.has(p._id || p.id)
+        );
+        return [...tempItems, ...filteredList];
       });
     } catch (err) {
       console.error("Failed to load portfolio items:", err);
@@ -403,38 +439,193 @@ export default function PortfolioPage() {
     }
   };
 
-  // Edit success handler
-  const handleEditSuccess = (updatedItem) => {
+  // ==========================================
+  // EDIT & EDIT UNDO HANDLERS (Phase 9.5)
+  // ==========================================
+
+  // Revert edited portfolio item data back to previous snapshot
+  const handleUndoEdit = useCallback(async (itemId, previousItem, actionToken) => {
+    // Guard against race conditions: verify this undo corresponds to the latest edit on this item
+    if (latestEditTokensRef.current.get(itemId) !== actionToken) {
+      return;
+    }
+
+    // Save current confirmed item for failure rollback
+    const currentConfirmed = items.find((i) => (i._id || i.id) === itemId);
+
+    // Optimistically restore previous item data in the UI
     setItems((prev) =>
       prev.map((i) =>
-        (i._id || i.id) === (updatedItem._id || updatedItem.id) ? updatedItem : i
+        (i._id || i.id) === itemId
+          ? {
+              ...i,
+              caption: previousItem.caption || "",
+              skill: previousItem.skill || null,
+            }
+          : i
       )
     );
-    showToast("Portfolio item updated successfully!", "success");
-  };
 
-  // Delete confirm handler
-  const handleDeleteConfirm = async () => {
-    if (!deleteTargetItem || deleting) return;
-    setDeleting(true);
+    try {
+      const skillId = previousItem.skill?._id || previousItem.skill || null;
+      const res = await portfolioService.updatePortfolioItem(itemId, {
+        caption: previousItem.caption || "",
+        skillId: skillId || null,
+      });
 
-    const itemId = deleteTargetItem._id || deleteTargetItem.id;
+      if (res?.success && res?.data) {
+        setItems((prev) =>
+          prev.map((i) => ((i._id || i.id) === itemId ? res.data : i))
+        );
+        showToast("Changes reverted", "success");
+      }
+    } catch (err) {
+      console.error("Failed to undo portfolio update:", err);
+      // Rollback to confirmed updated state on failure
+      if (currentConfirmed) {
+        setItems((prev) =>
+          prev.map((i) => ((i._id || i.id) === itemId ? currentConfirmed : i))
+        );
+      }
+      showToast("Couldn't undo changes. Please try again.", "error");
+    }
+  }, [items]);
+
+  // Edit success handler with 5-second Undo action toast
+  const handleEditSuccess = useCallback((updatedItem) => {
+    const itemId = updatedItem._id || updatedItem.id;
+    const previousItem = items.find((i) => (i._id || i.id) === itemId);
+
+    // Generate unique action token to protect against race conditions
+    const actionToken = `${Date.now()}_${Math.random()}`;
+    latestEditTokensRef.current.set(itemId, actionToken);
+
+    // Apply the edit to the UI immediately
+    setItems((prev) =>
+      prev.map((i) => ((i._id || i.id) === itemId ? updatedItem : i))
+    );
+
+    // Show 5-second non-blocking Undo toast
+    setToast({
+      show: true,
+      message: "Portfolio updated",
+      type: "undo",
+      duration: 5000,
+      action: {
+        label: "Undo",
+        onClick: () => {
+          if (previousItem) {
+            handleUndoEdit(itemId, previousItem, actionToken);
+          }
+        },
+      },
+    });
+  }, [items, handleUndoEdit]);
+
+  // ==========================================
+  // DELETE & DELETE UNDO HANDLERS (Phase 9.5)
+  // ==========================================
+
+  // Finalize permanent deletion after 5s expiration
+  const finalizeDelete = useCallback(async (itemId, actionToken) => {
+    const pending = pendingDeletionsRef.current.get(itemId);
+    if (!pending || pending.actionToken !== actionToken) return;
+
+    pendingDeletionsRef.current.delete(itemId);
 
     try {
       await portfolioService.deletePortfolioItem(itemId);
-      setItems((prev) => prev.filter((i) => (i._id || i.id) !== itemId));
-      showToast("Portfolio item deleted successfully.", "info");
-      setDeleteTargetItem(null);
     } catch (err) {
-      console.error("Failed to delete portfolio item:", err);
-      showToast(
-        err.response?.data?.message || err.message || "Failed to delete portfolio item.",
-        "error"
-      );
-    } finally {
-      setDeleting(false);
+      console.error("Failed to finalize portfolio deletion:", err);
+      // Restore item if deletion failed on the backend
+      setItems((prev) => [pending.item, ...prev]);
+      showToast("Failed to delete portfolio item. Item restored.", "error");
     }
-  };
+  }, []);
+
+  // Restore deleted item when Undo is clicked within 5 seconds
+  const handleUndoDelete = useCallback((itemId, actionToken) => {
+    const pending = pendingDeletionsRef.current.get(itemId);
+    if (!pending || pending.actionToken !== actionToken) return;
+
+    // Cancel pending permanent deletion timer
+    clearTimeout(pending.timerId);
+    pendingDeletionsRef.current.delete(itemId);
+
+    // Restore item immediately into visible items state
+    setItems((prev) => [pending.item, ...prev]);
+    showToast("Portfolio item restored", "success");
+  }, []);
+
+  // Delete confirm handler: Optimistically hides item and initiates 5-second Undo window
+  const handleDeleteConfirm = useCallback(() => {
+    if (!deleteTargetItem) return;
+
+    const itemToDelete = deleteTargetItem;
+    const itemId = itemToDelete._id || itemToDelete.id;
+    setDeleteTargetItem(null);
+
+    // Immediately remove/hide the item from the user's visible frontend list
+    setItems((prev) => prev.filter((i) => (i._id || i.id) !== itemId));
+
+    // Generate unique action token for this deletion
+    const actionToken = `${Date.now()}_${Math.random()}`;
+
+    // Start 5-second delayed finalization timer
+    const timerId = setTimeout(() => {
+      finalizeDelete(itemId, actionToken);
+    }, 5000);
+
+    // Record in pending deletions map
+    pendingDeletionsRef.current.set(itemId, {
+      item: itemToDelete,
+      actionToken,
+      timerId,
+    });
+
+    // Show 5-second non-blocking Undo toast
+    setToast({
+      show: true,
+      message: "Portfolio item deleted",
+      type: "undo",
+      duration: 5000,
+      action: {
+        label: "Undo",
+        onClick: () => handleUndoDelete(itemId, actionToken),
+      },
+    });
+  }, [deleteTargetItem, finalizeDelete, handleUndoDelete]);
+
+  // ==========================================
+  // MODERATION & REPORTING HANDLERS (Phase 9.5)
+  // ==========================================
+
+  const handleOpenReport = useCallback((item) => {
+    if (!authUser) {
+      showToast("Please log in to report content.", "error");
+      return;
+    }
+
+    const itemOwnerId =
+      item.user && typeof item.user === "object"
+        ? item.user._id || item.user.id
+        : item.user;
+
+    if (currentUserId && itemOwnerId && String(currentUserId) === String(itemOwnerId)) {
+      showToast("You cannot report your own portfolio item.", "error");
+      return;
+    }
+
+    setReportModalItem(item);
+  }, [authUser, currentUserId]);
+
+  const handleReportSuccess = useCallback(() => {
+    showToast(
+      "Report submitted. Thank you for helping keep SkillSwap safe.",
+      "success"
+    );
+    setReportModalItem(null);
+  }, []);
 
   // Check if an upload is currently active
   const isUploadingActive = items.some(
@@ -465,7 +656,10 @@ export default function PortfolioPage() {
       <Navbar />
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
-        <ToastNotification toast={toast} onClose={() => setToast({ show: false, message: "", type: "success" })} />
+        <ToastNotification
+          toast={toast}
+          onClose={() => setToast((prev) => ({ ...prev, show: false }))}
+        />
 
         {/* Top Navigation & Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-2xl border border-[#E6E3DA] p-5 sm:p-6 shadow-xs">
@@ -503,9 +697,10 @@ export default function PortfolioPage() {
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[#6B6858] mt-0.5">
-                  {targetLocation ? `${targetLocation} &middot; ` : ""}Work samples & project media
-                </p>
+                <div className="flex items-center gap-2 text-xs text-[#6B6858] mt-0.5 flex-wrap">
+                  {targetLocation && <span>{targetLocation}</span>}
+                  <span>Work samples & project media</span>
+                </div>
               </div>
             </div>
           </div>
@@ -686,6 +881,7 @@ export default function PortfolioPage() {
         onSelectIndex={handleLightboxSelectIndex}
         onReact={handleToggleReaction}
         onViewReactions={(i) => setReactionsModalItem(i)}
+        onReport={handleOpenReport}
       />
 
       {/* Upload Media Modal (Owner Only) */}
@@ -737,6 +933,14 @@ export default function PortfolioPage() {
         }
         onClose={() => setReactionsModalItem(null)}
         onCloseLightbox={() => setLightboxOpen(false)}
+      />
+
+      {/* Report Portfolio Item Modal (Visitor Only) */}
+      <PortfolioReportModal
+        isOpen={Boolean(reportModalItem)}
+        item={reportModalItem}
+        onClose={() => setReportModalItem(null)}
+        onSuccess={handleReportSuccess}
       />
     </div>
   );

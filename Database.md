@@ -96,7 +96,9 @@ A shared lookup collection — users reference `Skill._id` in `skillsOffered`/`s
   _id: ObjectId,
   swapRequest: ObjectId, // ref: SwapRequest — authoritative relationship for chat
   sender: ObjectId,      // ref: User
+  type: String,          // "text" | "meeting" (default: "text")
   content: String,       // max 2000 chars (cleared to "" when isDeleted: true)
+  meetingSession: ObjectId, // ref: MeetingSession (populated when type === "meeting")
   isDeleted: Boolean,    // soft delete flag (default: false)
   deletedAt: Date,       // soft delete timestamp
   status: String,        // "sent" | "delivered" | "read"
@@ -108,6 +110,27 @@ A shared lookup collection — users reference `Skill._id` in `skillsOffered`/`s
 }
 ```
 **Indexes:** `swapRequest` single index, plus `{ swapRequest: 1, createdAt: -1 }`, `{ swapRequest: 1, createdAt: 1 }`, and `{ swapRequest: 1, sender: 1, status: 1 }` compound indexes for fast chronological history and unread count queries.
+
+## 5. MeetingSession
+```js
+{
+  _id: ObjectId,
+  swap: ObjectId,          // ref: SwapRequest (required, indexed)
+  participants: [ObjectId],// ref: User (the two accepted swap participants)
+  createdBy: ObjectId,     // ref: User (initiator of the session)
+  roomName: String,        // unique deterministic Jitsi room identifier
+  scheduledAt: Date,       // date and time of the session (default: Date.now for instant)
+  duration: Number,        // session duration in minutes (15, 30, 45, 60; default: 30)
+  status: String,          // "scheduled" | "active" | "completed" | "cancelled" (default: "scheduled")
+  type: String,            // "instant" | "scheduled" (default: "scheduled")
+  note: String,            // optional topic/goal description (max 300 chars)
+  reminded15m: Boolean,    // atomic reminder flag for 15-minute advance notification (default: false)
+  remindedStart: Boolean,  // atomic reminder flag for session start notification (default: false)
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+**Indexes:** `swap` single index, compound `{ swap: 1, status: 1 }`, `{ participants: 1, status: 1 }`, `{ status: 1, reminded15m: 1, scheduledAt: 1 }`, and `{ status: 1, remindedStart: 1, scheduledAt: 1 }` for low-overhead scheduler polling and participant access.
 
 ## 6. Rating
 ```js
@@ -131,7 +154,7 @@ A shared lookup collection — users reference `Skill._id` in `skillsOffered`/`s
   user: ObjectId,        // ref: User — recipient
   sender: ObjectId,      // ref: User — sender / trigger user
   swap: ObjectId,        // ref: SwapRequest
-  type: String,          // "completion_request" | "completion_confirmed" | "completion_cancelled" | "swap_request" | "swap_accepted"
+  type: String,          // "completion_request" | "completion_confirmed" | "completion_cancelled" | "swap_request" | "swap_accepted" | "meeting_scheduled" | "meeting_reminder" | "meeting_started" | "meeting_cancelled"
   title: String,
   message: String,
   read: Boolean,         // default: false
@@ -155,7 +178,7 @@ A shared lookup collection — users reference `Skill._id` in `skillsOffered`/`s
   },
   caption: String,       // optional text (max 500 chars)
   skill: ObjectId,       // ref: Skill (optional linked skill owned by user)
-  moderationStatus: String, // "active" | "flagged" | "hidden" | "removed" (default: "active")
+  moderationStatus: String, // "active" | "reported" | "hidden" | "removed" (default: "active")
   reportCount: Number,   // default: 0
   reactions: [           // subdocument array for user reactions (1 active reaction per user)
     {
@@ -170,13 +193,30 @@ A shared lookup collection — users reference `Skill._id` in `skillsOffered`/`s
 ```
 **Indexes:** `user` single index, plus compound index `{ user: 1, moderationStatus: 1, "media.type": 1, createdAt: -1 }` for optimized user portfolio retrieval and media filtering.
 
-## 9. Relationships Overview
+## 9. PortfolioReport
+```js
+{
+  _id: ObjectId,
+  portfolioItem: ObjectId, // ref: Portfolio — target reported portfolio item
+  reporter: ObjectId,      // ref: User — user submitting report
+  reason: String,          // enum: ["nudity", "violence", "illegal", "hate_harassment", "spam", "copyright", "other"] (required)
+  description: String,     // optional text (max 500 chars, default: "")
+  status: String,          // enum: ["pending", "reviewed", "dismissed", "action_taken"] (default: "pending")
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+**Indexes:** `portfolioItem` and `reporter` single indexes, plus compound unique index `{ portfolioItem: 1, reporter: 1 }` enforcing maximum 1 report per user per portfolio item at the database level.
+
+## 10. Relationships Overview
 - `User` ↔ `Skill` — many-to-many, via `skillsOffered`/`skillsWanted` arrays of ObjectIds
 - `SwapRequest` — links two `User`s + two `Skill`s
 - `Message` — belongs to `SwapRequest` (many messages per swap) and references `User` as sender
 - `Rating` — one-to-one with a completed `SwapRequest` per direction (each user rates the other)
 - `Notification` — many-to-one with `User`, generated by events across SwapRequest/Message/Rating
 - `Portfolio` — many-to-one with `User` (max 20 images, 10 videos, 30 total items per user), optional reference to `Skill` owned by user
+- `PortfolioReport` — many-to-one with `Portfolio` (target media) and `User` (reporter), with DB-level compound unique constraint `{ portfolioItem: 1, reporter: 1 }` preventing duplicate reports per user
+
 
 ## 10. Auto-Calculated Fields
 `User.avgRating` and `User.completedSwaps` are server-managed statistics that can never be modified directly by client requests:

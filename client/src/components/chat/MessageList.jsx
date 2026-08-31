@@ -28,6 +28,8 @@ export default function MessageList({
   onMarkMessagesRead,
   onDeleteMessage,
   onSelectReply,
+  onJoinMeeting,
+  onCancelMeeting,
 }) {
   const containerRef = useRef(null);
   const bottomRef = useRef(null);
@@ -357,6 +359,8 @@ export default function MessageList({
                   onDeleteMessage={onDeleteMessage}
                   onSelectReply={onSelectReply}
                   onSelectReplyToMessage={handleSelectReplyToMessage}
+                  onJoinMeeting={onJoinMeeting}
+                  onCancelMeeting={onCancelMeeting}
                 />
               </div>
             </div>

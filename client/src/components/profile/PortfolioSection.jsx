@@ -4,6 +4,8 @@ import { FolderGit2, ArrowRight, Play, Tag, Plus } from "lucide-react";
 import portfolioService from "../../services/portfolioService";
 import PortfolioLightbox from "../portfolio/PortfolioLightbox";
 import PortfolioReactionsModal from "../portfolio/PortfolioReactionsModal";
+import PortfolioReportModal from "../portfolio/PortfolioReportModal";
+import ToastNotification from "../ToastNotification";
 import useAuth from "../../hooks/useAuth";
 
 /**
@@ -31,6 +33,8 @@ export default function PortfolioSection({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(-1);
   const [reactionsModalItem, setReactionsModalItem] = useState(null);
+  const [reportModalItem, setReportModalItem] = useState(null);
+  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
 
   const pendingReactionIdsRef = useRef(new Set());
 
@@ -145,11 +149,37 @@ export default function PortfolioSection({
     setLightboxOpen(true);
   };
 
+  const handleOpenReport = useCallback((item) => {
+    if (!authUser) {
+      setToast({
+        show: true,
+        message: "Please log in to report content.",
+        type: "error",
+      });
+      return;
+    }
+    setReportModalItem(item);
+  }, [authUser]);
+
+  const handleReportSuccess = useCallback(() => {
+    setToast({
+      show: true,
+      message: "Report submitted. Thank you for helping keep SkillSwap safe.",
+      type: "success",
+    });
+    setReportModalItem(null);
+  }, []);
+
   return (
     <section
       aria-label="Portfolio preview"
       className="bg-white rounded-2xl border border-[#E6E3DA] p-5 sm:p-6 shadow-xs hover:shadow-md transition-all duration-300 space-y-4"
     >
+      <ToastNotification
+        toast={toast}
+        onClose={() => setToast((prev) => ({ ...prev, show: false }))}
+      />
+
       {/* Portfolio Header Bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -269,6 +299,7 @@ export default function PortfolioSection({
         onSelectIndex={(newIdx) => setLightboxIndex(newIdx)}
         onReact={handleToggleReaction}
         onViewReactions={(i) => setReactionsModalItem(i)}
+        onReport={handleOpenReport}
       />
 
       {/* Reactions Modal */}
@@ -277,6 +308,14 @@ export default function PortfolioSection({
         item={reactionsModalItem}
         onClose={() => setReactionsModalItem(null)}
         onCloseLightbox={() => setLightboxOpen(false)}
+      />
+
+      {/* Report Portfolio Item Modal */}
+      <PortfolioReportModal
+        isOpen={Boolean(reportModalItem)}
+        item={reportModalItem}
+        onClose={() => setReportModalItem(null)}
+        onSuccess={handleReportSuccess}
       />
     </section>
   );

@@ -29,13 +29,12 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 | POST | `/api/users/me/skills/wanted` | Protected | Add a skill to skills-wanted (Enforces max 5 non-deleted learning skills limit; returns `409 Conflict` if capacity is reached) |
 | DELETE | `/api/users/me/skills/wanted/:skillId` | Protected | Remove a skill from skills-wanted (Frees capacity slot) |
 
-## Search & Matching
+## Search & Matching / Recommendations
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
 | GET | `/api/discover` | Protected | Unique-user discovery API with search, category, type, level filters, pagination (`?page=&limit=`), and sorting. Returns paginated unique discoverable user objects with active skills. |
 | GET | `/api/search?skill=` | Public | Search users by a skill name. Supports optional `?page=&limit=` pagination (e.g. `?skill=react&page=1&limit=10`) — not required for MVP, but documented so it can be added without an API contract change |
-| GET | `/api/matches` | Protected | Traditional rule-based matches for current user |
-| GET | `/api/matches/recommended` | Protected | AI-ranked recommendations (re-ranks the traditional match set) |
+| GET | `/api/recommendations` | Protected | Two-tier hybrid recommendation engine returning potential skill-swap partners sorted by skill compatibility. **Default Mode (`?ai=false` or omitted)**: Returns fast, deterministic recommendations using progressive directional exact match scoring (0→0, 1→26, 2→36, 3→42, 4→45, 5+→46), mutual exchange bonus (+20), and related category matches (+8 each, max 16), with centralized canonical alias resolution (`JS` ↔ `JavaScript`, `NodeJS` ↔ `Node.js`, `ReactJS` ↔ `React`, `UI UX` ↔ `UI/UX Design`). Gemini is NOT invoked. **Optional AI Mode (`?ai=true`)**: User-triggered Gemini AI semantic ranking layer evaluates deeper domain relationships (e.g. `Web Development` ↔ `React` + `Node.js`) on bounded candidate pool to calculate `semanticScore` (0–100) and concise AI explanations, merged with deterministic anchors via `hybridScore = round(traditionalScore * 0.70 + semanticScore * 0.30)`. **Resilient Fallback**: Seamlessly returns deterministic scores if Gemini is unconfigured, timed out, or unavailable. Supports `?page=&limit=&ai=`. Returns `compatibilityScore` (0–100), `traditionalScore`, optional `semanticScore`, structured `matchDetails`, `reasons`, `aiMatchReasons`, and `meta` (including `isAiRequested`, `isAiEnhanced`). |
 
 ## Swap Requests
 | Method | Endpoint | Auth | Description |
@@ -66,6 +65,15 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 | PATCH | `/api/chat/:swapId/read` | Protected | Mark incoming unread messages in `swapId` (optionally filtered by `messageIds` array in body) as read for current user and return updated unread count. |
 | DELETE | `/api/chat/:swapId/messages/:messageId` | Protected | Soft delete a user's own sent message for everyone. Validates user ownership and swapId match, clears content to `""`, sets `isDeleted: true` and `deletedAt`, and broadcasts `message_deleted` to room `swap:<swapId>`. |
 | DELETE | `/api/chat/:swapId/history` | Protected | Remove/delete an archived conversation (`completed`, `left`, `cancelled`) from current user's personal history (`$addToSet: { chatDeletedFor: userId }`). |
+
+## Video Meetings & Session Scheduling
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/api/meetings/instant` | Protected | Start an instant video meeting session for an accepted swap. Validates participant authorization and accepted swap status, generates deterministic collision-resistant room name (`skillswap-<swapId>-<meetingId>-<random>`), sets status to `active`, creates a chat message with `type: "meeting"`, emits `new_message` to room `swap:<swapId>`, and sends `meeting_started` in-app notification to partner. Returns `201 Created` with `{ meeting, message }`. |
+| POST | `/api/meetings` | Protected | Schedule a future video session for an accepted swap. Body: `{ swapId, scheduledAt, duration: 15\|30\|45\|60, note }`. Validates accepted swap participation and future date/time. Creates `MeetingSession` with status `scheduled`, creates chat message with `type: "meeting"`, emits `new_message` to room `swap:<swapId>`, and sends `meeting_scheduled` in-app notification to partner. Returns `201 Created` with `{ meeting, message }`. |
+| GET | `/api/meetings/:id` | Protected | Get meeting session details by ID. Must be an authorized participant on the associated swap. Returns `200 OK` with meeting details. |
+| GET | `/api/meetings/:id/join` | Protected | Join a scheduled or active video meeting session. Validates participant authorization, checks meeting is not cancelled/completed, transitions status from `scheduled` to `active`, and returns Jitsi configuration (`roomName`, `jitsiDomain`, `user` displayName/email). |
+| PATCH | `/api/meetings/:id/cancel` | Protected | Cancel a scheduled or active video meeting session. Validates participant authorization, marks status as `cancelled`, emits `meeting_updated` (`status: "cancelled"`) to room `swap:<swapId>`, and sends `meeting_cancelled` notification to partner. Returns `200 OK`. |
 
 ## Ratings & Reviews
 | Method | Endpoint | Auth | Description |
@@ -124,8 +132,10 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 ## Notifications
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/api/notifications` | Protected | Get current user's notifications. Supports optional `?page=&limit=` (e.g. `?page=1&limit=20`) |
-| PATCH | `/api/notifications/:id/read` | Protected | Mark a notification as read |
+| GET | `/api/notifications` | Protected | Get current user's notifications sorted newest first. Supports optional query parameters: `?page=1&limit=20&unreadOnly=true` (or `status=unread`). Populates `sender` (`name avatar profilePicture email location`) and `swap` (`offeredSkill wantedSkill`). Returns `{ success: true, data: [...], meta: { total, unreadCount, page, limit, totalPages } }`. |
+| GET | `/api/notifications/unread-count` | Protected | Get current user's unread notification count. Returns `{ success: true, data: { count: Number, unreadCount: Number } }`. |
+| PATCH | `/api/notifications/:id/read` | Protected | Mark a single notification as read (`read: true`). Validates ObjectId (400) and ownership (`404 Not Found` if notification does not belong to user). Emits `notification_unread_update` socket event to recipient's room. Returns `{ success: true, data: populatedNotification }`. |
+| PATCH | `/api/notifications/read-all` | Protected | Mark all unread notifications for the authenticated user as read (`read: true`). Emits `notification_unread_update` socket event with `unreadCount: 0`. Returns `{ success: true, message: "All notifications marked as read", data: { count: 0, unreadCount: 0 } }`. |
 
 ## Portfolio
 | Method | Endpoint | Auth | Description |
@@ -135,6 +145,7 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 | GET | `/api/portfolio/:id` | Public / Optional Auth | Get a single active portfolio item by ID with populated `user` (`name profilePicture location avgRating completedSwaps`) and `skill`, plus `reactionSummary` and `currentUserReaction`. Returns `404 Not Found` if nonexistent or not active. |
 | POST | `/api/portfolio/:id/reaction` | Protected | Add, change, or remove reaction on a portfolio item (1 reaction per user rule). Body: `{ type: "like" \| "impressive" \| "great_work" \| "creative" }`. Toggles reaction off if same type is clicked again; updates reaction type if different. Returns `{ success: true, message: String, data: { action: "added" \| "updated" \| "removed", reactionSummary: Object, currentUserReaction: String\|null } }`. |
 | GET | `/api/portfolio/:id/reactions` | Public / Optional Auth | Get list of users who reacted to a portfolio item. Populates only sanitized public user fields (`_id`, `name`, `profilePicture`). Never exposes emails or private data. Returns `{ success: true, data: { reactions: [{ _id, type, createdAt, user: { _id, name, profilePicture } }], total: Number } }`. |
+| POST | `/api/portfolio/:id/report` | Protected | Report a portfolio item for moderation review. Body: `{ reason: "nudity" \| "violence" \| "illegal" \| "hate_harassment" \| "spam" \| "copyright" \| "other", description: String (max 500, optional) }`. Validates authenticated identity, rejects self-reporting (`403 Forbidden`), and rejects duplicate reports (`409 Conflict`). Updates portfolio `moderationStatus` to `"reported"` (item remains visible until admin review) and increments `reportCount`. Returns `200 OK` with `{ success: true, message: "Portfolio item reported successfully." }`. |
 | PATCH | `/api/portfolio/:id` | Protected | Update caption (max 500 chars) and/or linked skill for an owned portfolio item. Validates ownership (`403 Forbidden` if not owner) and skill ownership. Media itself cannot be modified. Returns `200 OK` with updated item. |
 | DELETE | `/api/portfolio/:id` | Protected | Permanently delete an owned portfolio item and its Cloudinary media asset. Validates ownership (`403 Forbidden` if not owner). Returns `200 OK`. |
 

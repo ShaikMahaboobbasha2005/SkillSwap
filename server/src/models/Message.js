@@ -49,6 +49,18 @@ const messageSchema = new Schema(
       default: null,
       index: true,
     },
+    type: {
+      type: String,
+      enum: ["text", "meeting"],
+      default: "text",
+      index: true,
+    },
+    meetingSession: {
+      type: Schema.Types.ObjectId,
+      ref: "MeetingSession",
+      default: null,
+      index: true,
+    },
   },
   {
     timestamps: true,

@@ -24,6 +24,9 @@ export const SocketProvider = ({ children }) => {
   const unreadListenerMap = useRef(new Map());
   const deletedListenerMap = useRef(new Map());
   const discoverListenerMap = useRef(new Map());
+  const meetingListenerMap = useRef(new Map());
+  const notificationListenerMap = useRef(new Map());
+  const notificationUnreadListenerMap = useRef(new Map());
 
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState(null);
@@ -67,7 +70,11 @@ export const SocketProvider = ({ children }) => {
       statusListenerMap.current.clear();
       swapRequestListenerMap.current.clear();
       unreadListenerMap.current.clear();
+      deletedListenerMap.current.clear();
       discoverListenerMap.current.clear();
+      meetingListenerMap.current.clear();
+      notificationListenerMap.current.clear();
+      notificationUnreadListenerMap.current.clear();
       return;
     }
 
@@ -150,6 +157,16 @@ export const SocketProvider = ({ children }) => {
     discoverListenerMap.current.forEach((wrapper) => {
       socket.on("discover_updated", wrapper);
     });
+    meetingListenerMap.current.forEach((wrapper) => {
+      socket.on("meeting_updated", wrapper);
+      socket.on("meeting_created", wrapper);
+    });
+    notificationListenerMap.current.forEach((wrapper) => {
+      socket.on("notification", wrapper);
+    });
+    notificationUnreadListenerMap.current.forEach((wrapper) => {
+      socket.on("notification_unread_update", wrapper);
+    });
 
     return () => {
       socket.disconnect();
@@ -157,8 +174,13 @@ export const SocketProvider = ({ children }) => {
       setIsConnected(false);
       messageListenerMap.current.clear();
       statusListenerMap.current.clear();
+      swapRequestListenerMap.current.clear();
+      unreadListenerMap.current.clear();
       deletedListenerMap.current.clear();
       discoverListenerMap.current.clear();
+      meetingListenerMap.current.clear();
+      notificationListenerMap.current.clear();
+      notificationUnreadListenerMap.current.clear();
     };
   }, [token, isAuthenticated, currentUserId, refreshUnreadCount]);
 
@@ -396,6 +418,83 @@ export const SocketProvider = ({ children }) => {
     }
   }, []);
 
+  const subscribeToMeetingUpdates = useCallback((callback) => {
+    if (typeof callback !== "function") return;
+    if (meetingListenerMap.current.has(callback)) return;
+
+    const wrapper = (payload) => {
+      callback(payload);
+    };
+
+    meetingListenerMap.current.set(callback, wrapper);
+    if (socketRef.current) {
+      socketRef.current.on("meeting_updated", wrapper);
+      socketRef.current.on("meeting_created", wrapper);
+    }
+  }, []);
+
+  const unsubscribeFromMeetingUpdates = useCallback((callback) => {
+    if (typeof callback !== "function") return;
+    const wrapper = meetingListenerMap.current.get(callback);
+    if (wrapper) {
+      if (socketRef.current) {
+        socketRef.current.off("meeting_updated", wrapper);
+        socketRef.current.off("meeting_created", wrapper);
+      }
+      meetingListenerMap.current.delete(callback);
+    }
+  }, []);
+
+  const subscribeToNotifications = useCallback((callback) => {
+    if (typeof callback !== "function") return;
+    if (notificationListenerMap.current.has(callback)) return;
+
+    const wrapper = (payload) => {
+      callback(payload);
+    };
+
+    notificationListenerMap.current.set(callback, wrapper);
+    if (socketRef.current) {
+      socketRef.current.on("notification", wrapper);
+    }
+  }, []);
+
+  const unsubscribeFromNotifications = useCallback((callback) => {
+    if (typeof callback !== "function") return;
+    const wrapper = notificationListenerMap.current.get(callback);
+    if (wrapper) {
+      if (socketRef.current) {
+        socketRef.current.off("notification", wrapper);
+      }
+      notificationListenerMap.current.delete(callback);
+    }
+  }, []);
+
+  const subscribeToNotificationUnread = useCallback((callback) => {
+    if (typeof callback !== "function") return;
+    if (notificationUnreadListenerMap.current.has(callback)) return;
+
+    const wrapper = (payload) => {
+      callback(payload);
+    };
+
+    notificationUnreadListenerMap.current.set(callback, wrapper);
+    if (socketRef.current) {
+      socketRef.current.on("notification_unread_update", wrapper);
+    }
+  }, []);
+
+  const unsubscribeFromNotificationUnread = useCallback((callback) => {
+    if (typeof callback !== "function") return;
+    const wrapper = notificationUnreadListenerMap.current.get(callback);
+    if (wrapper) {
+      if (socketRef.current) {
+        socketRef.current.off("notification_unread_update", wrapper);
+      }
+      notificationUnreadListenerMap.current.delete(callback);
+    }
+  }, []);
+
   const value = {
     isConnected,
     connectionError,
@@ -418,6 +517,12 @@ export const SocketProvider = ({ children }) => {
     unsubscribeFromMessageDeleted,
     subscribeToDiscoverUpdates,
     unsubscribeFromDiscoverUpdates,
+    subscribeToMeetingUpdates,
+    unsubscribeFromMeetingUpdates,
+    subscribeToNotifications,
+    unsubscribeFromNotifications,
+    subscribeToNotificationUnread,
+    unsubscribeFromNotificationUnread,
   };
 
   return <SocketContext.Provider value={value}>{children}</SocketContext.Provider>;

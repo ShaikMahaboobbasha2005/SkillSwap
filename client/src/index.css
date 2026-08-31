@@ -134,6 +134,15 @@ textarea:focus-visible {
   50% { transform: translateY(-3px); }
 }
 
+@keyframes toastCountdown {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
 .animate-reactionPop {
   animation: reactionPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }

@@ -15,7 +15,11 @@ const chatRoutes = require("./routes/chatRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const ratingRoutes = require("./routes/ratingRoutes");
 const portfolioRoutes = require("./routes/portfolioRoutes");
+const recommendationRoutes = require("./routes/recommendationRoutes");
+const meetingRoutes = require("./routes/meetingRoutes");
 const initSockets = require("./sockets/socketHandler");
+const notificationService = require("./services/notificationService");
+const { initMeetingReminderJob } = require("./jobs/meetingReminderJob");
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
@@ -48,6 +52,9 @@ const io = new Server(server, {
 
 app.set("io", io);
 
+// Set Socket.io instance on notificationService for centralized real-time delivery
+notificationService.setIO(io);
+
 // Body Parser Middleware
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
@@ -71,9 +78,14 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/portfolio", portfolioRoutes);
+app.use("/api/recommendations", recommendationRoutes);
+app.use("/api/meetings", meetingRoutes);
 
 // Initialize Socket.io Connection & Event Handlers
 initSockets(io);
+
+// Initialize Background Meeting Reminder Job
+initMeetingReminderJob(io);
 
 // Shared Error Handler Middleware
 app.use(errorHandler);

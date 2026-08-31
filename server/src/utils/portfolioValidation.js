@@ -47,9 +47,28 @@ const portfolioReactionSchema = z.object({
   }),
 });
 
+const reportPortfolioSchema = z.object({
+  reason: z.enum(
+    ["nudity", "violence", "illegal", "hate_harassment", "spam", "copyright", "other"],
+    {
+      errorMap: () => ({
+        message:
+          "Invalid reason. Allowed values: nudity, violence, illegal, hate_harassment, spam, copyright, other",
+      }),
+    }
+  ),
+  description: z
+    .string()
+    .trim()
+    .max(500, "Description must be at most 500 characters")
+    .optional()
+    .default(""),
+});
+
 module.exports = {
   createPortfolioSchema,
   updatePortfolioSchema,
   portfolioTypeFilterSchema,
   portfolioReactionSchema,
+  reportPortfolioSchema,
 };

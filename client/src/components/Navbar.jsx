@@ -3,7 +3,9 @@ import { Link, useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import useSocket from "../hooks/useSocket";
 import { useSwap } from "../context/SwapContext";
+import useNotifications from "../hooks/useNotifications";
 import NotificationBadge from "./NotificationBadge";
+import NotificationBell from "./notifications/NotificationBell";
 import logoImg from "../assets/logo.png";
 import {
   Compass,
@@ -16,12 +18,15 @@ import {
   Home as HomeIcon,
   Handshake,
   MessageSquare,
+  Sparkles,
+  Bell,
 } from "lucide-react";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { unreadConversationCount } = useSocket();
   const { pendingIncomingCount } = useSwap();
+  const { unreadCount: notificationUnreadCount } = useNotifications();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -29,11 +34,20 @@ export default function Navbar() {
 
   const isActive = (path) => {
     if (path === "/") return location.pathname === "/";
+    if (path === "/recommendations" || path === "/matches") {
+      return (
+        location.pathname.startsWith("/recommendations") ||
+        location.pathname.startsWith("/matches")
+      );
+    }
     if (path === "/chats") {
       return location.pathname.startsWith("/chats") || location.pathname.includes("/chat");
     }
     if (path === "/swaps") {
       return location.pathname.startsWith("/swaps") && !location.pathname.includes("/chat");
+    }
+    if (path === "/notifications") {
+      return location.pathname.startsWith("/notifications");
     }
     return location.pathname.startsWith(path);
   };
@@ -101,6 +115,10 @@ export default function Navbar() {
             <Compass className="w-3.5 h-3.5" />
             <span>Discover Skills</span>
           </Link>
+          <Link to="/recommendations" className={linkClasses("/recommendations")}>
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Matches</span>
+          </Link>
           <Link to="/swaps" className={linkClasses("/swaps")}>
             <Handshake className="w-3.5 h-3.5" />
             <span>Swap Requests</span>
@@ -113,8 +131,11 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Desktop Profile Dropdown Navigation */}
-        <div className="hidden md:flex items-center space-x-3" ref={dropdownRef}>
+        {/* Desktop Right Actions: Notification Bell + Profile Dropdown */}
+        <div className="hidden md:flex items-center space-x-2" ref={dropdownRef}>
+          {/* Notification Bell */}
+          <NotificationBell />
+
           <div className="relative">
             <button
               type="button"
@@ -163,6 +184,22 @@ export default function Navbar() {
                   <span>My Profile</span>
                 </Link>
 
+                <Link
+                  to="/notifications"
+                  onClick={() => setDropdownOpen(false)}
+                  className="flex items-center justify-between px-4 py-2 text-xs font-semibold text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332] transition-colors"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Bell className="w-4 h-4 text-[#6B6858]" />
+                    <span>Notifications</span>
+                  </div>
+                  {notificationUnreadCount > 0 && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-amber-400 text-amber-950">
+                      {notificationUnreadCount}
+                    </span>
+                  )}
+                </Link>
+
                 <div className="flex items-center justify-between px-4 py-2 text-xs font-semibold text-[#6B6858] opacity-60 cursor-not-allowed">
                   <div className="flex items-center gap-2.5">
                     <Settings className="w-4 h-4" />
@@ -191,8 +228,9 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Hamburger Button */}
-        <div className="flex md:hidden items-center space-x-2">
+        {/* Mobile Action Controls: Bell + Hamburger Button */}
+        <div className="flex md:hidden items-center space-x-1.5">
+          <NotificationBell />
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -239,6 +277,21 @@ export default function Navbar() {
           </Link>
 
           <Link
+            to="/recommendations"
+            onClick={() => setMobileMenuOpen(false)}
+            className={`flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl transition-all ${
+              isActive("/recommendations")
+                ? "bg-[#E4EEE8] text-[#1B4332]"
+                : "text-[#16160F] hover:text-[#1B4332] hover:bg-[#F7F6F2]"
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <Sparkles className="w-4 h-4 text-[#6B6858]" />
+              <span>Matches</span>
+            </div>
+          </Link>
+
+          <Link
             to="/swaps"
             onClick={() => setMobileMenuOpen(false)}
             className={`flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl transition-all ${
@@ -268,6 +321,22 @@ export default function Navbar() {
               <span>Chats</span>
             </div>
             <NotificationBadge count={unreadConversationCount} variant="inline" />
+          </Link>
+
+          <Link
+            to="/notifications"
+            onClick={() => setMobileMenuOpen(false)}
+            className={`flex items-center justify-between w-full px-3.5 py-2.5 text-xs font-semibold rounded-xl transition-all ${
+              isActive("/notifications")
+                ? "bg-[#E4EEE8] text-[#1B4332]"
+                : "text-[#16160F] hover:text-[#1B4332] hover:bg-[#F7F6F2]"
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <Bell className="w-4 h-4 text-[#6B6858]" />
+              <span>Notifications</span>
+            </div>
+            <NotificationBadge count={notificationUnreadCount} variant="inline" />
           </Link>
 
           <Link

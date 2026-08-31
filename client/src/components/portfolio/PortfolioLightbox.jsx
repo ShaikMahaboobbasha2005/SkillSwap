@@ -1,14 +1,15 @@
 import { useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
-import { X, ChevronLeft, ChevronRight, Tag, Calendar } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Tag, Calendar, Flag } from "lucide-react";
 import ReactionPicker from "./ReactionPicker";
+import useAuth from "../../hooks/useAuth";
 
 /**
  * PortfolioLightbox Component
  *
  * Full-screen media viewer for images and short videos with keyboard & swipe navigation,
- * real author profile attribution, and the new SkillSwap reaction burst & appreciation system.
+ * real author profile attribution, reaction burst & appreciation system, and visitor moderation reporting.
  *
  * @param {Object} props
  * @param {boolean} props.isOpen - Whether lightbox is visible
@@ -18,6 +19,7 @@ import ReactionPicker from "./ReactionPicker";
  * @param {Function} props.onSelectIndex - Change active index callback
  * @param {Function} props.onReact - Reaction toggle callback
  * @param {Function} props.onViewReactions - View reactions modal callback
+ * @param {Function} [props.onReport] - Report portfolio item callback
  */
 export default function PortfolioLightbox({
   isOpen,
@@ -27,7 +29,9 @@ export default function PortfolioLightbox({
   onSelectIndex,
   onReact,
   onViewReactions,
+  onReport,
 }) {
+  const { user: authUser } = useAuth();
   const currentIndex = item && items ? items.findIndex((i) => (i._id || i.id) === (item._id || item.id)) : -1;
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex >= 0 && currentIndex < items.length - 1;
@@ -82,6 +86,9 @@ export default function PortfolioLightbox({
   const authorAvatar = authorObj?.profilePicture || item.ownerAvatar || "";
   const authorId = authorObj?._id || authorObj?.id || (typeof item.user === "string" ? item.user : null);
 
+  const currentUserId = authUser?._id || authUser?.id || "";
+  const isOwner = Boolean(currentUserId && authorId && String(currentUserId) === String(authorId));
+
   const formattedDate = item.createdAt
     ? new Date(item.createdAt).toLocaleDateString("en-US", {
         month: "short",
@@ -126,13 +133,28 @@ export default function PortfolioLightbox({
           </div>
         </Link>
 
-        {/* Counter and Close button */}
-        <div className="flex items-center gap-3">
+        {/* Counter, Report and Close button */}
+        <div className="flex items-center gap-2.5 sm:gap-3">
           {items.length > 1 && currentIndex >= 0 && (
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-white/10 text-white/80 border border-white/10">
               {currentIndex + 1} / {items.length}
             </span>
           )}
+
+          {/* Visitor Report Button (Never shown to the owner) */}
+          {!isOwner && onReport && (
+            <button
+              type="button"
+              onClick={() => onReport(item)}
+              className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-red-500/20 text-white/70 hover:text-red-300 border border-white/15 text-xs font-medium inline-flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+              title="Report portfolio item"
+              aria-label="Report this portfolio item"
+            >
+              <Flag className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Report</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onClose}

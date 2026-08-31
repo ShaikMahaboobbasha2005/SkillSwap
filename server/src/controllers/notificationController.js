@@ -37,6 +37,7 @@ const markAllNotificationsRead = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "All notifications marked as read",
+      data: { count: 0, unreadCount: 0 },
     });
   } catch (error) {
     next(error);
@@ -48,7 +49,7 @@ const getUnreadCount = async (req, res, next) => {
     const count = await notificationService.getUnreadCount(req.user.id);
     res.status(200).json({
       success: true,
-      data: { count },
+      data: { count, unreadCount: count },
     });
   } catch (error) {
     next(error);

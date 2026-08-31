@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AuthProvider } from "./context/AuthContext";
 import { SocketProvider } from "./context/SocketContext";
 import { SwapProvider } from "./context/SwapContext";
+import { NotificationProvider } from "./context/NotificationContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ScrollToTop from "./components/ScrollToTop";
 import Login from "./pages/Login";
@@ -14,6 +15,8 @@ import PortfolioPage from "./pages/PortfolioPage";
 import SwapRequestsPage from "./pages/SwapRequestsPage";
 import ChatsPage from "./pages/ChatsPage";
 import ChatPage from "./pages/ChatPage";
+import RecommendationsPage from "./pages/RecommendationsPage";
+import NotificationsPage from "./pages/NotificationsPage";
 
 function App() {
   return (
@@ -21,32 +24,37 @@ function App() {
       <ScrollToTop />
       <AuthProvider>
         <SocketProvider>
-          <SwapProvider>
-            <Routes>
-              {/* Public Auth & User Routes */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/users/:id" element={<PublicProfile />} />
-              <Route path="/profile/:id" element={<PublicProfile />} />
-              <Route path="/portfolio/user/:userId" element={<PortfolioPage />} />
-              <Route path="/portfolio/:userId" element={<PortfolioPage />} />
+          <NotificationProvider>
+            <SwapProvider>
+              <Routes>
+                {/* Public Auth & User Routes */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/users/:id" element={<PublicProfile />} />
+                <Route path="/profile/:id" element={<PublicProfile />} />
+                <Route path="/portfolio/user/:userId" element={<PortfolioPage />} />
+                <Route path="/portfolio/:userId" element={<PortfolioPage />} />
 
-              {/* Protected Routes */}
-              <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<Home />} />
-                <Route path="/discover" element={<DiscoverPage />} />
-                <Route path="/swaps" element={<SwapRequestsPage />} />
-                <Route path="/chats" element={<ChatsPage />} />
-                <Route path="/chats/:userId" element={<ChatsPage />} />
-                <Route path="/swaps/:swapId/chat" element={<ChatPage />} />
-                <Route path="/profile" element={<OwnProfile />} />
-                <Route path="/portfolio" element={<PortfolioPage />} />
-              </Route>
+                {/* Protected Routes */}
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/discover" element={<DiscoverPage />} />
+                  <Route path="/recommendations" element={<RecommendationsPage />} />
+                  <Route path="/matches" element={<RecommendationsPage />} />
+                  <Route path="/swaps" element={<SwapRequestsPage />} />
+                  <Route path="/chats" element={<ChatsPage />} />
+                  <Route path="/chats/:userId" element={<ChatsPage />} />
+                  <Route path="/swaps/:swapId/chat" element={<ChatPage />} />
+                  <Route path="/notifications" element={<NotificationsPage />} />
+                  <Route path="/profile" element={<OwnProfile />} />
+                  <Route path="/portfolio" element={<PortfolioPage />} />
+                </Route>
 
-              {/* Fallback route */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </SwapProvider>
+                {/* Fallback route */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </SwapProvider>
+          </NotificationProvider>
         </SocketProvider>
       </AuthProvider>
     </Router>

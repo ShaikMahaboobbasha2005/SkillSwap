@@ -5,11 +5,15 @@ import useAuth from "../hooks/useAuth";
 import useSocket from "../hooks/useSocket";
 import swapService from "../services/swapService";
 import chatService from "../services/chatService";
+import meetingService from "../services/meetingService";
 import ChatHeader from "../components/chat/ChatHeader";
 import MessageList from "../components/chat/MessageList";
 import MessageInput from "../components/chat/MessageInput";
 import ConfirmModal from "../components/ConfirmModal";
 import ToastNotification from "../components/ToastNotification";
+import MeetingOptionsModal from "../components/meetings/MeetingOptionsModal";
+import ScheduleMeetingModal from "../components/meetings/ScheduleMeetingModal";
+import JitsiMeetingModal from "../components/meetings/JitsiMeetingModal";
 import { AlertCircle, ArrowLeft, ShieldAlert, Lock, Info, Clock, Sparkles, Check, X } from "lucide-react";
 
 export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null, allSwaps = null, onSwapChange = null }) {
@@ -34,6 +38,8 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
     unsubscribeFromMessageDeleted,
     subscribeToSwapRequests,
     unsubscribeFromSwapRequests,
+    subscribeToMeetingUpdates,
+    unsubscribeFromMeetingUpdates,
   } = useSocket();
 
   const [swap, setSwap] = useState(null);
@@ -48,9 +54,20 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [showDeleteHistoryModal, setShowDeleteHistoryModal] = useState(false);
 
+  // Video Meeting States
+  const [meetingOptionsOpen, setMeetingOptionsOpen] = useState(false);
+  const [scheduleMeetingOpen, setScheduleMeetingOpen] = useState(false);
+  const [activeMeetingData, setActiveMeetingData] = useState(null);
+  const [isStartingInstant, setIsStartingInstant] = useState(false);
+
   const [toast, setToast] = useState({ show: false, message: "", type: "info" });
 
   const currentUserId = user?._id || user?.id;
+
+  // Derive counterpart profile info safely
+  const isSender = swap?.fromUser?._id?.toString() === currentUserId?.toString();
+  const counterpart = isSender ? swap?.toUser : swap?.fromUser;
+  const counterpartName = counterpart?.name || "Swap Partner";
 
   // Active swapId ref to prevent stale async responses from populating wrong chat
   const activeSwapIdRef = useRef(swapId);
@@ -89,6 +106,28 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
     },
     [mergeMessages]
   );
+
+  // Real-time meeting updates (active / cancelled / scheduled)
+  const handleMeetingUpdated = useCallback((payload) => {
+    if (!payload || !payload.meetingId) return;
+
+    setMessages((prev) =>
+      prev.map((msg) => {
+        const session = msg.meetingSession;
+        const sId = session?._id || session;
+        if (msg.type === "meeting" && sId?.toString() === payload.meetingId.toString()) {
+          return {
+            ...msg,
+            meetingSession: {
+              ...(typeof session === "object" ? session : {}),
+              status: payload.status,
+            },
+          };
+        }
+        return msg;
+      })
+    );
+  }, []);
 
   // Real-time message status updates (sent -> delivered -> read)
   const handleStatusUpdate = useCallback(
@@ -246,6 +285,89 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
     }
   };
 
+  // Video Meeting Handlers
+  const handleStartInstantMeeting = async () => {
+    if (isStartingInstant || !swapId) return;
+    setIsStartingInstant(true);
+    try {
+      const res = await meetingService.createInstantMeeting(swapId);
+      setMeetingOptionsOpen(false);
+      if (res?.data?.meeting) {
+        const joinRes = await meetingService.joinMeeting(res.data.meeting._id);
+        setActiveMeetingData(joinRes.data);
+      }
+    } catch (err) {
+      setToast({
+        show: true,
+        message: err.response?.data?.message || err.message || "Failed to start instant video session.",
+        type: "error",
+      });
+    } finally {
+      setIsStartingInstant(false);
+    }
+  };
+
+  const handleScheduleMeeting = async (data) => {
+    const res = await meetingService.scheduleMeeting({
+      swapId,
+      ...data,
+    });
+    setToast({
+      show: true,
+      message: "Video session scheduled successfully!",
+      type: "success",
+    });
+    return res;
+  };
+
+  const handleJoinMeetingFromChat = async (meetingId) => {
+    try {
+      const res = await meetingService.joinMeeting(meetingId);
+      if (res && res.data) {
+        setActiveMeetingData(res.data);
+      }
+    } catch (err) {
+      setToast({
+        show: true,
+        message: err.response?.data?.message || err.message || "Unable to join video session.",
+        type: "error",
+      });
+    }
+  };
+
+  const handleCancelMeetingFromChat = async (meetingId) => {
+    try {
+      await meetingService.cancelMeeting(meetingId);
+      setMessages((prev) =>
+        prev.map((msg) => {
+          const session = msg.meetingSession;
+          const sId = session?._id || session;
+          if (msg.type === "meeting" && sId?.toString() === meetingId.toString()) {
+            return {
+              ...msg,
+              meetingSession: {
+                ...(typeof session === "object" ? session : {}),
+                status: "cancelled",
+              },
+            };
+          }
+          return msg;
+        })
+      );
+      setToast({
+        show: true,
+        message: "Video session cancelled.",
+        type: "info",
+      });
+    } catch (err) {
+      setToast({
+        show: true,
+        message: err.response?.data?.message || err.message || "Failed to cancel meeting.",
+        type: "error",
+      });
+    }
+  };
+
   // Predictable Lifecycle for active swapId: Clear state -> SwapDetails -> History -> Subscribe -> Join -> Read -> Ready
   useEffect(() => {
     let isMounted = true;
@@ -270,42 +392,37 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
         // Guard against unmounted component or stale user navigation (e.g. A -> B -> C)
         if (!isMounted || activeSwapIdRef.current !== currentSwapId) return;
 
-        const activeSwap = historyRes?.swapRequest;
+        const activeSwap =
+          historyRes?.swapRequest ||
+          historyRes?.data?.swapRequest ||
+          (historyRes?.data && !Array.isArray(historyRes.data) && historyRes.data.status ? historyRes.data : null);
 
-        if (!activeSwap) {
-          setPageError({
-            code: "SWAP_NOT_FOUND",
-            message: "Swap request details could not be loaded.",
-          });
-          setLoading(false);
-          return;
-        }
+        const historyMsgs = Array.isArray(historyRes?.data)
+          ? historyRes.data
+          : Array.isArray(historyRes?.data?.messages)
+          ? historyRes.data.messages
+          : Array.isArray(historyRes?.messages)
+          ? historyRes.messages
+          : [];
 
-        const ALLOWED_STATUSES = ["accepted", "completed", "left"];
-        if (!ALLOWED_STATUSES.includes(activeSwap.status)) {
-          setPageError({
-            code: "SWAP_NOT_ACCEPTED",
-            message: "Chat is only available for accepted, completed, or ended skill swap requests.",
-          });
-          setLoading(false);
-          return;
-        }
+        const readOnlyFlag = Boolean(
+          historyRes?.isReadOnly ??
+          historyRes?.data?.isReadOnly ??
+          (activeSwap && activeSwap.status !== "accepted")
+        );
 
         setSwap(activeSwap);
-        setIsReadOnly(activeSwap.status !== "accepted");
+        setIsReadOnly(readOnlyFlag);
 
-        if (historyRes?.success && Array.isArray(historyRes.data)) {
-          const historyMsgs = historyRes.data;
-
-          // Capture FIRST incoming unread message AND total unread count BEFORE mark-as-read alters status
-          const unreadIncoming = historyMsgs.filter((m) => {
-            const senderId = m.sender?._id || m.sender?.id || m.sender;
-            return (
-              senderId?.toString() !== currentUserId?.toString() &&
+        // Calculate unread divider anchor
+        if (historyMsgs.length > 0) {
+          const unreadIncoming = historyMsgs.filter(
+            (m) =>
               m.status !== "read" &&
-              !m.isDeleted
-            );
-          });
+              !m.isDeleted &&
+              currentUserId &&
+              (m.sender?._id || m.sender?.id || m.sender)?.toString() !== currentUserId.toString()
+          );
 
           const firstUnread = unreadIncoming.length > 0 ? unreadIncoming[0] : null;
           const firstUnreadId = firstUnread ? (firstUnread._id || firstUnread.id)?.toString() : null;
@@ -321,9 +438,10 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
         subscribeToStatusUpdates(handleStatusUpdate);
         subscribeToMessageDeleted(handleMessageDeleted);
         subscribeToSwapRequests(handleSwapRequestUpdated);
+        subscribeToMeetingUpdates(handleMeetingUpdated);
 
         // Join Socket.io room for currentSwapId (if active)
-        if (activeSwap.status === "accepted") {
+        if (activeSwap?.status === "accepted") {
           try {
             await joinSwapChat(currentSwapId);
           } catch (joinErr) {
@@ -387,6 +505,7 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
       unsubscribeFromStatusUpdates(handleStatusUpdate);
       unsubscribeFromMessageDeleted(handleMessageDeleted);
       unsubscribeFromSwapRequests(handleSwapRequestUpdated);
+      unsubscribeFromMeetingUpdates(handleMeetingUpdated);
     };
   }, [
     swapId,
@@ -398,9 +517,15 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
     unsubscribeFromStatusUpdates,
     subscribeToMessageDeleted,
     unsubscribeFromMessageDeleted,
+    subscribeToSwapRequests,
+    unsubscribeFromSwapRequests,
+    subscribeToMeetingUpdates,
+    unsubscribeFromMeetingUpdates,
     handleNewMessage,
     handleStatusUpdate,
     handleMessageDeleted,
+    handleSwapRequestUpdated,
+    handleMeetingUpdated,
     currentUserId
   ]);
 
@@ -609,6 +734,7 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
         allSwaps={allSwaps}
         activeSwapId={swapId}
         onSwapChange={onSwapChange}
+        onOpenVideoMenu={() => setMeetingOptionsOpen(true)}
       />
 
       {/* Completion Request Pending Banner in Active Chat Workspace */}
@@ -695,6 +821,8 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
           onMarkMessagesRead={markSwapAsRead}
           onDeleteMessage={isReadOnly ? undefined : handleDeleteMessage}
           onSelectReply={isReadOnly ? undefined : handleSelectReply}
+          onJoinMeeting={handleJoinMeetingFromChat}
+          onCancelMeeting={handleCancelMeetingFromChat}
         />
       </main>
 
@@ -712,6 +840,34 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
           isConnected={isConnected}
           replyingTo={replyingTo}
           onCancelReply={() => setReplyingTo(null)}
+        />
+      )}
+
+      {/* Meeting Options Modal */}
+      <MeetingOptionsModal
+        isOpen={meetingOptionsOpen}
+        onClose={() => setMeetingOptionsOpen(false)}
+        partnerName={counterpartName}
+        onStartInstant={handleStartInstantMeeting}
+        onOpenSchedule={() => setScheduleMeetingOpen(true)}
+        isStarting={isStartingInstant}
+      />
+
+      {/* Schedule Meeting Modal */}
+      <ScheduleMeetingModal
+        isOpen={scheduleMeetingOpen}
+        onClose={() => setScheduleMeetingOpen(false)}
+        partnerName={counterpartName}
+        onSchedule={handleScheduleMeeting}
+      />
+
+      {/* Embedded Jitsi Video Session Modal */}
+      {activeMeetingData && (
+        <JitsiMeetingModal
+          isOpen={Boolean(activeMeetingData)}
+          onClose={() => setActiveMeetingData(null)}
+          meetingData={activeMeetingData}
+          currentUser={user}
         />
       )}
     </div>

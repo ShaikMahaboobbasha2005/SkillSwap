@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Check, CheckCheck, MoreVertical, Trash2, Ban, Reply } from "lucide-react";
+import MeetingMessageCard from "../meetings/MeetingMessageCard";
 
 /**
  * Helper to format timestamp cleanly for chat messages without third-party dependencies.
@@ -29,6 +30,8 @@ export default function MessageBubble({
   onDeleteMessage,
   onSelectReply,
   onSelectReplyToMessage,
+  onJoinMeeting,
+  onCancelMeeting,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -44,6 +47,18 @@ export default function MessageBubble({
   const longPressTimerRef = useRef(null);
 
   if (!message) return null;
+
+  // Render dedicated MeetingMessageCard for video call / session scheduled cards
+  if (message.type === "meeting") {
+    return (
+      <MeetingMessageCard
+        message={message}
+        currentUserId={currentUserId}
+        onJoinMeeting={onJoinMeeting}
+        onCancelMeeting={onCancelMeeting}
+      />
+    );
+  }
 
   const msgIdStr = (message._id || message.id)?.toString();
   const senderId = message.sender?._id || message.sender?.id || message.sender;

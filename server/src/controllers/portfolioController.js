@@ -149,6 +149,27 @@ const getPortfolioReactions = async (req, res, next) => {
   }
 };
 
+/**
+ * Report a portfolio item for moderation review
+ * POST /api/portfolio/:id/report
+ */
+const reportPortfolioItem = async (req, res, next) => {
+  try {
+    const result = await portfolioService.reportPortfolioItem(
+      req.params.id,
+      req.user.id,
+      req.body
+    );
+
+    res.status(200).json({
+      success: true,
+      message: result.message || "Portfolio item reported successfully.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createPortfolioItem,
   getUserPortfolio,
@@ -157,4 +178,5 @@ module.exports = {
   deletePortfolioItem,
   toggleReaction,
   getPortfolioReactions,
+  reportPortfolioItem,
 };

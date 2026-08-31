@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Portfolio = require("../models/Portfolio");
+const PortfolioReport = require("../models/PortfolioReport");
 const User = require("../models/User");
 const Skill = require("../models/Skill");
 const {
@@ -36,10 +37,18 @@ const createPortfolioItem = async (userId, file, body = {}) => {
   const { caption = "", skillId } = body;
   const mediaType = file.mediaType || (file.mimetype.startsWith("video/") ? "video" : "image");
 
-  // 1. Portfolio Limits Validation (Active items only)
+  // 1. Portfolio Limits Validation (Active & Reported items only)
   const [imageCount, videoCount] = await Promise.all([
-    Portfolio.countDocuments({ user: userId, "media.type": "image", moderationStatus: "active" }),
-    Portfolio.countDocuments({ user: userId, "media.type": "video", moderationStatus: "active" }),
+    Portfolio.countDocuments({
+      user: userId,
+      "media.type": "image",
+      moderationStatus: { $in: ["active", "reported"] },
+    }),
+    Portfolio.countDocuments({
+      user: userId,
+      "media.type": "video",
+      moderationStatus: { $in: ["active", "reported"] },
+    }),
   ]);
   const totalCount = imageCount + videoCount;
 
@@ -172,7 +181,7 @@ const formatPortfolioItem = (item, currentUserId = null) => {
 };
 
 /**
- * Get all active portfolio items for a specific user
+ * Get all active and reported portfolio items for a specific user
  * @param {string} targetUserId - Target user ID
  * @param {Object} queryParams - Query parameters (e.g. ?type=image|video)
  * @param {string|null} currentUserId - Current authenticated user ID if any
@@ -191,7 +200,7 @@ const getUserPortfolio = async (targetUserId, queryParams = {}, currentUserId = 
   const { type } = queryParams;
   const filter = {
     user: targetUserId,
-    moderationStatus: "active",
+    moderationStatus: { $in: ["active", "reported"] },
   };
 
   if (type) {
@@ -217,7 +226,7 @@ const getUserPortfolio = async (targetUserId, queryParams = {}, currentUserId = 
 };
 
 /**
- * Get a single portfolio item by ID
+ * Get a single active or reported portfolio item by ID
  * @param {string} portfolioId - Portfolio item ID
  * @param {string|null} currentUserId - Current authenticated user ID if any
  * @returns {Promise<Object>}
@@ -227,7 +236,7 @@ const getPortfolioItemById = async (portfolioId, currentUserId = null) => {
 
   const item = await Portfolio.findOne({
     _id: portfolioId,
-    moderationStatus: "active",
+    moderationStatus: { $in: ["active", "reported"] },
   })
     .populate("user", USER_POPULATE_FIELDS)
     .populate("skill", SKILL_POPULATE_FIELDS);
@@ -343,6 +352,13 @@ const deletePortfolioItem = async (portfolioId, userId) => {
   // 2. Delete document from MongoDB
   await Portfolio.findByIdAndDelete(portfolioId);
 
+  // 3. Clean up associated reports if any
+  try {
+    await PortfolioReport.deleteMany({ portfolioItem: portfolioId });
+  } catch (cleanErr) {
+    console.warn(`[Portfolio Service] Failed to clean up reports for deleted portfolio ${portfolioId}:`, cleanErr.message);
+  }
+
   return {
     success: true,
     message: "Portfolio item deleted successfully",
@@ -369,7 +385,7 @@ const toggleReaction = async (portfolioId, userId, reactionType) => {
 
   const item = await Portfolio.findOne({
     _id: portfolioId,
-    moderationStatus: "active",
+    moderationStatus: { $in: ["active", "reported"] },
   });
 
   if (!item) {
@@ -430,7 +446,7 @@ const getPortfolioReactions = async (portfolioId) => {
 
   const item = await Portfolio.findOne({
     _id: portfolioId,
-    moderationStatus: "active",
+    moderationStatus: { $in: ["active", "reported"] },
   }).populate("reactions.user", "_id name profilePicture location");
 
   if (!item) {
@@ -460,6 +476,81 @@ const getPortfolioReactions = async (portfolioId) => {
   };
 };
 
+/**
+ * Report a portfolio item for moderation review
+ * @param {string} portfolioId - Target portfolio ID
+ * @param {string} reporterId - Authenticated reporter user ID
+ * @param {Object} reportData - { reason: string, description?: string }
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+const reportPortfolioItem = async (portfolioId, reporterId, reportData = {}) => {
+  validateObjectId(portfolioId, "portfolio ID");
+  validateObjectId(reporterId, "reporter user ID");
+
+  const item = await Portfolio.findOne({
+    _id: portfolioId,
+    moderationStatus: { $in: ["active", "reported"] },
+  });
+
+  if (!item) {
+    const error = new Error("Portfolio item not found.");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  // Prevent users from reporting their own portfolio items
+  if (item.user.toString() === reporterId.toString()) {
+    const error = new Error("You cannot report your own portfolio item.");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  // Check for existing active report by the same user
+  const existingReport = await PortfolioReport.findOne({
+    portfolioItem: portfolioId,
+    reporter: reporterId,
+  });
+
+  if (existingReport) {
+    const error = new Error("You have already reported this portfolio item.");
+    error.statusCode = 409;
+    throw error;
+  }
+
+  const { reason, description = "" } = reportData;
+
+  const newReport = new PortfolioReport({
+    portfolioItem: portfolioId,
+    reporter: reporterId,
+    reason,
+    description: typeof description === "string" ? description.trim() : "",
+    status: "pending",
+  });
+
+  try {
+    await newReport.save();
+  } catch (err) {
+    if (err.code === 11000) {
+      const error = new Error("You have already reported this portfolio item.");
+      error.statusCode = 409;
+      throw error;
+    }
+    throw err;
+  }
+
+  // Update portfolio item status and report count
+  if (item.moderationStatus === "active") {
+    item.moderationStatus = "reported";
+  }
+  item.reportCount = (item.reportCount || 0) + 1;
+  await item.save();
+
+  return {
+    success: true,
+    message: "Portfolio item reported successfully.",
+  };
+};
+
 module.exports = {
   createPortfolioItem,
   getUserPortfolio,
@@ -468,6 +559,7 @@ module.exports = {
   deletePortfolioItem,
   toggleReaction,
   getPortfolioReactions,
+  reportPortfolioItem,
   formatReactionSummary,
   formatPortfolioItem,
 };

@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Rating = require("../models/Rating");
 const SwapRequest = require("../models/SwapRequest");
 const User = require("../models/User");
+const notificationService = require("./notificationService");
 
 const objectIdRegex = /^[0-9a-fA-F]{24}$/;
 const REVIEWER_POPULATE_FIELDS = "name profilePicture location";
@@ -119,6 +120,21 @@ const createRating = async (swapId, reviewerId, ratingData) => {
   const populatedRating = await Rating.findById(newRating._id)
     .populate("reviewer", REVIEWER_POPULATE_FIELDS)
     .populate("ratedUser", REVIEWER_POPULATE_FIELDS);
+
+  // 11. Trigger in-app Notification for ratedUser inside try/catch
+  try {
+    const reviewerName = populatedRating.reviewer?.name || "Your swap partner";
+    await notificationService.createNotification({
+      user: ratedUserId,
+      sender: reviewerId,
+      swap: swapId,
+      type: "rating_received",
+      title: "New Review Received",
+      message: `${reviewerName} rated your completed swap ${stars} star${stars > 1 ? "s" : ""}.`,
+    });
+  } catch (notifErr) {
+    console.warn("Failed to create rating received notification:", notifErr?.message || notifErr);
+  }
 
   return {
     rating: populatedRating,

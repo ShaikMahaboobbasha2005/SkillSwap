@@ -45,13 +45,14 @@ const portfolioSchema = new Schema(
     },
     moderationStatus: {
       type: String,
-      enum: ["active", "flagged", "hidden", "removed"],
+      enum: ["active", "reported", "flagged", "hidden", "removed"],
       default: "active",
       index: true,
     },
     reportCount: {
       type: Number,
       default: 0,
+      min: 0,
     },
     reactions: [
       {

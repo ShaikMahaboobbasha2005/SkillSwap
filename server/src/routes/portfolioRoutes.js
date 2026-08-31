@@ -8,6 +8,7 @@ const validateRequest = require("../middleware/validateRequest");
 const {
   updatePortfolioSchema,
   portfolioReactionSchema,
+  reportPortfolioSchema,
 } = require("../utils/portfolioValidation");
 
 // Protected: Create portfolio item (multipart/form-data with media file)
@@ -16,6 +17,14 @@ router.post(
   authMiddleware,
   handlePortfolioUploadMiddleware,
   portfolioController.createPortfolioItem
+);
+
+// Protected: Report a portfolio item for moderation review
+router.post(
+  "/:id/report",
+  authMiddleware,
+  validateRequest(reportPortfolioSchema),
+  portfolioController.reportPortfolioItem
 );
 
 // Protected: Add / change / remove reaction on a portfolio item

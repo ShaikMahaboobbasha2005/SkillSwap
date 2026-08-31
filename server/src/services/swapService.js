@@ -190,6 +190,21 @@ const createSwapRequest = async (fromUserId, data) => {
     .populate("offeredSkill", SKILL_POPULATE_FIELDS)
     .populate("wantedSkill", SKILL_POPULATE_FIELDS);
 
+  // Trigger in-app Notification for recipient inside try/catch
+  try {
+    const senderName = created.fromUser?.name || "A user";
+    await notificationService.createNotification({
+      user: toUserId,
+      sender: fromUserId,
+      swap: created._id,
+      type: "swap_request",
+      title: "New Swap Request",
+      message: `${senderName} wants to exchange skills with you.`,
+    });
+  } catch (notifErr) {
+    console.warn("Failed to create swap request notification:", notifErr?.message || notifErr);
+  }
+
   return formatSwapWithSnapshots(created);
 };
 
@@ -324,6 +339,21 @@ const acceptSwapRequest = async (swapId, userId) => {
     .populate("offeredSkill", SKILL_POPULATE_FIELDS)
     .populate("wantedSkill", SKILL_POPULATE_FIELDS);
 
+  // Trigger in-app Notification for the sender inside try/catch
+  try {
+    const receiverName = updated.toUser?.name || "Your partner";
+    await notificationService.createNotification({
+      user: updated.fromUser?._id || updated.fromUser,
+      sender: userId,
+      swap: updated._id,
+      type: "swap_accepted",
+      title: "Swap Accepted!",
+      message: `${receiverName} accepted your skill swap request.`,
+    });
+  } catch (notifErr) {
+    console.warn("Failed to create swap accepted notification:", notifErr?.message || notifErr);
+  }
+
   return formatSwapWithSnapshots(updated);
 };
 
@@ -358,6 +388,21 @@ const rejectSwapRequest = async (swapId, userId) => {
     .populate("toUser", USER_POPULATE_FIELDS)
     .populate("offeredSkill", SKILL_POPULATE_FIELDS)
     .populate("wantedSkill", SKILL_POPULATE_FIELDS);
+
+  // Trigger in-app Notification for the sender inside try/catch
+  try {
+    const receiverName = updated.toUser?.name || "Your partner";
+    await notificationService.createNotification({
+      user: updated.fromUser?._id || updated.fromUser,
+      sender: userId,
+      swap: updated._id,
+      type: "swap_rejected",
+      title: "Swap Request Declined",
+      message: `${receiverName} declined your swap request.`,
+    });
+  } catch (notifErr) {
+    console.warn("Failed to create swap rejected notification:", notifErr?.message || notifErr);
+  }
 
   return formatSwapWithSnapshots(updated);
 };
@@ -648,6 +693,22 @@ const leaveSwapRequest = async (swapId, userId) => {
     { $set: { status: "left", leftBy: userId, endedAt: now } },
     { new: true }
   );
+
+  const otherParticipantId = isSender ? existingSwap.toUser : existingSwap.fromUser;
+  // Trigger in-app Notification for partner inside try/catch
+  try {
+    const leaver = await User.findById(userId).select("name").lean();
+    await notificationService.createNotification({
+      user: otherParticipantId,
+      sender: userId,
+      swap: swapId,
+      type: "swap_left",
+      title: "Swap Ended",
+      message: `${leaver?.name || "Your partner"} ended the skill swap.`,
+    });
+  } catch (notifErr) {
+    console.warn("Failed to create swap left notification:", notifErr?.message || notifErr);
+  }
 
   return await SwapRequest.findById(swapId)
     .populate("fromUser", USER_POPULATE_FIELDS)

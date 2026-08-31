@@ -96,6 +96,17 @@ export const getPortfolioReactions = async (id) => {
   return response.data;
 };
 
+/**
+ * Report a portfolio item for moderation review.
+ * @param {string} id - Portfolio item ID
+ * @param {Object} data - { reason: string, description?: string }
+ * @returns {Promise<Object>} API response { success: true, message: string }
+ */
+export const reportPortfolioItem = async (id, data) => {
+  const response = await api.post(`/portfolio/${id}/report`, data);
+  return response.data;
+};
+
 const portfolioService = {
   getUserPortfolio,
   getPortfolioItem,
@@ -104,6 +115,7 @@ const portfolioService = {
   deletePortfolioItem,
   togglePortfolioReaction,
   getPortfolioReactions,
+  reportPortfolioItem,
 };
 
 export default portfolioService;

@@ -173,31 +173,74 @@
     - Created `PortfolioReactionsModal.jsx` displaying list of users who reacted, category filtering tabs (`All`, `👍 Like`, `🔥 Impressive`, `👏 Great Work`, `💡 Creative`), user avatars, and profile links.
     - Integrated reaction bar into `PortfolioLightbox.jsx` with synchronized state across grid, lightbox, and profile previews.
     - Isolated temporary uploading and failed upload cards from reaction interactions.
-- **Done =** Users can showcase their work with image and video media uploads, enjoy optimistic non-blocking uploads with live progress bars, react to portfolio work with 4 emojis, view who reacted in category tabs, and manage portfolio items.
+  - **Phase 9.5 — Portfolio Undo & Moderation Foundation (Completed):**
+    - **Portfolio Edit Undo:** Snapshots previous caption and linked skill state, displays 5-second countdown Undo toast (`"Portfolio updated [ Undo ] 5s"`), and atomically restores/persists previous data with version/action token guards to prevent race conditions during rapid edits.
+    - **Portfolio Delete Undo & Delayed Finalization:** Optimistically hides deleted items from the visible UI, opens a 5-second Undo window (`"Portfolio item deleted [ Undo ] 5s"`), restores item immediately if Undo is clicked, and finalizes permanent MongoDB deletion and Cloudinary media asset cleanup only after window expiration without conflicts across multiple simultaneous deletions.
+    - **Enhanced ToastNotification:** Extended `ToastNotification.jsx` to support customizable action buttons (`[ Undo ]`), countdown ticker, and Pine `#1B4332` / `#3FA873` design system tokens while remaining 100% backward compatible.
+    - **Moderation Status Support:** Updated `Portfolio.moderationStatus` enum to `["active", "reported", "hidden", "removed"]`. `active` and `reported` items remain publicly visible; `hidden` and `removed` items are excluded from public responses.
+    - **Dedicated PortfolioReport Model:** Created `PortfolioReport` schema with reporter, portfolioItem, reason enum (`nudity`, `violence`, `illegal`, `hate_harassment`, `spam`, `copyright`, `other`), optional description (max 500 chars), and compound unique index `{ portfolioItem: 1, reporter: 1 }` preventing duplicate active reports at the database level.
+    - **Report API:** Implemented protected endpoint `POST /api/portfolio/:id/report` with Zod validation, self-reporting prevention (`403 Forbidden`), duplicate report protection (`409 Conflict`), and automatic status update to `reported`.
+    - **PortfolioReportModal & Lightbox Integration:** Created `PortfolioReportModal.jsx` and added secondary visitor `[ Report ]` action to `PortfolioLightbox.jsx` with real-time feedback toasts and owner exclusion.
+- **Done =** Users can showcase their work with image and video media uploads, enjoy optimistic non-blocking uploads with live progress bars, react to portfolio work with 4 emojis, undo edits and deletions within a 5-second window, and safely report objectionable content to lay the foundation for future moderation.
 
 ## Phase 10 — Smart Recommendations
-- **Goal:** Enhance candidate matching using an intelligent AI recommendation layer.
-- **Features:**
-  - Traditional rule-based matching
-  - AI candidate ranking
-  - Compatibility scoring
-  - Graceful fallback when AI is unavailable
-- **Architecture Decision:** AI enhances traditional matching and never replaces it.
-- **Done =** AI recommendations work while traditional matching remains functional.
+- **Goal:** Enhance candidate matching using an intelligent AI recommendation layer built on top of a deterministic, rule-based matching foundation.
+- **Features & Subphases:**
+  - **Phase 10.1 — Traditional Matching, Compatibility Foundation & Skill Normalization (Completed):**
+    - Built a deterministic, rule-based recommendation service (`recommendationService.js`) and API endpoint `GET /api/recommendations` protected by JWT `authMiddleware`.
+    - **Smart Skill Normalization & Canonical Alias Resolution:** Created centralized `skillNormalization.js` utility that standardizes skill casing, spacing, and punctuation variations, and maps common synonyms/aliases to canonical skill identifiers (e.g., `JS` ↔ `JavaScript`, `NodeJS` ↔ `Node.js`, `ReactJS` ↔ `React`, `UI UX` ↔ `UI/UX Design`, `cpp` ↔ `c++`, `ts` ↔ `typescript`). Ensures strict false equivalence protection (`Java !== JavaScript`, `React !== React Native`, `Python !== Django`, `Figma !== UI/UX Design`, `Frontend !== React`).
+    - **Display Name Preservation:** Preserves original user-entered skill names in the database, API response objects, and human-readable explanation sentences (`"They offer JS, which you want to learn."`).
+    - **Candidate Filtering & Visibility Pipeline:** Evaluates skill normalization before candidate scoring, ensuring candidate users with alias skills are accurately matched, scored, and retained in recommendations rather than excluded. Self-exclusion strictly removes only the authenticated user (`owner: { $ne: currentUserId }`), allowing valid compatible partners across distinct skills to be recommended.
+    - **Skill Compatibility Analysis:** Computes exact matches for user (`exactMatchesForYou`), exact matches for candidate (`exactMatchesForThem`), detects two-way mutual exchanges (`mutualMatch`), and calculates related category matches (`relatedMatches`).
+    - **Progressive Diminishing-Returns Compatibility Scoring (0–100):** Directional exact match scoring with diminishing returns per direction (0: 0, 1: 26, 2: 36, 3: 42, 4: 45, 5+: 46) + two-way mutual bonus (+20) + related category matches (+8 each, max 16), strictly clamped between 0 and 100 with zero influence from reputation/popularity metrics. Eliminates premature 100% saturation (1↔1 = 72%, 2↔1 = 82%, 2↔2 = 92%, 3↔2 = 98%, 3↔3 = 100%) and maintains meaningful ranking differences for multi-skill matches.
+    - **Deterministic Match Reasons:** Generates human-readable explanations based exclusively on real match data.
+    - **Pure Skill-Compatibility Sorting:** Sorted deterministically by `compatibilityScore DESC`, `mutualMatch DESC`, `exactMatchCount DESC`, `relatedMatchCount DESC`, and `_id ASC`.
+    - **Pagination:** Supports `?page=&limit=` pagination with standard `{ data: { recommendations }, meta: { page, limit, total, totalPages } }` response format.
+    - Verified with comprehensive test suite and zero AI dependencies.
+  - **Phase 10.2 — Recommendation UI & Match Discovery (Completed):**
+    - Built authenticated `RecommendationsPage.jsx` view mounted on `/recommendations` (with `/matches` alias) and added "Matches" (`Sparkles` icon) navigation link with active state indicator in desktop Navbar and mobile drawer.
+    - Implemented `RecommendationCard.jsx` displaying user identity, location, rating & swaps, bounded 0–100% compatibility badge with tier levels ("Excellent Match", "Strong Match", "Potential Match", "Related Skills"), and smooth progress bar.
+    - Designed distinct Pine Green `#E4EEE8` banner and accent border for strong mutual two-way skill exchanges (`mutualMatch === true`).
+    - Visualized partitioned skill exchange directions: "They Can Teach You" (`exactMatchesForYou` green-tinted chips), "You Can Teach Them" (`exactMatchesForThem` chips), and "Related Category Interests".
+    - Rendered deterministic match explanations with checkmark bullet points and expandable `+X more reasons` toggle.
+    - Integrated direct "View Profile" link (`/profile/:id`) and secondary "Request Swap" action opening `SwapRequestModal`.
+    - Created `RecommendationSkeleton.jsx` pulsing layout, `RecommendationEmptyState.jsx` with "Manage My Skills" profile link, and `RecommendationErrorState.jsx` with retry action.
+  - **Phase 10.3 — Gemini AI Semantic Match Ranking (Completed with User-Triggered Controls):**
+    - **User-Triggered Execution Architecture:** Default recommendation requests (`GET /api/recommendations`) execute 100% deterministically with zero Gemini API calls, keeping the default Matches view instantaneous, cost-free, and quota-friendly. Gemini AI semantic ranking is strictly opt-in, triggered only when the user explicitly requests AI recommendations via `?ai=true` (`[ ✨ AI Recommendations ]`).
+    - **Google Gemini Flash Semantic Layer:** Built a dedicated `geminiMatchingService.js` leveraging `@google/genai` to evaluate deeper semantic taxonomy relationships between skills (e.g., `Web Development` ↔ `React` + `Node.js` + `Express`, `Frontend` ↔ `React` + `CSS`, `Backend` ↔ `Node.js` + `MongoDB`).
+    - **Privacy-Safe & Bounded Candidate Pool:** Passes only sanitized skill metadata (names, categories, levels) for bounded candidate pools ($\le 20$ candidates) in a single batched structured prompt. Enforces candidate ID verification to prevent fabricated candidates and strips sensitive user data (passwords, JWTs, chats, emails).
+    - **Structured AI Output & Validation:** Enforces structured JSON output parsing, validates score bounds (0–100 integer clamping), and constrains human-readable AI explanations to $\le 2$ concise sentences.
+    - **70/30 Hybrid Scoring Formula & Guardrails:** Combines deterministic score ($70\%$) with Gemini semantic score ($30\%$) via `round(traditionalScore * 0.70 + semanticScore * 0.30)`. The 70% deterministic anchor guarantees that strong mutual exact matches are protected from being displaced by weak candidates with high AI scores.
+    - **Resilient Fallback Mechanism:** Transparently defaults to deterministic scoring and explanations if `GEMINI_API_KEY` is missing or if the API experiences timeouts, rate limits (429), or malformed output, with non-blocking user feedback and zero client disruption.
+    - **Unified In-Page UI Experience:** Integrated seamless mode switcher (`[ All Matches ]` / `[ ✨ AI Recommendations ]`) inside `RecommendationsPage.jsx` without adding extra navbar items or routes, visual AI explanation badges in `RecommendationCard.jsx`, lightweight AI loading indicators, and dedicated AI empty/fallback states.
+    - **Comprehensive Automated Test Suite:** Verified with 12 automated tests in `server/test/gemini_matching_test.js` covering default vs user-triggered execution, fallback behaviors, 70/30 math, score bounds, candidate isolation, and anti-hallucination.
+  - **Phase 10.4 — Integrated Video Meetings & Swap Session Scheduling (Completed):**
+    - **Integrated Chat Workflow (No Separate Page):** Built video calling and scheduling directly inside the chat experience (`ChatHeader`, `MessageList`, `ChatPage`), preserving the single conversation hub design.
+    - **Strict Accepted Swap Access Requirement:** Implemented multi-layered backend validation (`verifyAcceptedSwapParticipant`) ensuring only active participants on an `accepted` swap request can create, join, or cancel video meetings. Blocked for unauthorized users, pending swaps, and ended swaps.
+    - **Instant & Scheduled Session Creation:** Created `MeetingSession` Mongoose schema and endpoints `POST /api/meetings/instant` and `POST /api/meetings` supporting instant launches and future session scheduling with duration (15, 30, 45, 60 mins) and optional topic/goal notes.
+    - **Deterministic Collision-Resistant Rooms:** Implemented deterministic room name generator (`skillswap-<swapId>-<meetingId>-<random>`) for isolated, private Jitsi rooms.
+    - **Interactive In-Chat Meeting Message Cards:** Extended `Message` model with `type: "meeting"` and `meetingSession` reference. Created `MeetingMessageCard.jsx` to render live status ("Live / Ready", "Scheduled", "Completed", "Cancelled"), formatted date/time, topic, and `[ Join Call Now ]` & `[ Cancel ]` buttons in the chat stream.
+    - **Embedded Jitsi Video Conference Overlay:** Created `JitsiMeetingModal.jsx` utilizing Jitsi Meet External API with custom toolbar options, responsive full-screen toggling, and clean `[ Leave Call ]` hangup action returning users safely back to their chat.
+    - **Atomic Background Reminder Job:** Built background scheduler worker (`meetingReminderJob.js`) polling every 30s with atomic MongoDB `findOneAndUpdate` idempotency guards to deliver 15-minute advance and start-time in-app notifications with zero duplicate alerts.
+    - **Real-Time Synchronization:** Emitted `new_message` and `meeting_updated` socket events to room `swap:<swapId>` and user notifications to partner rooms.
+    - **Automated Verification:** Implemented and verified all 10 core test cases in `server/test/meeting_test.js` (Accepted Swap Access, Unauthorized Access Blocked, Pending Swap Blocked, Instant Meeting, Schedule Meeting, Participant Access, Cancellation, Reminder Eligibility, Duplicate Reminder Prevention, Chat Integration).
+- **Architecture Decision:** Video meetings are integrated directly into chat as message cards and embedded overlays without a standalone meetings page. Pure skill compatibility and verified swap acceptance govern access.
+- **Done =** Users with accepted swaps can start instant video calls or schedule future sessions directly within their chat, receive automated reminders, and join video rooms seamlessly via Jitsi Meet.
 
 ## Phase 11 — Notifications & Polish
 - **Goal:** Add real-time/in-app notifications and elevate overall UI/UX quality.
-- **Features:**
-  - Notification center
-  - Request notifications
-  - Rating notifications
-  - Loading states & skeleton loaders
-  - Empty states
-  - Micro-animations and transitions
-  - Responsive verification across screen sizes
-  - Accessibility improvements (a11y)
-  - Design polish
-- **Done =** Application feels production-ready.
+- **Sub-Phases:**
+  - **Phase 11.1 — Notification Center & Real-Time Notifications (Completed):**
+    - **Unified Backend Notification Pipeline:** Standardized `Notification` Mongoose model with full enum types (`swap_request`, `swap_accepted`, `swap_rejected`, `swap_left`, `completion_request`, `completion_confirmed`, `completion_cancelled`, `meeting_scheduled`, `meeting_reminder`, `meeting_started`, `meeting_cancelled`, `rating_received`), optional swap reference (`required: false`), and compound index `{ user: 1, read: 1, createdAt: -1 }`.
+    - **Automatic Service-Level Notification Producers:** Integrated non-blocking `createNotification` calls across `swapService.js` (requests, acceptances, rejections, leaves, completion mark/confirmation/cancellation), `meetingService.js` (scheduling, instant start, cancellation), `meetingReminderJob.js` (advance alerts and start-time reminders), and `ratingService.js` (rating received).
+    - **Socket.IO Centralized Broadcast:** Attached `io` instance to `notificationService.setIO(io)` in `server.js`. Persisted notifications automatically emit `notification` events with populated documents and live recipient `unreadCount` to personal rooms `user:<userId>`, as well as `notification_unread_update` events on mark-as-read and mark-all-as-read.
+    - **Frontend Notification Infrastructure:** Created `NotificationContext.jsx` and `useNotifications.js` managing live notifications and unread counts with race-safe MongoDB `_id` deduplication, optimistic mark-read operations, and pagination support.
+    - **Interactive Navbar Notification Bell:** Built `NotificationBell.jsx` featuring dynamic unread badge with live pulse animations, accessible popover dropdown displaying recent activity, quick "Mark all as read" button, skeleton loading (`NotificationSkeleton.jsx`), empty state, and keyboard Escape / click-outside dismissal.
+    - **Notification Row Presentation:** Built `NotificationItem.jsx` with distinct type icons (`lucide-react`), sender avatars, relative timestamps ("Just now", "2m ago", "1h ago", "Yesterday"), unread left-accent borders (`#1B4332`), and intelligent click routing to `/swaps`, `/swaps/:swapId/chat`, or `/profile`.
+    - **Dedicated Notification Center:** Built full-page `NotificationsPage.jsx` at `/notifications` featuring All / Unread filter tabs, total unread badge, bulk mark-read action, "Load More" pagination, and empty/error states with retry.
+    - **Navbar & Mobile Integration:** Integrated `NotificationBell` in desktop navigation and mobile header, with a live badge notification link in the mobile drawer.
+    - **Automated Verification:** Implemented 12 comprehensive automated tests in `server/test/notification_test.js` covering pagination, isolation, mark-read, mark-all-read, unread count accuracy, Socket.IO broadcast, swap/rating producers, missing swap handling, and deduplication.
+- **Done =** Users receive real-time notifications for all platform events with live Navbar bell badge synchronization, popover dropdown, dedicated `/notifications` management page, and zero regressions across existing chat, swap, and meeting workflows.
 
 ## Phase 12 — Testing & Deployment
 - **Goal:** Thoroughly test the application and deploy both frontend and backend services.

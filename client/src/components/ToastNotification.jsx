@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   CheckCircle2,
@@ -9,6 +9,7 @@ import {
   Send,
   XCircle,
   Ban,
+  RotateCcw,
 } from "lucide-react";
 
 /**
@@ -19,6 +20,7 @@ import {
  * above modals, overlays, and all page elements.
  *
  * Supported toast types:
+ * - "undo" : White surface with #E6E3DA border, #1B4332 Pine action button, and 5s countdown timer
  * - "sent" | "primary" : Pine / Dark Accent with Send icon
  * - "success" | "accepted" : Emerald Green with CheckCircle2 icon
  * - "rejected" : Amber / Orange with XCircle icon
@@ -33,16 +35,123 @@ export default function ToastNotification({
   showCloseButton = true,
   autoHideDuration = 4000,
 }) {
+  const duration = toast?.duration || autoHideDuration;
+  const isUndo = toast?.type === "undo" || Boolean(toast?.action);
+  const [secondsRemaining, setSecondsRemaining] = useState(
+    Math.ceil(duration / 1000)
+  );
+  const startTimeRef = useRef(Date.now());
+
   useEffect(() => {
     if (!toast || !toast.show) return;
+
+    startTimeRef.current = Date.now();
+    const initialSeconds = Math.ceil(duration / 1000);
+    setSecondsRemaining(initialSeconds);
+
+    // Countdown interval for visual seconds display
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTimeRef.current;
+      const remaining = Math.max(0, Math.ceil((duration - elapsed) / 1000));
+      setSecondsRemaining(remaining);
+    }, 250);
+
+    // Auto-dismiss timeout
     const timer = setTimeout(() => {
       onClose?.();
-    }, autoHideDuration);
-    return () => clearTimeout(timer);
-  }, [toast, onClose, autoHideDuration]);
+    }, duration);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timer);
+    };
+  }, [toast, onClose, duration]);
 
   if (!toast || !toast.show) return null;
 
+  // Render Undo Toast Variant (Phase 9.5 Specification)
+  if (isUndo) {
+    const handleActionClick = () => {
+      if (toast.action?.onClick) {
+        toast.action.onClick();
+      }
+      onClose?.();
+    };
+
+    return createPortal(
+      <div
+        role="status"
+        aria-live="polite"
+        className="fixed top-5 right-5 z-[10050] max-w-sm w-full animate-slideDown pointer-events-auto select-none"
+      >
+        <div className="relative overflow-hidden p-4 rounded-2xl bg-white border border-[#E6E3DA] shadow-xl flex flex-col gap-3 text-[#16160F] backdrop-blur-md transition-all">
+          {/* Header Row: Message & Countdown Pill */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div
+                className="w-7 h-7 rounded-xl bg-[#E4EEE8] text-[#1B4332] border border-[#1B4332]/20 flex items-center justify-center shrink-0 shadow-2xs"
+                aria-hidden="true"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </div>
+              <p className="text-xs font-bold text-[#16160F] tracking-tight leading-snug truncate">
+                {toast.message}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Countdown Ticker */}
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#F7F6F2] text-[#6B6858] border border-[#E6E3DA] tabular-nums">
+                {secondsRemaining}s
+              </span>
+
+              {/* Close / Dismiss button */}
+              {showCloseButton && (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="Dismiss notification"
+                  title="Dismiss notification"
+                  className="text-[#6B6858] hover:text-[#16160F] p-1 rounded-lg hover:bg-[#F7F6F2] transition-colors cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Action Row: Undo Button */}
+          {toast.action && (
+            <div className="flex items-center justify-end gap-2 pt-1 border-t border-[#E6E3DA]/60">
+              <button
+                type="button"
+                onClick={handleActionClick}
+                className="px-4 py-1.5 bg-[#1B4332] hover:bg-[#143326] text-white text-xs font-bold rounded-xl shadow-2xs hover:shadow-xs active:scale-[0.97] transition-all cursor-pointer inline-flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#3FA873]"
+                aria-label={toast.action.label || "Undo"}
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>{toast.action.label || "Undo"}</span>
+              </button>
+            </div>
+          )}
+
+          {/* Linear Progress Bar (Pine / Dark Accent #3FA873) */}
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#E6E3DA]/60 pointer-events-none overflow-hidden">
+            <div
+              className="h-full bg-[#3FA873] transition-all linear"
+              style={{
+                width: "100%",
+                animation: `toastCountdown ${duration}ms linear forwards`,
+              }}
+            />
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
+  // Standard Semantic Toast Variants
   const type = toast.type ? toast.type.toLowerCase() : "info";
 
   let bgStyles = "bg-[#16160F] text-white border-[#16160F]";
@@ -91,7 +200,7 @@ export default function ToastNotification({
     <div
       role="status"
       aria-live="polite"
-      className="fixed top-5 right-5 z-[10050] max-w-sm w-full animate-slideDown pointer-events-auto"
+      className="fixed top-5 right-5 z-[10050] max-w-sm w-full animate-slideDown pointer-events-auto select-none"
     >
       <div
         className={`relative overflow-hidden p-4 rounded-xl shadow-xl border flex items-start gap-3 backdrop-blur-md transition-all ${bgStyles}`}
@@ -126,8 +235,11 @@ export default function ToastNotification({
         {/* Auto Progress Bar */}
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 pointer-events-none">
           <div
-            className="h-full bg-white/60 transition-all duration-[4000ms] linear"
-            style={{ width: "100%" }}
+            className="h-full bg-white/60 transition-all linear"
+            style={{
+              width: "100%",
+              animation: `toastCountdown ${duration}ms linear forwards`,
+            }}
           />
         </div>
       </div>

@@ -17,7 +17,7 @@ const notificationSchema = new Schema(
     swap: {
       type: Schema.Types.ObjectId,
       ref: "SwapRequest",
-      required: true,
+      required: false,
     },
     type: {
       type: String,
@@ -29,6 +29,11 @@ const notificationSchema = new Schema(
         "swap_accepted",
         "swap_rejected",
         "swap_left",
+        "meeting_scheduled",
+        "meeting_reminder",
+        "meeting_started",
+        "meeting_cancelled",
+        "rating_received",
       ],
       required: true,
     },
@@ -50,5 +55,8 @@ const notificationSchema = new Schema(
     timestamps: true,
   }
 );
+
+// Compound index for fast unread notifications list & unread count queries
+notificationSchema.index({ user: 1, read: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Notification", notificationSchema);
