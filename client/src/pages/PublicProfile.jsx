@@ -226,6 +226,13 @@ export default function PublicProfile() {
                 </div>
               </div>
 
+              {/* Read-Only Bio Presentation */}
+              <div className="pt-1">
+                <p className="text-xs sm:text-sm text-[#16160F]/95 leading-relaxed font-normal max-w-2xl">
+                  {profile.bio || "No bio added yet."}
+                </p>
+              </div>
+
               {/* Social Links Row */}
               <SocialLinksRow socialLinks={profile.socialLinks} className="pt-1" />
 

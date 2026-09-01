@@ -1,18 +1,20 @@
 import { useNavigate } from "react-router-dom";
 import useNotifications from "../../hooks/useNotifications";
 import {
-  Handshake,
+  ArrowLeftRight,
   CheckCircle2,
   XCircle,
   UserMinus,
   Clock,
   Trophy,
   AlertCircle,
+  Calendar,
+  CalendarX,
   Video,
   Bell,
-  CalendarX,
   Star,
   Check,
+  ArrowRight,
 } from "lucide-react";
 
 /**
@@ -45,92 +47,151 @@ const formatRelativeTime = (timestamp) => {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
+/**
+ * Derives swap skill context dynamically from populated swap data
+ */
+const getSwapSkillContext = (swap) => {
+  if (!swap || typeof swap !== "object") return null;
+
+  const offeredName =
+    swap.offeredSkill?.name ||
+    (typeof swap.offeredSkill === "string" ? swap.offeredSkill : "");
+  const wantedName =
+    swap.wantedSkill?.name ||
+    (typeof swap.wantedSkill === "string" ? swap.wantedSkill : "");
+
+  if (offeredName && wantedName) {
+    return {
+      title: `${offeredName} ↔ ${wantedName}`,
+      subtitle: "Skill Swap",
+    };
+  } else if (offeredName || wantedName) {
+    return {
+      title: offeredName || wantedName,
+      subtitle: "Skill Swap",
+    };
+  }
+  return null;
+};
+
 const getTypeConfig = (type) => {
   switch (type) {
     case "swap_request":
       return {
-        icon: Handshake,
+        icon: ArrowLeftRight,
         color: "text-[#1B4332]",
         bg: "bg-[#E4EEE8]",
+        border: "border-[#1B4332]/20",
         defaultTitle: "New Swap Request",
+        actionText: "View Request",
       };
     case "swap_accepted":
       return {
         icon: CheckCircle2,
         color: "text-emerald-700",
         bg: "bg-emerald-50",
+        border: "border-emerald-200",
         defaultTitle: "Swap Accepted",
+        actionText: "Open Chat",
       };
     case "swap_rejected":
       return {
         icon: XCircle,
-        color: "text-rose-600",
+        color: "text-rose-700",
         bg: "bg-rose-50",
+        border: "border-rose-200",
         defaultTitle: "Swap Declined",
+        actionText: "Open History",
       };
     case "swap_left":
       return {
         icon: UserMinus,
-        color: "text-amber-700",
+        color: "text-amber-800",
         bg: "bg-amber-50",
+        border: "border-amber-200",
         defaultTitle: "Swap Ended",
+        actionText: "Open History",
       };
     case "completion_request":
       return {
         icon: Clock,
-        color: "text-indigo-600",
+        color: "text-indigo-700",
         bg: "bg-indigo-50",
+        border: "border-indigo-200",
         defaultTitle: "Completion Requested",
+        actionText: "Confirm Swap",
       };
     case "completion_confirmed":
       return {
         icon: Trophy,
         color: "text-emerald-700",
         bg: "bg-emerald-50",
+        border: "border-emerald-200",
         defaultTitle: "Swap Completed",
+        actionText: "Open History",
       };
     case "completion_cancelled":
       return {
         icon: AlertCircle,
-        color: "text-rose-600",
+        color: "text-rose-700",
         bg: "bg-rose-50",
+        border: "border-rose-200",
         defaultTitle: "Completion Not Confirmed",
+        actionText: "Open Chat",
       };
     case "meeting_scheduled":
+      return {
+        icon: Calendar,
+        color: "text-[#1B4332]",
+        bg: "bg-[#E4EEE8]",
+        border: "border-[#1B4332]/20",
+        defaultTitle: "Video Session Scheduled",
+        actionText: "View Session",
+      };
     case "meeting_started":
       return {
         icon: Video,
-        color: "text-[#1B4332]",
-        bg: "bg-[#E4EEE8]",
-        defaultTitle: "Video Session",
+        color: "text-emerald-700",
+        bg: "bg-emerald-100",
+        border: "border-emerald-300",
+        defaultTitle: "Video Session Starting",
+        actionText: "Join Call Now",
       };
     case "meeting_reminder":
       return {
         icon: Bell,
-        color: "text-amber-700",
+        color: "text-amber-800",
         bg: "bg-amber-50",
-        defaultTitle: "Session Reminder",
+        border: "border-amber-200",
+        defaultTitle: "Upcoming Video Session",
+        actionText: "Open Chat",
       };
     case "meeting_cancelled":
       return {
         icon: CalendarX,
-        color: "text-rose-600",
+        color: "text-rose-700",
         bg: "bg-rose-50",
+        border: "border-rose-200",
         defaultTitle: "Session Cancelled",
+        actionText: "Open Chat",
       };
     case "rating_received":
       return {
         icon: Star,
         color: "text-[#B8860B]",
         bg: "bg-[#FEF9C3]",
-        defaultTitle: "New Review",
+        border: "border-[#B8860B]/20",
+        defaultTitle: "New Review Received",
+        actionText: "View Review",
       };
     default:
       return {
         icon: Bell,
         color: "text-[#1B4332]",
         bg: "bg-[#E4EEE8]",
+        border: "border-[#1B4332]/20",
         defaultTitle: "Notification",
+        actionText: "Open",
       };
   }
 };
@@ -144,8 +205,13 @@ export default function NotificationItem({ notification, onClose, compact = fals
   const { _id, type, title, message, read, sender, swap, createdAt } = notification;
   const typeConfig = getTypeConfig(type);
   const Icon = typeConfig.icon;
+  const swapContext = getSwapSkillContext(swap);
 
-  const swapId = swap?._id || (typeof swap === "string" ? swap : null);
+  // Safely extract swap ID across object, string, or legacy properties
+  const swapId =
+    swap?._id ||
+    swap?.id ||
+    (typeof swap === "string" ? swap : notification.swapId || null);
 
   const handleClick = (e) => {
     // Mark as read immediately
@@ -157,32 +223,106 @@ export default function NotificationItem({ notification, onClose, compact = fals
       onClose();
     }
 
-    // Determine target navigation based on type
+    // Exact deep-linking behavior per Phase 11.2 specification
+    const encodedSwapId = swapId ? encodeURIComponent(swapId) : "";
+
     switch (type) {
       case "swap_request":
-        navigate("/swaps");
+        if (encodedSwapId) {
+          navigate(`/swaps?tab=incoming&highlight=${encodedSwapId}`);
+        } else {
+          navigate("/swaps?tab=incoming");
+        }
         break;
+
       case "swap_accepted":
-      case "meeting_scheduled":
-      case "meeting_started":
-      case "meeting_reminder":
         if (swapId) {
           navigate(`/swaps/${swapId}/chat`);
         } else {
           navigate("/chats");
         }
         break;
-      case "completion_request":
-      case "completion_confirmed":
-      case "completion_cancelled":
-      case "swap_left":
+
       case "swap_rejected":
+        if (encodedSwapId) {
+          navigate(`/swaps?tab=history&highlight=${encodedSwapId}`);
+        } else {
+          navigate("/swaps?tab=history");
+        }
+        break;
+
+      case "swap_left":
+        if (encodedSwapId) {
+          navigate(`/swaps?tab=history&highlight=${encodedSwapId}`);
+        } else {
+          navigate("/swaps?tab=history");
+        }
+        break;
+
+      case "completion_request":
+        if (swapId) {
+          navigate(`/swaps/${swapId}/chat?highlight=completion`);
+        } else {
+          navigate("/chats");
+        }
+        break;
+
+      case "completion_confirmed":
+        if (encodedSwapId) {
+          navigate(`/swaps?tab=history&highlight=${encodedSwapId}`);
+        } else {
+          navigate("/swaps?tab=history");
+        }
+        break;
+
+      case "completion_cancelled":
+        if (swapId) {
+          navigate(`/swaps/${swapId}/chat`);
+        } else {
+          navigate("/chats");
+        }
+        break;
+
+      case "meeting_scheduled":
+        if (swapId) {
+          navigate(`/swaps/${swapId}/chat?highlight=meeting`);
+        } else {
+          navigate("/chats");
+        }
+        break;
+
+      case "meeting_started":
+        if (swapId) {
+          navigate(`/swaps/${swapId}/chat?highlight=meeting`);
+        } else {
+          navigate("/chats");
+        }
+        break;
+
+      case "meeting_reminder":
+        if (swapId) {
+          navigate(`/swaps/${swapId}/chat?highlight=meeting`);
+        } else {
+          navigate("/chats");
+        }
+        break;
+
       case "meeting_cancelled":
-        navigate("/swaps");
+        if (swapId) {
+          navigate(`/swaps/${swapId}/chat?highlight=meeting`);
+        } else {
+          navigate("/chats");
+        }
         break;
+
       case "rating_received":
-        navigate("/profile");
+        if (encodedSwapId) {
+          navigate(`/profile?highlightSwap=${encodedSwapId}`);
+        } else {
+          navigate("/profile");
+        }
         break;
+
       default:
         if (swapId) {
           navigate(`/swaps/${swapId}/chat`);
@@ -209,67 +349,108 @@ export default function NotificationItem({ notification, onClose, compact = fals
           handleClick(e);
         }
       }}
-      className={`group relative flex items-start gap-3 p-3 transition-colors cursor-pointer text-left focus:outline-none focus:bg-[#F7F6F2] ${
-        compact ? "rounded-xl" : "rounded-2xl border border-[#E6E3DA]"
+      className={`group relative flex items-start gap-3 transition-all duration-200 cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-[#1B4332]/20 ${
+        compact
+          ? "p-3 rounded-xl border border-transparent hover:border-[#E6E3DA]"
+          : "p-4 sm:p-5 rounded-2xl border border-[#E6E3DA] hover:border-[#1B4332]/30 hover:shadow-xs"
       } ${
         read
           ? "bg-white hover:bg-[#F7F6F2]"
-          : "bg-[#F7F6F2]/80 hover:bg-[#E4EEE8]/40 border-l-4 border-l-[#1B4332]"
+          : "bg-white hover:bg-[#F7F6F2]/90 border-l-4 border-l-[#1B4332] shadow-2xs"
       }`}
     >
       {/* Type Icon Badge */}
       <div
-        className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 border border-black/5 ${typeConfig.bg} ${typeConfig.color}`}
+        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 border ${typeConfig.border} ${typeConfig.bg} ${typeConfig.color} transition-transform group-hover:scale-105 duration-200`}
       >
-        <Icon className="w-4 h-4" />
+        <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
       </div>
 
-      {/* Main Content */}
+      {/* Main Notification Body */}
       <div className="flex-1 min-w-0 pr-6">
+        {/* Header Row: Title, Unread Dot, Timestamp */}
         <div className="flex items-center gap-2 justify-between">
           <div className="flex items-center gap-1.5 min-w-0">
             <h4
-              className={`text-xs truncate ${
-                read ? "font-medium text-[#16160F]" : "font-bold text-[#16160F]"
+              className={`text-xs sm:text-sm tracking-tight truncate ${
+                read ? "font-semibold text-[#16160F]/90" : "font-bold text-[#16160F]"
               }`}
             >
               {title || typeConfig.defaultTitle}
             </h4>
             {!read && (
-              <span className="w-2 h-2 rounded-full bg-[#1B4332] shrink-0" aria-label="Unread" />
+              <span
+                className="w-2 h-2 rounded-full bg-[#1B4332] shrink-0 animate-pulse"
+                aria-label="Unread notification"
+                title="Unread"
+              />
             )}
           </div>
-          <span className="text-[11px] text-[#6B6858] shrink-0">
+          <span className="text-[11px] text-[#6B6858] font-medium shrink-0">
             {formatRelativeTime(createdAt)}
           </span>
         </div>
 
+        {/* Message Body */}
         <p
-          className={`text-xs text-[#6B6858] mt-0.5 leading-relaxed line-clamp-2 ${
-            !read ? "text-[#16160F]/90 font-normal" : ""
-          }`}
+          className={`text-xs text-[#6B6858] mt-1 leading-relaxed ${
+            compact ? "line-clamp-2" : "line-clamp-3"
+          } ${!read ? "text-[#16160F]/85 font-normal" : ""}`}
         >
           {message}
         </p>
 
-        {sender && sender.name && (
-          <div className="flex items-center gap-1.5 mt-1.5">
-            <div className="w-4 h-4 rounded-full bg-[#1B4332] text-white flex items-center justify-center text-[9px] font-bold overflow-hidden shrink-0">
-              {sender.profilePicture ? (
-                <img
-                  src={sender.profilePicture}
-                  alt={sender.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                sender.name.charAt(0).toUpperCase()
-              )}
+        {/* Specific Swap Context Pill / Card */}
+        {swapContext && (
+          <div
+            className={`mt-2.5 rounded-xl border flex items-center justify-between gap-2 transition-colors ${
+              compact
+                ? "px-2.5 py-1.5 bg-[#F7F6F2] border-[#E6E3DA]/80"
+                : "px-3 py-2 bg-[#F7F6F2] border-[#E6E3DA] group-hover:border-[#1B4332]/20"
+            }`}
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-5 h-5 rounded-md bg-[#E4EEE8] text-[#1B4332] flex items-center justify-center shrink-0">
+                <ArrowLeftRight className="w-3 h-3" />
+              </div>
+              <span className="text-xs font-semibold text-[#16160F] truncate">
+                {swapContext.title}
+              </span>
             </div>
-            <span className="text-[11px] text-[#6B6858] font-medium truncate">
-              {sender.name}
+            <span className="text-[10px] sm:text-[11px] font-medium text-[#6B6858] px-2 py-0.5 rounded-md bg-white border border-[#E6E3DA] shrink-0">
+              {swapContext.subtitle}
             </span>
           </div>
         )}
+
+        {/* Footer Meta Row: Sender info and Action CTA */}
+        <div className="flex items-center justify-between gap-2 mt-3 pt-1 border-t border-black/5">
+          {sender && sender.name ? (
+            <div className="flex items-center gap-1.5 min-w-0">
+              <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-[#1B4332] text-white flex items-center justify-center text-[9px] sm:text-[10px] font-bold overflow-hidden shrink-0">
+                {sender.profilePicture ? (
+                  <img
+                    src={sender.profilePicture}
+                    alt={sender.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  sender.name.charAt(0).toUpperCase()
+                )}
+              </div>
+              <span className="text-[11px] text-[#6B6858] font-medium truncate max-w-[120px] sm:max-w-[180px]">
+                {sender.name}
+              </span>
+            </div>
+          ) : (
+            <span />
+          )}
+
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-[#1B4332] group-hover:text-[#143326] transition-colors shrink-0">
+            <span>{typeConfig.actionText}</span>
+            <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5 duration-200" />
+          </div>
+        </div>
       </div>
 
       {/* Quick Mark-Read Button for unread notifications */}
@@ -278,7 +459,7 @@ export default function NotificationItem({ notification, onClose, compact = fals
           type="button"
           onClick={handleMarkReadOnly}
           title="Mark as read"
-          className="absolute right-2.5 top-3 p-1 rounded-lg text-[#6B6858] hover:text-[#1B4332] hover:bg-[#E4EEE8] transition-colors focus:outline-none focus:ring-1 focus:ring-[#1B4332]"
+          className="absolute right-2.5 top-3 p-1 rounded-lg text-[#6B6858] hover:text-[#1B4332] hover:bg-[#E4EEE8] transition-colors focus:outline-none focus:ring-1 focus:ring-[#1B4332] cursor-pointer"
           aria-label="Mark notification as read"
         >
           <Check className="w-3.5 h-3.5" />
@@ -287,3 +468,4 @@ export default function NotificationItem({ notification, onClose, compact = fals
     </div>
   );
 }
+

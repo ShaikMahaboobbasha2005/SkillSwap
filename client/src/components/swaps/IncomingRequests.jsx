@@ -32,6 +32,7 @@ export default function IncomingRequests({
   onCancelCompletion,
   onLeave,
   statusFilter = "",
+  highlightedSwapId = null,
 }) {
   const { user } = useAuth();
   const { refreshStats } = useSwap();
@@ -174,6 +175,10 @@ export default function IncomingRequests({
             onLeave={onLeave}
             onHide={(s) => setHideSwapTarget(s)}
             isProcessing={processing && selectedSwap?._id === swap._id}
+            isHighlighted={Boolean(
+              highlightedSwapId &&
+                String(highlightedSwapId) === String(swap._id || swap.id)
+            )}
           />
         ))}
       </div>

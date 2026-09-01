@@ -2,9 +2,10 @@ const chatService = require("../services/chatService");
 
 const getMessages = async (req, res, next) => {
   try {
+    const userId = req.user?.id || req.user?._id;
     const result = await chatService.getMessagesBySwapId(
       req.params.swapId,
-      req.user.id,
+      userId,
       req.query
     );
     res.status(200).json({
@@ -26,7 +27,8 @@ const getMessages = async (req, res, next) => {
 
 const getConversations = async (req, res, next) => {
   try {
-    const conversations = await chatService.getConversations(req.user.id);
+    const userId = req.user?.id || req.user?._id;
+    const conversations = await chatService.getConversations(userId);
     res.status(200).json({
       success: true,
       data: conversations,
@@ -38,7 +40,8 @@ const getConversations = async (req, res, next) => {
 
 const getUnreadCount = async (req, res, next) => {
   try {
-    const counts = await chatService.getUnreadCounts(req.user.id);
+    const userId = req.user?.id || req.user?._id;
+    const counts = await chatService.getUnreadCounts(userId);
     res.status(200).json({
       success: true,
       data: {
@@ -54,10 +57,11 @@ const getUnreadCount = async (req, res, next) => {
 
 const markAsRead = async (req, res, next) => {
   try {
+    const userId = req.user?.id || req.user?._id;
     const { messageIds } = req.body || {};
     const result = await chatService.markMessagesAsRead(
       req.params.swapId,
-      req.user.id,
+      userId,
       messageIds
     );
 
@@ -67,7 +71,7 @@ const markAsRead = async (req, res, next) => {
         success: true,
         type: "read",
         swapId: req.params.swapId,
-        readBy: req.user.id,
+        readBy: userId,
         readAt: result.readAt,
         messageIds: result.messageIds,
       });
@@ -84,10 +88,11 @@ const markAsRead = async (req, res, next) => {
 
 const deleteMessage = async (req, res, next) => {
   try {
+    const userId = req.user?.id || req.user?._id;
     const result = await chatService.deleteMessage(
       req.params.swapId,
       req.params.messageId,
-      req.user.id
+      userId
     );
 
     const io = req.app.get("io");
@@ -130,9 +135,10 @@ const deleteMessage = async (req, res, next) => {
 
 const deleteChatHistory = async (req, res, next) => {
   try {
+    const userId = req.user?.id || req.user?._id;
     const result = await chatService.deleteChatHistoryForUser(
       req.params.swapId,
-      req.user.id
+      userId
     );
     res.status(200).json({
       success: true,

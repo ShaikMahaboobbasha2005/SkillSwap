@@ -12,11 +12,20 @@ import { Star, Loader2, RefreshCw, MessageSquareQuote } from "lucide-react";
  * @param {number} [props.avgRating=0] - Profile average rating (server-managed)
  * @param {string} [props.className] - Optional container classes
  */
-export default function ReviewsSection({ userId, avgRating = 0, className = "" }) {
+export default function ReviewsSection({
+  userId,
+  avgRating = 0,
+  className = "",
+  highlightSwapId = null,
+  highlightReviewId = null,
+}) {
   const [reviews, setReviews] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  const initialHighlight = highlightSwapId || highlightReviewId || null;
+  const [targetHighlight, setTargetHighlight] = useState(initialHighlight);
 
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -75,6 +84,45 @@ export default function ReviewsSection({ userId, avgRating = 0, className = "" }
     fetchReviews(1, false);
   }, [fetchReviews]);
 
+  // Sync targetHighlight on prop changes
+  useEffect(() => {
+    if (highlightSwapId || highlightReviewId) {
+      setTargetHighlight(highlightSwapId || highlightReviewId);
+    }
+  }, [highlightSwapId, highlightReviewId]);
+
+  // Auto-scroll to highlighted review card when reviews finish loading
+  useEffect(() => {
+    if (!loading && targetHighlight) {
+      const scrollTimer = setTimeout(() => {
+        const element =
+          document.querySelector(`[data-swap-id="${targetHighlight}"]`) ||
+          document.querySelector(`[data-review-id="${targetHighlight}"]`) ||
+          document.getElementById("reviews-section");
+
+        if (element) {
+          const prefersReducedMotion =
+            window.matchMedia &&
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+          element.scrollIntoView({
+            behavior: prefersReducedMotion ? "auto" : "smooth",
+            block: "center",
+          });
+        }
+      }, 200);
+
+      const fadeTimer = setTimeout(() => {
+        setTargetHighlight(null);
+      }, 2500);
+
+      return () => {
+        clearTimeout(scrollTimer);
+        clearTimeout(fadeTimer);
+      };
+    }
+  }, [loading, targetHighlight]);
+
   const handleLoadMore = () => {
     if (page < totalPages && !loadingMore) {
       fetchReviews(page + 1, true);
@@ -87,6 +135,7 @@ export default function ReviewsSection({ userId, avgRating = 0, className = "" }
 
   return (
     <section
+      id="reviews-section"
       aria-label="Reviews and Ratings"
       className={`bg-white rounded-2xl border border-[#E6E3DA] p-5 sm:p-6 shadow-xs hover:shadow-md transition-all duration-300 ${className}`}
     >
@@ -173,7 +222,15 @@ export default function ReviewsSection({ userId, avgRating = 0, className = "" }
           <div className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {reviews.map((review) => (
-                <ReviewCard key={review._id || review.id} review={review} />
+                <ReviewCard
+                  key={review._id || review.id}
+                  review={review}
+                  isHighlighted={Boolean(
+                    targetHighlight &&
+                      ((review.swapRequest?._id || review.swapRequest)?.toString() === targetHighlight ||
+                        (review._id || review.id)?.toString() === targetHighlight)
+                  )}
+                />
               ))}
             </div>
 

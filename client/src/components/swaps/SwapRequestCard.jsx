@@ -49,6 +49,7 @@ export default function SwapRequestCard({
   onRatePartner,
   onHide,
   isProcessing = false,
+  isHighlighted = false,
 }) {
   if (!swap) return null;
 
@@ -206,7 +207,13 @@ export default function SwapRequestCard({
 
   return (
     <article
-      className="bg-white border border-[#E6E3DA] rounded-2xl p-5 shadow-xs hover:border-[#1B4332]/30 transition-all duration-300 flex flex-col justify-between space-y-4 group"
+      id={`swap-card-${swapId}`}
+      data-swap-id={swapId}
+      className={`rounded-2xl p-5 shadow-xs transition-all duration-500 flex flex-col justify-between space-y-4 group ${
+        isHighlighted
+          ? "bg-[#E4EEE8]/40 border-[#1B4332] ring-2 ring-[#1B4332]/30 shadow-md scale-[1.01]"
+          : "bg-white border-[#E6E3DA] hover:border-[#1B4332]/30"
+      }`}
       aria-label={`Swap request with ${counterpartName}`}
     >
       {/* Top Header: Counterpart User Info + Status Badge */}
@@ -235,6 +242,11 @@ export default function SwapRequestCard({
               >
                 {counterpartName}
               </Link>
+              {isHighlighted && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#1B4332] text-white shadow-2xs animate-pulse shrink-0">
+                  <Sparkles className="w-3 h-3" /> From Notification
+                </span>
+              )}
               {!isHistory && (
                 <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#F7F6F2] text-[#6B6858] border border-[#E6E3DA]">
                   {isIncoming ? "From" : "To"}

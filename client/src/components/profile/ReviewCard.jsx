@@ -8,7 +8,7 @@ import { Star, MapPin } from "lucide-react";
  * @param {Object} props
  * @param {Object} props.review - Rating & Review document from API
  */
-export default function ReviewCard({ review }) {
+export default function ReviewCard({ review, isHighlighted = false }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (!review) return null;
@@ -26,6 +26,9 @@ export default function ReviewCard({ review }) {
   const stars = Math.min(5, Math.max(1, parseInt(review.stars, 10) || 5));
   const reviewText = typeof review.review === "string" ? review.review.trim() : "";
 
+  const swapId = (review.swapRequest?._id || review.swapRequest)?.toString();
+  const reviewId = (review._id || review.id)?.toString();
+
   // Threshold for showing "Show more" button (~3-4 lines of text in compact card)
   const isLongText = reviewText.length > 130;
 
@@ -38,7 +41,15 @@ export default function ReviewCard({ review }) {
     : "";
 
   return (
-    <div className="bg-[#F7F6F2]/60 border border-[#E6E3DA] rounded-2xl p-4 flex flex-col justify-between space-y-3 hover:border-[#1B4332]/40 hover:bg-white transition-all duration-200 shadow-2xs group">
+    <div
+      data-swap-id={swapId}
+      data-review-id={reviewId}
+      className={`rounded-2xl p-4 flex flex-col justify-between space-y-3 transition-all duration-500 shadow-2xs group ${
+        isHighlighted
+          ? "bg-[#E4EEE8]/40 border-[#1B4332] ring-2 ring-[#1B4332]/30 shadow-md scale-[1.01]"
+          : "bg-[#F7F6F2]/60 border-[#E6E3DA] hover:border-[#1B4332]/40 hover:bg-white"
+      }`}
+    >
       {/* Card Header: Reviewer Avatar, Name, Location & Star Rating */}
       <div className="flex items-start justify-between gap-2.5">
         <div className="flex items-center gap-2.5 min-w-0">

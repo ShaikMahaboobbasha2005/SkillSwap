@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import useAuth from "../hooks/useAuth";
 import useSocket from "../hooks/useSocket";
@@ -60,6 +60,10 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
   const [activeMeetingData, setActiveMeetingData] = useState(null);
   const [isStartingInstant, setIsStartingInstant] = useState(false);
 
+  const [searchParams] = useSearchParams();
+  const highlightParam = searchParams.get("highlight");
+  const [highlightedFeature, setHighlightedFeature] = useState(highlightParam);
+
   const [toast, setToast] = useState({ show: false, message: "", type: "info" });
 
   const currentUserId = user?._id || user?.id;
@@ -74,6 +78,44 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
   useEffect(() => {
     activeSwapIdRef.current = swapId;
   }, [swapId]);
+
+  // Sync highlightParam on URL changes
+  useEffect(() => {
+    if (highlightParam) {
+      setHighlightedFeature(highlightParam);
+    }
+  }, [highlightParam]);
+
+  // Handle auto-scroll and highlight fade for chat sections (meeting card / completion banner)
+  useEffect(() => {
+    if (!loading && highlightedFeature) {
+      let scrollTimer = null;
+      if (highlightedFeature === "meeting") {
+        scrollTimer = setTimeout(() => {
+          const meetingCards = document.querySelectorAll('[data-meeting-card="true"]');
+          const latestCard = meetingCards[meetingCards.length - 1];
+          if (latestCard) {
+            const prefersReducedMotion =
+              window.matchMedia &&
+              window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+            latestCard.scrollIntoView({
+              behavior: prefersReducedMotion ? "auto" : "smooth",
+              block: "center",
+            });
+          }
+        }, 300);
+      }
+
+      const fadeTimer = setTimeout(() => {
+        setHighlightedFeature(null);
+      }, 2500);
+
+      return () => {
+        if (scrollTimer) clearTimeout(scrollTimer);
+        clearTimeout(fadeTimer);
+      };
+    }
+  }, [loading, highlightedFeature]);
 
   // Race-safe message merging helper for same swapId
   const mergeMessages = useCallback((currentMsgs, newMsgs) => {
@@ -740,8 +782,11 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
       {/* Completion Request Pending Banner in Active Chat Workspace */}
       {!isReadOnly && swap?.status === "accepted" && swap?.completionRequestedBy && (
         <div
-          className={`px-4 py-3 border-b text-xs flex items-center justify-between gap-3 shrink-0 flex-wrap ${
-            String(swap.completionRequestedBy?._id || swap.completionRequestedBy?.id || swap.completionRequestedBy) === String(currentUserId)
+          id="chat-completion-banner"
+          className={`px-4 py-3 border-b text-xs flex items-center justify-between gap-3 shrink-0 flex-wrap transition-all duration-500 ${
+            highlightedFeature === "completion"
+              ? "ring-2 ring-[#1B4332] shadow-sm bg-emerald-100/90 border-emerald-300 scale-[1.005]"
+              : String(swap.completionRequestedBy?._id || swap.completionRequestedBy?.id || swap.completionRequestedBy) === String(currentUserId)
               ? "bg-amber-50 border-amber-200 text-amber-900"
               : "bg-emerald-50 border-emerald-200 text-emerald-900"
           }`}

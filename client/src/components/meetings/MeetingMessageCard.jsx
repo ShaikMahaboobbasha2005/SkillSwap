@@ -93,7 +93,7 @@ export default function MeetingMessageCard({
   const isCompleted = status === "completed";
 
   return (
-    <div className="w-full max-w-sm sm:max-w-md mx-auto my-2 px-1">
+    <div data-meeting-card="true" className="w-full max-w-sm sm:max-w-md mx-auto my-2 px-1">
       <div
         className={`rounded-2xl border transition-all overflow-hidden shadow-2xs ${
           isCancelled

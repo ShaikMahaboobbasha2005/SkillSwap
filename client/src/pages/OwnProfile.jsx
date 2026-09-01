@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { getOwnProfile, updateOwnProfile, uploadProfilePicture } from "../services/profileService";
 import Navbar from "../components/Navbar";
@@ -21,6 +21,9 @@ import { Eye, Camera, Edit3, MapPin, Calendar, Trash2 } from "lucide-react";
 export default function OwnProfile() {
   const { user: authUser, updateUser } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const highlightSwapParam = searchParams.get("highlightSwap");
+  const highlightReviewParam = searchParams.get("highlightReview") || searchParams.get("highlight");
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -173,11 +176,10 @@ export default function OwnProfile() {
       const res = await getOwnProfile();
       if (res.success && res.data) {
         setProfile(res.data);
-        const storedBio = localStorage.getItem(`skillswap_bio_${res.data._id}`) || "";
         setFormData({
           name: res.data.name || "",
           location: res.data.location || "",
-          bio: storedBio,
+          bio: res.data.bio || "",
           socialLinks: {
             linkedin: res.data.socialLinks?.linkedin || "",
             github: res.data.socialLinks?.github || "",
@@ -212,11 +214,10 @@ export default function OwnProfile() {
       performCancelEdit();
     } else {
       if (profile) {
-        const storedBio = localStorage.getItem(`skillswap_bio_${profile._id}`) || "";
         setFormData({
           name: profile.name || "",
           location: profile.location || "",
-          bio: storedBio,
+          bio: profile.bio || "",
           socialLinks: {
             linkedin: profile.socialLinks?.linkedin || "",
             github: profile.socialLinks?.github || "",
@@ -243,11 +244,10 @@ export default function OwnProfile() {
 
   const performCancelEdit = () => {
     if (profile) {
-      const storedBio = localStorage.getItem(`skillswap_bio_${profile._id}`) || "";
       setFormData({
         name: profile.name || "",
         location: profile.location || "",
-        bio: storedBio,
+        bio: profile.bio || "",
         socialLinks: {
           linkedin: profile.socialLinks?.linkedin || "",
           github: profile.socialLinks?.github || "",
@@ -387,10 +387,9 @@ export default function OwnProfile() {
   };
 
   // Determine if form fields are modified
-  const storedBio = profile ? localStorage.getItem(`skillswap_bio_${profile._id}`) || "" : "";
   const isNameModified = Boolean(profile && formData.name.trim() !== (profile.name || "").trim());
   const isLocationModified = Boolean(profile && formData.location.trim() !== (profile.location || "").trim());
-  const isBioModified = Boolean(formData.bio.trim() !== storedBio.trim());
+  const isBioModified = Boolean(profile && formData.bio.trim() !== (profile.bio || "").trim());
 
   const isFieldSocialModified = (platform) => {
     if (!profile) return false;
@@ -437,6 +436,7 @@ export default function OwnProfile() {
       const updatedData = {
         name: formData.name.trim(),
         location: formData.location.trim(),
+        bio: formData.bio.trim(),
         socialLinks: {
           linkedin: formData.socialLinks.linkedin.trim(),
           github: formData.socialLinks.github.trim(),
@@ -449,9 +449,6 @@ export default function OwnProfile() {
       const res = await updateOwnProfile(updatedData);
 
       if (res.success) {
-        if (profile?._id) {
-          localStorage.setItem(`skillswap_bio_${profile._id}`, formData.bio.trim());
-        }
         setProfile(res.data);
         updateUser(res.data);
         setIsEditing(false);
@@ -1043,6 +1040,8 @@ export default function OwnProfile() {
         <ReviewsSection
           userId={profile?._id}
           avgRating={profile?.avgRating || 0}
+          highlightSwapId={highlightSwapParam}
+          highlightReviewId={highlightReviewParam}
         />
 
       </main>

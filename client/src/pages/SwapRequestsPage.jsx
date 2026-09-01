@@ -35,13 +35,16 @@ export default function SwapRequestsPage() {
   const { stats, refreshStats } = useSwap();
   const { subscribeToSwapRequests, unsubscribeFromSwapRequests } = useSocket();
 
-  // URL Sync for Tab and Status Filter
+  // URL Sync for Tab, Status Filter, and Highlight
   const tabParam = searchParams.get("tab");
   const statusParam = searchParams.get("status") || "";
+  const highlightParam = searchParams.get("highlight") || "";
 
   const validTabs = ["incoming", "outgoing", "history"];
   const activeTab = validTabs.includes(tabParam) ? tabParam : "incoming";
   const statusFilter = statusParam;
+
+  const [highlightedSwapId, setHighlightedSwapId] = useState(highlightParam);
 
   const [incomingRequests, setIncomingRequests] = useState([]);
   const [outgoingRequests, setOutgoingRequests] = useState([]);
@@ -170,6 +173,44 @@ export default function SwapRequestsPage() {
     refreshStats();
     fetchRequests();
   }, [refreshStats, fetchRequests]);
+
+  // Sync highlightParam on URL changes
+  useEffect(() => {
+    if (highlightParam) {
+      setHighlightedSwapId(highlightParam);
+    }
+  }, [highlightParam]);
+
+  // Auto-scroll to highlighted card when requests finish loading and fade after 2.5s
+  useEffect(() => {
+    if (!loading && highlightedSwapId) {
+      const scrollTimer = setTimeout(() => {
+        const element =
+          document.querySelector(`[data-swap-id="${highlightedSwapId}"]`) ||
+          document.getElementById(`swap-card-${highlightedSwapId}`);
+
+        if (element) {
+          const prefersReducedMotion =
+            window.matchMedia &&
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+          element.scrollIntoView({
+            behavior: prefersReducedMotion ? "auto" : "smooth",
+            block: "center",
+          });
+        }
+      }, 150);
+
+      const fadeTimer = setTimeout(() => {
+        setHighlightedSwapId(null);
+      }, 2500);
+
+      return () => {
+        clearTimeout(scrollTimer);
+        clearTimeout(fadeTimer);
+      };
+    }
+  }, [loading, highlightedSwapId]);
 
   // Action Refresh Callback (Preserves activeTab and statusFilter)
   const handleActionComplete = useCallback(() => {
@@ -558,6 +599,7 @@ export default function SwapRequestsPage() {
               onCancelCompletion={handleCancelCompletionRequest}
               onLeave={handleLeaveSwap}
               statusFilter={statusFilter}
+              highlightedSwapId={highlightedSwapId}
             />
           ) : activeTab === "outgoing" ? (
             <OutgoingRequests
@@ -570,6 +612,7 @@ export default function SwapRequestsPage() {
               onCancelCompletion={handleCancelCompletionRequest}
               onLeave={handleLeaveSwap}
               statusFilter={statusFilter}
+              highlightedSwapId={highlightedSwapId}
             />
           ) : (
             /* Swap History Tab View */
@@ -611,6 +654,11 @@ export default function SwapRequestsPage() {
                         type="history"
                         currentUserId={currentUserId}
                         onRatePartner={handleOpenRatingModal}
+                        isHighlighted={Boolean(
+                          highlightedSwapId &&
+                            String(highlightedSwapId) ===
+                              String(swap._id || swap.id)
+                        )}
                       />
                     ))}
                   </div>

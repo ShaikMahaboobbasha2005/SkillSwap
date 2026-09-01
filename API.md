@@ -13,9 +13,9 @@ Base URL: `/api` · Auth: JWT via `Authorization: Bearer <token>` header on all 
 ## Users / Profile
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/api/users/:id` | Public | View a user's profile (name, pfp, banner, location, socialLinks, rating, completed swaps, skills, portfolio) |
+| GET | `/api/users/:id` | Public | View a user's profile (name, pfp, banner, location, bio, socialLinks, rating, completed swaps, skills, portfolio) |
 | GET | `/api/profile/me` | Protected | Get current user's own profile |
-| PUT | `/api/users/me` / `/api/profile/me` | Protected | Edit own profile: name, profile picture, banner, location, socialLinks (`linkedin`, `github`, `instagram`, `youtube`, `website` validated URLs) |
+| PUT | `/api/users/me` / `/api/profile/me` | Protected | Edit own profile: name, profile picture, banner, location, bio (max 160 chars), socialLinks (`linkedin`, `github`, `instagram`, `youtube`, `website` validated URLs) |
 | POST | `/api/profile/upload-image` | Protected | Upload profile photo or banner image (via Cloudinary) |
 | POST | `/api/users/me/portfolio` | Protected | Upload an image/video to portfolio (via Cloudinary) |
 | DELETE | `/api/users/me/portfolio/:mediaId` | Protected | Remove a portfolio item |

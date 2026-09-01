@@ -191,6 +191,10 @@ const saveMessage = async ({ swapId, senderId, content, replyTo = null, status =
 };
 
 const getConversations = async (userId) => {
+  if (!userId || !isValidObjectId(userId)) {
+    return [];
+  }
+
   // Find all active accepted swap requests where user has not deleted chat from history
   const acceptedSwaps = await SwapRequest.find({
     status: "accepted",
@@ -205,7 +209,8 @@ const getConversations = async (userId) => {
 
   const conversations = await Promise.all(
     acceptedSwaps.map(async (swap) => {
-      const isSender = swap.fromUser._id.toString() === userId.toString();
+      const fromId = String(swap.fromUser?._id || swap.fromUser || "");
+      const isSender = fromId === String(userId);
       const counterpart = isSender ? swap.toUser : swap.fromUser;
 
       const offeredSkillName = isSender ? swap.offeredSkill?.name : swap.wantedSkill?.name;
@@ -257,6 +262,8 @@ const getConversations = async (userId) => {
 };
 
 const getUnreadConversationCount = async (userId) => {
+  if (!userId || !isValidObjectId(userId)) return 0;
+
   const acceptedSwaps = await SwapRequest.find({
     status: "accepted",
     $or: [{ fromUser: userId }, { toUser: userId }],
@@ -278,6 +285,10 @@ const getUnreadConversationCount = async (userId) => {
 };
 
 const getUnreadCounts = async (userId) => {
+  if (!userId || !isValidObjectId(userId)) {
+    return { unreadConversationCount: 0, totalUnreadMessageCount: 0 };
+  }
+
   const acceptedSwaps = await SwapRequest.find({
     status: "accepted",
     $or: [{ fromUser: userId }, { toUser: userId }],

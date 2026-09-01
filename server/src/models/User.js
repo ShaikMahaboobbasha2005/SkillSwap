@@ -70,6 +70,12 @@ const userSchema = new Schema(
       default: "",
       index: true,
     },
+    bio: {
+      type: String,
+      trim: true,
+      default: "",
+      maxlength: 160,
+    },
     socialLinks: {
       linkedin: {
         type: String,

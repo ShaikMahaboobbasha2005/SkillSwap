@@ -23,6 +23,7 @@ const updateOwnProfile = async (userId, updateData) => {
   if (updateData.profileBanner !== undefined) allowedFields.profileBanner = updateData.profileBanner;
   if (updateData.profileBannerPublicId !== undefined) allowedFields.profileBannerPublicId = updateData.profileBannerPublicId;
   if (updateData.location !== undefined) allowedFields.location = updateData.location;
+  if (updateData.bio !== undefined) allowedFields.bio = typeof updateData.bio === "string" ? updateData.bio.trim() : "";
   if (updateData.socialLinks !== undefined) {
     if (updateData.socialLinks === null) {
       allowedFields.socialLinks = {
@@ -158,7 +159,7 @@ const getUserPublicProfile = async (targetUserId) => {
   }
 
   const user = await User.findById(targetUserId).select(
-    "name email profilePicture profileBanner location socialLinks avgRating completedSwaps portfolio createdAt"
+    "name email profilePicture profileBanner location bio socialLinks avgRating completedSwaps portfolio createdAt"
   );
 
   if (!user) {

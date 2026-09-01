@@ -85,6 +85,13 @@ const updateProfileSchema = z.object({
     })
     .max(100, "Location must be at most 100 characters")
     .optional(),
+  bio: z
+    .string({
+      invalid_type_error: "Bio must be a string",
+    })
+    .trim()
+    .max(160, "Bio must be at most 160 characters")
+    .optional(),
   profilePicture: z
     .string({
       invalid_type_error: "Profile picture must be a string URL",
