@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Modal from "../Modal";
 import ratingService from "../../services/ratingService";
-import { Star, Loader2, AlertCircle } from "lucide-react";
+import { Star, Loader2, AlertCircle, ArrowLeftRight } from "lucide-react";
 
 export default function RatingModal({
   isOpen,
@@ -25,6 +25,20 @@ export default function RatingModal({
   const partner = isFromMe ? swap.toUser : swap.fromUser;
   const partnerName = partner?.name || "Swap Partner";
   const partnerAvatar = partner?.profilePicture || "";
+
+  // Derive swap skill names
+  const offeredName =
+    swap.offeredSkill?.name ||
+    (typeof swap.offeredSkill === "string" ? swap.offeredSkill : "") ||
+    swap.offeredSkillSnapshot?.name ||
+    swap.offeredSkillName ||
+    "";
+  const wantedName =
+    swap.wantedSkill?.name ||
+    (typeof swap.wantedSkill === "string" ? swap.wantedSkill : "") ||
+    swap.wantedSkillSnapshot?.name ||
+    swap.wantedSkillName ||
+    "";
 
   const handleStarClick = (num) => {
     setStars(num);
@@ -99,6 +113,23 @@ export default function RatingModal({
             <p className="text-[11px] text-[#6B6858]">How was your skill swap experience?</p>
           </div>
         </div>
+
+        {/* Swap Skill Context Badge */}
+        {(offeredName || wantedName) && (
+          <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-white border border-[#E6E3DA] shadow-2xs">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <div className="w-5 h-5 rounded-md bg-[#E4EEE8] text-[#1B4332] flex items-center justify-center shrink-0">
+                <ArrowLeftRight className="w-3 h-3" />
+              </div>
+              <span className="text-xs font-bold text-[#16160F] truncate">
+                {offeredName && wantedName ? `${offeredName} ↔ ${wantedName}` : offeredName || wantedName}
+              </span>
+            </div>
+            <span className="text-[10px] font-semibold text-[#6B6858] px-1.5 py-0.5 rounded bg-[#F7F6F2] border border-[#E6E3DA] shrink-0">
+              Skill Swap
+            </span>
+          </div>
+        )}
 
         {/* Server Error Alert */}
         {serverError && (

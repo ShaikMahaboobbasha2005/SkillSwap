@@ -18,6 +18,7 @@ export default function ReviewsSection({
   className = "",
   highlightSwapId = null,
   highlightReviewId = null,
+  isOwner = false,
 }) {
   const [reviews, setReviews] = useState([]);
   const [total, setTotal] = useState(0);
@@ -221,17 +222,23 @@ export default function ReviewsSection({
           /* Compact Review Cards Grid */
           <div className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {reviews.map((review) => (
-                <ReviewCard
-                  key={review._id || review.id}
-                  review={review}
-                  isHighlighted={Boolean(
-                    targetHighlight &&
-                      ((review.swapRequest?._id || review.swapRequest)?.toString() === targetHighlight ||
-                        (review._id || review.id)?.toString() === targetHighlight)
-                  )}
-                />
-              ))}
+              {reviews.map((review) => {
+                const swapId = (review.swapRequest?._id || review.swapRequest)?.toString();
+                const reviewId = (review._id || review.id)?.toString();
+                const isItemHighlighted = Boolean(
+                  targetHighlight &&
+                    (swapId === targetHighlight || reviewId === targetHighlight)
+                );
+
+                return (
+                  <ReviewCard
+                    key={reviewId || swapId}
+                    review={review}
+                    isHighlighted={isItemHighlighted}
+                    canNavigate={isOwner}
+                  />
+                );
+              })}
             </div>
 
             {/* Load More Button */}

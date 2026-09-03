@@ -7,6 +7,16 @@ const notificationService = require("./notificationService");
 const objectIdRegex = /^[0-9a-fA-F]{24}$/;
 const REVIEWER_POPULATE_FIELDS = "name profilePicture location";
 
+const SWAP_POPULATE_CONFIG = {
+  path: "swapRequest",
+  select:
+    "_id fromUser toUser offeredSkill wantedSkill offeredSkillName wantedSkillName offeredSkillSnapshot wantedSkillSnapshot status completedAt",
+  populate: [
+    { path: "offeredSkill", select: "name category level" },
+    { path: "wantedSkill", select: "name category level" },
+  ],
+};
+
 /**
  * Recalculate and update the average rating of a user based ONLY on ratings received.
  * @param {string|ObjectId} ratedUserId - User ID who received ratings
@@ -119,7 +129,8 @@ const createRating = async (swapId, reviewerId, ratingData) => {
   // 10. Populate rating document
   const populatedRating = await Rating.findById(newRating._id)
     .populate("reviewer", REVIEWER_POPULATE_FIELDS)
-    .populate("ratedUser", REVIEWER_POPULATE_FIELDS);
+    .populate("ratedUser", REVIEWER_POPULATE_FIELDS)
+    .populate(SWAP_POPULATE_CONFIG);
 
   // 11. Trigger in-app Notification for ratedUser inside try/catch
   try {
@@ -177,7 +188,8 @@ const getRatingsForUser = async (ratedUserId, query = {}) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("reviewer", REVIEWER_POPULATE_FIELDS),
+      .populate("reviewer", REVIEWER_POPULATE_FIELDS)
+      .populate(SWAP_POPULATE_CONFIG),
     Rating.countDocuments(filter),
   ]);
 
@@ -208,7 +220,9 @@ const getRatingStatusForSwap = async (swapId, reviewerId) => {
   const rating = await Rating.findOne({
     swapRequest: swapId,
     reviewer: reviewerId,
-  });
+  })
+    .populate("reviewer", REVIEWER_POPULATE_FIELDS)
+    .populate(SWAP_POPULATE_CONFIG);
 
   return {
     hasRated: Boolean(rating),

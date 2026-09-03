@@ -55,10 +55,16 @@ const getSwapSkillContext = (swap) => {
 
   const offeredName =
     swap.offeredSkill?.name ||
-    (typeof swap.offeredSkill === "string" ? swap.offeredSkill : "");
+    (typeof swap.offeredSkill === "string" ? swap.offeredSkill : "") ||
+    swap.offeredSkillSnapshot?.name ||
+    swap.offeredSkillName ||
+    "";
   const wantedName =
     swap.wantedSkill?.name ||
-    (typeof swap.wantedSkill === "string" ? swap.wantedSkill : "");
+    (typeof swap.wantedSkill === "string" ? swap.wantedSkill : "") ||
+    swap.wantedSkillSnapshot?.name ||
+    swap.wantedSkillName ||
+    "";
 
   if (offeredName && wantedName) {
     return {

@@ -184,22 +184,6 @@ export default function Navbar() {
                   <span>My Profile</span>
                 </Link>
 
-                <Link
-                  to="/notifications"
-                  onClick={() => setDropdownOpen(false)}
-                  className="flex items-center justify-between px-4 py-2 text-xs font-semibold text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332] transition-colors"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Bell className="w-4 h-4 text-[#6B6858]" />
-                    <span>Notifications</span>
-                  </div>
-                  {notificationUnreadCount > 0 && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-amber-400 text-amber-950">
-                      {notificationUnreadCount}
-                    </span>
-                  )}
-                </Link>
-
                 <div className="flex items-center justify-between px-4 py-2 text-xs font-semibold text-[#6B6858] opacity-60 cursor-not-allowed">
                   <div className="flex items-center gap-2.5">
                     <Settings className="w-4 h-4" />

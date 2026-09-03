@@ -1042,6 +1042,7 @@ export default function OwnProfile() {
           avgRating={profile?.avgRating || 0}
           highlightSwapId={highlightSwapParam}
           highlightReviewId={highlightReviewParam}
+          isOwner={true}
         />
 
       </main>

@@ -269,6 +269,7 @@ export default function PublicProfile() {
         <ReviewsSection
           userId={profile._id}
           avgRating={profile?.avgRating || 0}
+          isOwner={isSelf}
         />
 
       </main>
