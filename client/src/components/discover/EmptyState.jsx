@@ -11,10 +11,10 @@ export default function EmptyState({ onClearFilters }) {
       {/* Heading & Subtitle */}
       <div className="max-w-md space-y-1">
         <h3 className="text-lg font-bold text-[#16160F]">
-          No skills are currently available
+          No skills or members found
         </h3>
         <p className="text-xs sm:text-sm text-[#6B6858] leading-relaxed">
-          No skills are currently available matching your search criteria. Try changing your search query or adjusting your filters.
+          We couldn't find anyone matching your current search criteria. Try searching for a different skill or adjusting your filters.
         </p>
       </div>
 
