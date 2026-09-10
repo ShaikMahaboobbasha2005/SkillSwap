@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import NotificationBadge from "../NotificationBadge";
-import { MessageSquareDashed, Sparkles, Search, X, Layers } from "lucide-react";
+import { MessageSquareDashed, Search, X, Layers } from "lucide-react";
+import MatchesIcon from "../icons/MatchesIcon";
 
 /**
  * Format timestamp cleanly for conversation list previews
@@ -124,7 +125,7 @@ export default function ConversationList({
       )}
 
       {/* Main Conversation Thread List */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-1.5 scrollbar-thin scrollbar-thumb-zinc-300">
+      <div className="flex-1 overflow-y-auto p-3 pb-20 md:pb-3 space-y-1.5 scrollbar-thin scrollbar-thumb-zinc-300">
         {hasNoConversationsAtAll ? (
           <div className="h-full flex flex-col items-center justify-center p-6 text-center">
             <div className="w-10 h-10 rounded-2xl bg-[#E4EEE8] text-[#1B4332] flex items-center justify-center mb-2">
@@ -192,7 +193,7 @@ export default function ConversationList({
                       </div>
 
                       <div className="text-[10px] font-semibold text-[#1B4332] truncate flex items-center gap-1">
-                        <Sparkles className="w-2.5 h-2.5 shrink-0" />
+                        <MatchesIcon className="w-2.5 h-2.5 shrink-0" />
                         <span className="truncate">{skillContext}</span>
                       </div>
 

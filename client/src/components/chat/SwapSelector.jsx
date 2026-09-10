@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { ChevronDown, Check, Sparkles } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
+import MatchesIcon from "../icons/MatchesIcon";
 
 /**
  * SwapSelector — Compact dropdown for switching between multiple active swaps
@@ -107,7 +108,7 @@ export default function SwapSelector({
         aria-expanded={isOpen}
         aria-label="Select skill swap"
       >
-        <Sparkles className="w-3 h-3 text-[#1B4332] shrink-0" />
+        <MatchesIcon className="w-3 h-3 text-[#1B4332] shrink-0" />
         <span className="font-semibold truncate">
           {activeSkills.offered} ↔ {activeSkills.learned}
         </span>

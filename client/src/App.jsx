@@ -3,6 +3,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { SocketProvider } from "./context/SocketContext";
 import { SwapProvider } from "./context/SwapContext";
 import { NotificationProvider } from "./context/NotificationContext";
+import AppLayout from "./components/layout/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ScrollToTop from "./components/ScrollToTop";
 import Login from "./pages/Login";
@@ -27,27 +28,32 @@ function App() {
           <NotificationProvider>
             <SwapProvider>
               <Routes>
-                {/* Public Auth & User Routes */}
+                {/* Public Auth Routes */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
-                <Route path="/users/:id" element={<PublicProfile />} />
-                <Route path="/profile/:id" element={<PublicProfile />} />
-                <Route path="/portfolio/user/:userId" element={<PortfolioPage />} />
-                <Route path="/portfolio/:userId" element={<PortfolioPage />} />
 
-                {/* Protected Routes */}
-                <Route element={<ProtectedRoute />}>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/discover" element={<DiscoverPage />} />
-                  <Route path="/recommendations" element={<RecommendationsPage />} />
-                  <Route path="/matches" element={<RecommendationsPage />} />
-                  <Route path="/swaps" element={<SwapRequestsPage />} />
-                  <Route path="/chats" element={<ChatsPage />} />
-                  <Route path="/chats/:userId" element={<ChatsPage />} />
-                  <Route path="/swaps/:swapId/chat" element={<ChatPage />} />
-                  <Route path="/notifications" element={<NotificationsPage />} />
-                  <Route path="/profile" element={<OwnProfile />} />
-                  <Route path="/portfolio" element={<PortfolioPage />} />
+                {/* Main Application Shell with Shared Mobile Navigation & Safe-Area Clearance */}
+                <Route element={<AppLayout />}>
+                  {/* Public User & Portfolio Routes */}
+                  <Route path="/users/:id" element={<PublicProfile />} />
+                  <Route path="/profile/:id" element={<PublicProfile />} />
+                  <Route path="/portfolio/user/:userId" element={<PortfolioPage />} />
+                  <Route path="/portfolio/:userId" element={<PortfolioPage />} />
+
+                  {/* Protected Routes */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/discover" element={<DiscoverPage />} />
+                    <Route path="/recommendations" element={<RecommendationsPage />} />
+                    <Route path="/matches" element={<RecommendationsPage />} />
+                    <Route path="/swaps" element={<SwapRequestsPage />} />
+                    <Route path="/chats" element={<ChatsPage />} />
+                    <Route path="/chats/:userId" element={<ChatsPage />} />
+                    <Route path="/swaps/:swapId/chat" element={<ChatPage />} />
+                    <Route path="/notifications" element={<NotificationsPage />} />
+                    <Route path="/profile" element={<OwnProfile />} />
+                    <Route path="/portfolio" element={<PortfolioPage />} />
+                  </Route>
                 </Route>
 
                 {/* Fallback route */}

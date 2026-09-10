@@ -4,7 +4,6 @@ import {
   MapPin,
   Star,
   Sparkles,
-  GraduationCap,
   ArrowLeftRight,
   CheckCircle2,
   User,
@@ -13,6 +12,7 @@ import {
   Layers,
   BookOpen,
 } from "lucide-react";
+import { OfferedSkillIcon, WantedSkillIcon, MatchesIcon } from "../icons";
 
 /**
  * Derives compatibility tier label and color styles based on score
@@ -161,7 +161,7 @@ export default function RecommendationCard({ recommendation, onRequestSwap }) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className={`w-6 h-6 rounded-lg ${tier.badgeBg} flex items-center justify-center shrink-0`}>
-                  <Sparkles className={`w-3.5 h-3.5 ${tier.iconColor}`} />
+                  <MatchesIcon className={`w-3.5 h-3.5 ${tier.iconColor}`} />
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs font-bold text-[#16160F]">{tier.label}</span>
@@ -190,7 +190,7 @@ export default function RecommendationCard({ recommendation, onRequestSwap }) {
           {exactMatchesForYou.length > 0 && (
             <div>
               <div className="flex items-center gap-1.5 text-[10.5px] font-bold text-[#1B4332] uppercase tracking-wider mb-1.5">
-                <GraduationCap className="w-3.5 h-3.5 shrink-0" />
+                <OfferedSkillIcon className="w-3.5 h-3.5 shrink-0" />
                 <span>They Can Teach You</span>
               </div>
               <div className="flex flex-wrap gap-1.5">
@@ -215,7 +215,7 @@ export default function RecommendationCard({ recommendation, onRequestSwap }) {
           {exactMatchesForThem.length > 0 && (
             <div>
               <div className="flex items-center gap-1.5 text-[10.5px] font-bold text-[#16160F] uppercase tracking-wider mb-1.5">
-                <BookOpen className="w-3.5 h-3.5 text-[#3FA873] shrink-0" />
+                <WantedSkillIcon className="w-3.5 h-3.5 text-amber-700 shrink-0" />
                 <span>You Can Teach Them</span>
               </div>
               <div className="flex flex-wrap gap-1.5">

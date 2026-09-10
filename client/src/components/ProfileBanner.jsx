@@ -170,9 +170,9 @@ export default function ProfileBanner({
         {badgeText}
       </div>
 
-      {/* Single Clean "Edit Banner" Trigger & Dropdown Menu */}
+      {/* Single Clean "Edit Banner" Trigger & Dropdown Menu (Top-Right positioned to never collide with overlapping avatar) */}
       {isOwner && !uploading && (
-        <div className="absolute bottom-3 right-4 z-10" ref={menuRef}>
+        <div className="absolute top-3 right-4 sm:top-4 sm:right-6 z-20" ref={menuRef}>
           <button
             type="button"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -185,9 +185,9 @@ export default function ProfileBanner({
             <ChevronDown className={`w-3 h-3 text-[#6B6858] transition-transform ${menuOpen ? "rotate-180" : ""}`} />
           </button>
 
-          {/* Contextual Dropdown Menu */}
+          {/* Contextual Dropdown Menu (Opens downward cleanly away from avatar) */}
           {menuOpen && (
-            <div className="absolute right-0 bottom-10 w-44 bg-white border border-[#E6E3DA] rounded-xl shadow-xl py-1.5 z-30 animate-fadeIn space-y-0.5">
+            <div className="absolute right-0 top-10 w-44 bg-white border border-[#E6E3DA] rounded-xl shadow-xl py-1.5 z-30 animate-fadeIn space-y-0.5">
               <button
                 type="button"
                 onClick={() => {

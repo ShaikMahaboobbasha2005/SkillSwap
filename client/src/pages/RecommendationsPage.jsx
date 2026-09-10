@@ -7,6 +7,7 @@ import RecommendationErrorState from "../components/recommendations/Recommendati
 import SwapRequestModal from "../components/swaps/SwapRequestModal";
 import recommendationService from "../services/recommendationService";
 import { Sparkles, ArrowDown, RefreshCw, Users, Info, ArrowLeft } from "lucide-react";
+import MatchesIcon from "../components/icons/MatchesIcon";
 
 export default function RecommendationsPage() {
   const [isAiMode, setIsAiMode] = useState(false);
@@ -124,7 +125,7 @@ export default function RecommendationsPage() {
         <div className="mb-4 sm:mb-5 flex flex-col md:flex-row md:items-end justify-between gap-3">
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-[#E4EEE8] text-[#1B4332] text-[11px] font-bold mb-1.5 border border-[#1B4332]/15">
-              <Sparkles className="w-3 h-3" />
+              <MatchesIcon className="w-3 h-3" />
               <span>Smart Compatibility Engine</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-extrabold text-[#16160F] tracking-tight">
@@ -165,7 +166,7 @@ export default function RecommendationsPage() {
                   : "text-[#6B6858] hover:text-[#16160F] hover:bg-[#F7F6F2]"
               }`}
             >
-              <Users className="w-3 h-3" />
+              <MatchesIcon className="w-3 h-3" />
               <span>All Matches</span>
             </button>
 

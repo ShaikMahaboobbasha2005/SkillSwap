@@ -4,11 +4,9 @@ import {
   Star,
   MapPin,
   Handshake,
-  GraduationCap,
-  Target,
-  Sparkles,
   UserCheck,
 } from "lucide-react";
+import { OfferedSkillIcon, WantedSkillIcon, MatchesIcon } from "../icons";
 import useAuth from "../../hooks/useAuth";
 
 export default function DiscoverCard({ user, onRequestSwap }) {
@@ -169,7 +167,7 @@ export default function DiscoverCard({ user, onRequestSwap }) {
           {/* Offering Skills Section */}
           <div>
             <div className="flex items-center gap-1.5 mb-2">
-              <GraduationCap className="w-3.5 h-3.5 text-[#1B4332]" />
+              <OfferedSkillIcon className="w-3.5 h-3.5 text-[#1B4332]" />
               <h4 className="text-xs font-bold uppercase tracking-wider text-[#16160F]">
                 Offering Skills
               </h4>
@@ -231,7 +229,7 @@ export default function DiscoverCard({ user, onRequestSwap }) {
           {/* Learning Skills Section */}
           <div>
             <div className="flex items-center gap-1.5 mb-2">
-              <Target className="w-3.5 h-3.5 text-amber-700" />
+              <WantedSkillIcon className="w-3.5 h-3.5 text-amber-700" />
               <h4 className="text-xs font-bold uppercase tracking-wider text-[#16160F]">
                 Learning Skills
               </h4>
@@ -310,7 +308,7 @@ export default function DiscoverCard({ user, onRequestSwap }) {
                 : "Skill swap request integration point"
             }
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <MatchesIcon className="w-3.5 h-3.5" />
             <span>Request Swap</span>
           </button>
         </div>

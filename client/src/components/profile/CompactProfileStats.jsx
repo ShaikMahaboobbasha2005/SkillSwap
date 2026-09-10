@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { Star, RefreshCw, GraduationCap, Image } from "lucide-react";
+import { Star, RefreshCw, Image } from "lucide-react";
+import OfferedSkillIcon from "../icons/OfferedSkillIcon";
 
 /**
  * CompactProfileStats Component
@@ -70,7 +71,7 @@ export default function CompactProfileStats({
       {/* 3. Total Skills Metric */}
       <div className="flex items-center gap-2 px-2 shrink-0">
         <div className="w-8 h-8 rounded-lg bg-[#E4EEE8] text-[#1B4332] border border-[#1B4332]/20 flex items-center justify-center shrink-0">
-          <GraduationCap className="w-4 h-4 text-[#1B4332]" />
+          <OfferedSkillIcon className="w-4 h-4 text-[#1B4332]" />
         </div>
         <div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B6858] block leading-none">

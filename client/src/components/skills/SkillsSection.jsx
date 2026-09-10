@@ -4,6 +4,7 @@ import SkillModal from "./SkillModal";
 import DeleteSkillDialog from "./DeleteSkillDialog";
 import EmptyState from "../EmptyState";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { OfferedSkillIcon, WantedSkillIcon } from "../icons";
 import {
   getOwnSkills,
   getUserActiveSkills,
@@ -224,7 +225,7 @@ export default function SkillsSection({
           <div>
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#1B4332]"></span>
+                <OfferedSkillIcon className="w-4 h-4 text-[#1B4332]" />
                 <h2 className="text-sm font-extrabold text-[#16160F]">Skills Offered</h2>
               </div>
               <div className="flex items-center gap-2">
@@ -330,7 +331,7 @@ export default function SkillsSection({
           <div>
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-600"></span>
+                <WantedSkillIcon className="w-4 h-4 text-amber-700" />
                 <h2 className="text-sm font-extrabold text-[#16160F]">Skills Wanted</h2>
               </div>
               <div className="flex items-center gap-2">

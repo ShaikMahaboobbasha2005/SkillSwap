@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
-import { Sparkles, ArrowRight, BookOpen, Compass } from "lucide-react";
+import { ArrowRight, BookOpen, Compass } from "lucide-react";
+import MatchesIcon from "../icons/MatchesIcon";
 
 export default function RecommendationEmptyState() {
   return (
     <div className="bg-white border border-[#E6E3DA] rounded-2xl p-8 sm:p-12 text-center max-w-xl mx-auto shadow-xs">
       <div className="w-14 h-14 rounded-2xl bg-[#E4EEE8] text-[#1B4332] flex items-center justify-center mx-auto mb-4 border border-[#1B4332]/20">
-        <Sparkles className="w-7 h-7 text-[#3FA873]" />
+        <MatchesIcon className="w-7 h-7 text-[#1B4332]" />
       </div>
 
       <h3 className="text-lg sm:text-xl font-bold text-[#16160F] mb-2">

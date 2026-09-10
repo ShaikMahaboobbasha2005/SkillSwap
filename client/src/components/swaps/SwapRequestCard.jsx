@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import StatusBadge from "./StatusBadge";
 import ratingService from "../../services/ratingService";
 import {
-  GraduationCap,
   ArrowRight,
   UserCheck,
   Calendar,
@@ -17,6 +16,7 @@ import {
   MoreVertical,
   EyeOff,
 } from "lucide-react";
+import { OfferedSkillIcon, WantedSkillIcon } from "../icons";
 
 /**
  * SwapRequestCard Component
@@ -332,7 +332,7 @@ export default function SwapRequestCard({
               : "You Offered"}
           </span>
           <div className="flex items-center gap-2">
-            <GraduationCap className="w-4 h-4 text-[#1B4332] shrink-0" />
+            <OfferedSkillIcon className="w-4 h-4 text-[#1B4332] shrink-0" />
             <span className="text-xs sm:text-sm font-bold text-[#1B4332] truncate">
               {offeredSkillName}
             </span>
@@ -361,7 +361,7 @@ export default function SwapRequestCard({
               : "You Requested"}
           </span>
           <div className="flex items-center gap-2 sm:justify-end">
-            <Sparkles className="w-4 h-4 text-amber-700 shrink-0" />
+            <WantedSkillIcon className="w-4 h-4 text-amber-700 shrink-0" />
             <span className="text-xs sm:text-sm font-bold text-[#16160F] truncate">
               {wantedSkillName}
             </span>

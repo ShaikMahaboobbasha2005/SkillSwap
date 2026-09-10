@@ -5,7 +5,8 @@ import { getOwnSkills, getUserActiveSkills } from "../../services/skillService";
 import swapService from "../../services/swapService";
 import useAuth from "../../hooks/useAuth";
 import { useSwap } from "../../context/SwapContext";
-import { Sparkles, GraduationCap, ArrowRight, UserCheck, AlertCircle, ChevronDown } from "lucide-react";
+import { ArrowRight, UserCheck, AlertCircle, ChevronDown } from "lucide-react";
+import { OfferedSkillIcon, WantedSkillIcon, MatchesIcon } from "../icons";
 
 /**
  * SwapRequestModal Component
@@ -341,9 +342,12 @@ export default function SwapRequestModal({
           {/* Section 1: Requested Skill */}
           <div className="space-y-1.5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-0.5">
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#16160F]">
-                I'm Requesting
-              </label>
+              <div className="flex items-center gap-1.5">
+                <WantedSkillIcon className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#16160F]">
+                  I'm Requesting
+                </label>
+              </div>
               <span className="text-[11px] text-[#6B6858]">
                 {targetName} is offering {targetOfferedSkills.length > 1 ? "these skills" : "this skill"}.
               </span>
@@ -376,7 +380,7 @@ export default function SwapRequestModal({
                     </select>
 
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[#1B4332]">
-                      <GraduationCap className="w-4 h-4" />
+                      <WantedSkillIcon className="w-4 h-4 text-[#1B4332]" />
                     </div>
 
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-[#1B4332]">
@@ -386,7 +390,7 @@ export default function SwapRequestModal({
                 ) : (
                   <div className="bg-[#E4EEE8]/60 border border-[#1B4332]/20 rounded-xl p-3 flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0">
-                      <GraduationCap className="w-4 h-4 text-[#1B4332] shrink-0" />
+                      <WantedSkillIcon className="w-4 h-4 text-[#1B4332] shrink-0" />
                       <div className="min-w-0">
                         <span className="text-sm font-bold text-[#1B4332] block truncate">
                           {selectedTargetSkill?.name}
@@ -438,9 +442,12 @@ export default function SwapRequestModal({
           {/* Section 2: Offered Skill */}
           <div className="space-y-1.5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-0.5">
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#16160F]">
-                I'll Offer <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center gap-1.5">
+                <OfferedSkillIcon className="w-3.5 h-3.5 text-[#1B4332] shrink-0" />
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#16160F]">
+                  I'll Offer <span className="text-red-500">*</span>
+                </label>
+              </div>
               <span className="text-[11px] text-[#6B6858]">
                 Choose one of your skills to exchange.
               </span>
@@ -524,7 +531,7 @@ export default function SwapRequestModal({
               </>
             ) : (
               <>
-                <Sparkles className="w-3.5 h-3.5" />
+                <MatchesIcon className="w-3.5 h-3.5" />
                 <span>Send Request</span>
               </>
             )}

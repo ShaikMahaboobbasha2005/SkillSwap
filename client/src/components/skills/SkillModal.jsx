@@ -6,6 +6,7 @@ import {
   SKILL_LEVELS,
   SKILL_STATUS,
 } from "../../constants/skillConstants";
+import { OfferedSkillIcon, WantedSkillIcon } from "../icons";
 
 export default function SkillModal({
   isOpen,
@@ -167,7 +168,11 @@ export default function SkillModal({
                   : "bg-amber-50 text-amber-700 border-amber-200"
               }`}
             >
-              {fixedType === "Offer" ? "🎓" : "🎯"}
+              {fixedType === "Offer" ? (
+                <OfferedSkillIcon className="w-5 h-5 text-[#1B4332]" />
+              ) : (
+                <WantedSkillIcon className="w-5 h-5 text-amber-700" />
+              )}
             </div>
             <div>
               <h2 className="text-base font-extrabold text-[#16160F]">{modalTitle}</h2>
