@@ -181,7 +181,7 @@ export default function RecommendationsPage() {
               }`}
             >
               <Sparkles className={`w-3 h-3 ${isAiMode ? "text-white" : "text-[#3FA873]"}`} />
-              <span>✨ AI Recommendations</span>
+              <span>AI Recommendations</span>
             </button>
           </div>
 
