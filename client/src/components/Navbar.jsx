@@ -172,21 +172,28 @@ export default function Navbar() {
                 <Link
                   to="/profile"
                   onClick={() => setDropdownOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332] transition-colors"
+                  className={`flex items-center gap-2.5 px-4 py-2 text-xs font-semibold transition-colors ${
+                    location.pathname === "/profile"
+                      ? "bg-[#E4EEE8] text-[#1B4332]"
+                      : "text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332]"
+                  }`}
                 >
-                  <User className="w-4 h-4 text-[#6B6858]" />
+                  <User className={`w-4 h-4 ${location.pathname === "/profile" ? "text-[#1B4332]" : "text-[#6B6858]"}`} />
                   <span>My Profile</span>
                 </Link>
 
-                <div className="flex items-center justify-between px-4 py-2 text-xs font-semibold text-[#6B6858] opacity-60 cursor-not-allowed">
-                  <div className="flex items-center gap-2.5">
-                    <Settings className="w-4 h-4" />
-                    <span>Settings</span>
-                  </div>
-                  <span className="text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#F7F6F2] border border-[#E6E3DA]">
-                    Soon
-                  </span>
-                </div>
+                <Link
+                  to="/settings"
+                  onClick={() => setDropdownOpen(false)}
+                  className={`flex items-center gap-2.5 px-4 py-2 text-xs font-semibold transition-colors ${
+                    location.pathname === "/settings"
+                      ? "bg-[#E4EEE8] text-[#1B4332]"
+                      : "text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332]"
+                  }`}
+                >
+                  <Settings className={`w-4 h-4 ${location.pathname === "/settings" ? "text-[#1B4332]" : "text-[#6B6858]"}`} />
+                  <span>Settings</span>
+                </Link>
 
                 <div className="border-t border-[#E6E3DA] pt-1">
                   <button

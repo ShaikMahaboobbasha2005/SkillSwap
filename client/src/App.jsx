@@ -18,6 +18,7 @@ import ChatsPage from "./pages/ChatsPage";
 import ChatPage from "./pages/ChatPage";
 import RecommendationsPage from "./pages/RecommendationsPage";
 import NotificationsPage from "./pages/NotificationsPage";
+import SettingsPage from "./pages/SettingsPage";
 
 function App() {
   return (
@@ -53,6 +54,7 @@ function App() {
                     <Route path="/notifications" element={<NotificationsPage />} />
                     <Route path="/profile" element={<OwnProfile />} />
                     <Route path="/portfolio" element={<PortfolioPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
                   </Route>
                 </Route>
 

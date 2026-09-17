@@ -240,7 +240,7 @@
     - **Dedicated Notification Center:** Built full-page `NotificationsPage.jsx` at `/notifications` featuring All / Unread filter tabs, total unread badge, bulk mark-read action, "Load More" pagination, and empty/error states with retry.
     - **Navbar & Mobile Integration:** Integrated `NotificationBell` in desktop navigation and mobile header, with a live badge notification link in the mobile drawer.
     - **Automated Verification:** Implemented 12 comprehensive automated tests in `server/test/notification_test.js` covering pagination, isolation, mark-read, mark-all-read, unread count accuracy, Socket.IO broadcast, swap/rating producers, missing swap handling, and deduplication.
-  - **Phase 11.2 — Bug Fixes & UX Polish (In Progress):**
+  - **Phase 11.2 — Bug Fixes & UX Polish (Completed):**
     - **Bug #1 (Bio Persistence — Completed):** Fixed inconsistent bio persistence across browser reloads and public profile views. Added persistent `bio` field (`maxlength: 160`) to `User` Mongoose schema, Joi schema validation, and `profileService.js` whitelist. Removed temporary browser `localStorage` workaround and verified persistence across MongoDB, authenticated profile editing, and public profile views.
     - **Bug #2 (Notification Navigation, Deep-Linking & Exact Entity Highlighting — Completed):** Resolved inconsistent notification click navigation where terminal or outgoing swap events routed to generic `/swaps` (Incoming tab). Implemented deterministic target routing with deep-link query parameters (`/swaps?tab=incoming&highlight=<swapId>`, `/swaps?tab=history&highlight=<swapId>`, `/swaps/:swapId/chat?highlight=completion`, `/swaps/:swapId/chat?highlight=meeting`, `/profile?highlightSwap=<swapId>`), dynamic swap skill context derivation (`React ↔ Node.js`), smooth auto-scrolling to exact targeted elements, temporary visual highlight animations (`2.5s` duration with `prefers-reduced-motion` compliance), and redesigned `NotificationItem.jsx` with Lucide type badges, micro-animations, compact bell mode, and full page mode.
     - **Polish #1 (Profile Cleanup — Completed):** Removed redundant Notifications entry from the User Profile dropdown menu to eliminate clutter and keep the Profile experience focused strictly on identity, skills, swaps, portfolio, and reviews while preserving the global NotificationBell and `/notifications` center.
@@ -256,16 +256,42 @@
 - **Done =** Users receive real-time notifications for all platform events with live Navbar bell badge synchronization, popover dropdown, dedicated `/notifications` management page, deterministic deep-link entity navigation and auto-scrolling with visual highlighting, polished Discover & Recommendations workflows, persistent mobile bottom navigation strictly matching the architectural sketch with centralized safe-area spacing, profile avatar account menu, resolved banner collision, unified three-icon SkillSwap iconography system across mobile/desktop navigation, skill cards, swap requests, and matches, and zero regressions across existing chat, swap, and meeting workflows.
 
 ## Phase 12 — Testing & Deployment
-- **Goal:** Thoroughly test the application and deploy both frontend and backend services.
-- **Features:**
-  - Comprehensive API testing
-  - Manual flow testing
-  - Error handling verification
-  - Authentication verification
-  - Production deployment (Render backend & Vercel frontend)
-  - MongoDB Atlas & Cloudinary integration checks
-  - Production checklist execution
-- **Done =** Application is successfully deployed and works end-to-end.
+- **Goal:** Polish the application dashboard, thoroughly test all flows, and deploy both frontend and backend services.
+- **Sub-Phases:**
+  - **Phase 12.1 — Dashboard / Home Redesign (Completed):**
+    - Redesigned authenticated Home page (`Home.jsx`) into an actionable personal dashboard answering "What's happening with my SkillSwap account right now?".
+    - Created `DashboardHero.jsx` with welcome greeting using the authenticated user's real name, tasteful `DASHBOARD` badge, and quick actions bar (Discover Skills, View Matches, Swap Requests, My Profile) reusing existing application routes.
+    - Created `DashboardStats.jsx` presenting a 5-metric account snapshot (Skills Offered, Skills Wanted, Active Swaps, Completed Swaps, Average Rating) computed exclusively from real data with deep links.
+    - Created `ActiveSwapsSection.jsx` communicating current ongoing exchanges with partner avatar, reciprocal skills (`OfferedSkillIcon` ↔ `WantedSkillIcon`), and direct `[ Open Chat → ]` actions, with a friendly empty state CTA to Discover Skills.
+    - Created `PendingRequestsSection.jsx` clearly distinguishing incoming vs outgoing swap requests with status badges, partner info, and deep links to `/swaps?tab=incoming&highlight=` or `/swaps?tab=outgoing&highlight=`.
+    - Created `RecommendedMatchesSection.jsx` showing top deterministic match previews with compatibility scores (`MatchesIcon`), exchange directions, and profile/connect links.
+    - Created `RecentActivitySection.jsx` displaying the latest 5 notifications via `NotificationItem compact={true}` with full Phase 11.2 deep-linking preserved.
+    - Implemented a 2-column desktop grid (7 cols operational, 5 cols triage & feeds) that gracefully stacks on mobile with centralized safe-area bottom navigation clearance.
+- **Done =** Authenticated Home page is a polished, actionable personal dashboard with 0 build errors, zero backend changes, and no regressions across existing workflows.
+  - **Phase 12 — Settings Page Foundation (Completed):**
+    - **Settings Route (`/settings`):** Mounted authenticated `SettingsPage.jsx` at `/settings` under `ProtectedRoute` within the shared application shell (`AppLayout`), with zero duplicate routes.
+    - **Account Section:**
+      - **My Profile:** Displays user avatar, display name, account role badge (Admin / Member), and location (only if present) with a direct "My Profile →" link navigating to `/profile` reusing existing `useAuth` context.
+      - **Email (Read-Only):** Displays the currently authenticated user's email inside a read-only lock field with clear helper text ("Email changes aren't currently supported.") and zero fabricated verified-badge claims or fake editing functionality.
+      - **Account Information:** Displays authenticated metadata (User ID with one-click copy to clipboard showing a temporary "Copied" visual feedback state, Account Role from existing user schema, and formatted "Member Since" from `createdAt`), with zero invented status fields.
+    - **Preferences — Appearance (Dark Mode Preparation):**
+      - Prepares the interface for upcoming Dark Mode implementation with three visual tiles: System, Light, and Dark.
+      - Light is highlighted as current/active matching the application's default light theme (`#F7F6F2` / `#FFFFFF` / `#1B4332`).
+      - System and Dark tiles are visually disabled and clearly marked "Coming soon" with zero fake theme toggling or state fabrication. Full Dark Mode remains scheduled for its dedicated Phase 12 sub-phase.
+    - **Notifications Section:**
+      - Reflects existing in-app real-time notification infrastructure (Swap requests, Meeting reminders, Partner reviews) delivered via `NotificationBell` and Socket.IO.
+      - Email notification and digest preferences are presented as disabled and marked "Coming soon" with no invented backend APIs or fake client persistence.
+    - **Account Actions Section:**
+      - Reuses the existing authentication context (`useAuth().logout()`) with an inline two-step confirmation state ("Are you sure you want to log out?" with `[Log out]` and `[Cancel]`) to prevent accidental sign-outs.
+    - **Mobile Navigation Architecture Integration:**
+      - Mobile profile avatar menu in the top header now navigates directly to `/settings`, preserving the clean avatar trigger and eliminating hamburger menus.
+      - Mobile bottom navigation bar remains strictly preserved with 5 destinations (Home, Matches, Discover, Swaps, Chats), with zero Profile or Settings items injected.
+      - Seamless clearance above the fixed mobile bottom navigation bar via centralized `AppLayout` safe-area bottom padding.
+    - **Desktop Navigation Integration:**
+      - Top-right account dropdown panel seamlessly opens `/settings` with active route highlight styling, preserving existing desktop navigation.
+    - **Responsive Design & Accessibility:**
+      - Validated for viewports from 320px, 360px, 375px, 390px, 414px, 430px, 768px, to 1024px+ with zero horizontal overflow, comfortable touch targets, semantic buttons/labels, and accessible disabled states.
+- **Done =** Authenticated Settings page foundation is fully implemented at `/settings`, integrated with existing authentication context, profile avatar dropdowns, and design tokens, with 0 build errors, zero backend changes, and zero regressions.
 
 ---
 
