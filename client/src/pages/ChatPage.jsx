@@ -686,11 +686,11 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
   });  // Render Page-Level Permanent Access Errors
   if (pageError) {
     return (
-      <div className="h-[100dvh] max-h-[100dvh] bg-[#F7F6F2] text-[#16160F] font-sans antialiased flex flex-col overflow-hidden">
+      <div className="h-[100dvh] max-h-[100dvh] bg-[#F7F6F2] dark:bg-[#0F1210] text-[#16160F] dark:text-[#F2F1EC] font-sans antialiased flex flex-col overflow-hidden">
         {!isEmbedded && <Navbar />}
         <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          <div className="max-w-md w-full bg-white border border-[#E6E3DA] rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-sm">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-800 border border-amber-200 flex items-center justify-center mx-auto shrink-0">
+          <div className="max-w-md w-full bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 flex items-center justify-center mx-auto shrink-0">
               {pageError.code === "FORBIDDEN" ? (
                 <ShieldAlert className="w-6 h-6" />
               ) : (
@@ -699,14 +699,14 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
             </div>
 
             <div className="space-y-1">
-              <h2 className="text-lg sm:text-xl font-extrabold text-[#16160F]">
+              <h2 className="text-lg sm:text-xl font-extrabold text-[#16160F] dark:text-[#F2F1EC]">
                 {pageError.code === "SWAP_NOT_ACCEPTED"
                   ? "Chat Not Available"
                   : pageError.code === "FORBIDDEN"
                   ? "Access Denied"
                   : "Swap Not Found"}
               </h2>
-              <p className="text-xs sm:text-sm text-[#6B6858] leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#6B6858] dark:text-[#9C9A8C] leading-relaxed">
                 {pageError.message}
               </p>
             </div>
@@ -714,7 +714,7 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
             <div className="pt-2">
               <Link
                 to="/swaps?tab=history"
-                className="w-full py-2.5 px-4 rounded-xl bg-[#1B4332] hover:bg-[#143326] text-white font-bold text-xs sm:text-sm transition-all inline-flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
+                className="w-full py-2.5 px-4 rounded-xl bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#339162] text-white dark:text-[#0F1210] font-bold text-xs sm:text-sm transition-all inline-flex items-center justify-center gap-2 cursor-pointer shadow-2xs"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to Swap History</span>
@@ -741,7 +741,7 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
     : "an earlier date";
 
   const chatContent = (
-    <div className="flex-1 flex flex-col h-full min-h-0 bg-[#F7F6F2] text-[#16160F] font-sans antialiased overflow-hidden">
+    <div className="flex-1 flex flex-col h-full min-h-0 bg-[#F7F6F2] dark:bg-[#0F1210] text-[#16160F] dark:text-[#F2F1EC] font-sans antialiased overflow-hidden">
       {/* Toast Notification Container */}
       <ToastNotification
         toast={toast}
@@ -785,23 +785,23 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
           id="chat-completion-banner"
           className={`px-4 py-3 border-b text-xs flex items-center justify-between gap-3 shrink-0 flex-wrap transition-all duration-500 ${
             highlightedFeature === "completion"
-              ? "ring-2 ring-[#1B4332] shadow-sm bg-emerald-100/90 border-emerald-300 scale-[1.005]"
+              ? "ring-2 ring-[#1B4332] dark:ring-[#3FA873] shadow-sm bg-emerald-100/90 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-700 scale-[1.005]"
               : String(swap.completionRequestedBy?._id || swap.completionRequestedBy?.id || swap.completionRequestedBy) === String(currentUserId)
-              ? "bg-amber-50 border-amber-200 text-amber-900"
-              : "bg-emerald-50 border-emerald-200 text-emerald-900"
+              ? "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/40 text-amber-900 dark:text-amber-300"
+              : "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/40 text-emerald-900 dark:text-emerald-300"
           }`}
         >
           <div className="flex items-center gap-2 min-w-0">
             {String(swap.completionRequestedBy?._id || swap.completionRequestedBy?.id || swap.completionRequestedBy) === String(currentUserId) ? (
               <>
-                <Clock className="w-4 h-4 text-amber-600 shrink-0 animate-pulse" />
+                <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
                 <span className="font-semibold">
                   Completion request sent. Waiting for partner to confirm.
                 </span>
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span className="font-semibold">
                   {swap.completionRequestedBy?.name || "Your swap partner"} has requested to mark this swap as completed.
                 </span>
@@ -814,7 +814,7 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
               <button
                 type="button"
                 onClick={handleCancelCompletionFromChat}
-                className="px-3 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded-lg transition-all text-xs cursor-pointer"
+                className="px-3 py-1 bg-amber-100 dark:bg-amber-900/40 hover:bg-amber-200 dark:hover:bg-amber-900/60 text-amber-900 dark:text-amber-200 font-bold rounded-lg transition-all text-xs cursor-pointer"
               >
                 Cancel Request
               </button>
@@ -823,14 +823,14 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
                 <button
                   type="button"
                   onClick={handleCancelCompletionFromChat}
-                  className="px-3 py-1 bg-zinc-200 hover:bg-zinc-300 text-zinc-800 font-bold rounded-lg transition-all text-xs cursor-pointer"
+                  className="px-3 py-1 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold rounded-lg transition-all text-xs cursor-pointer"
                 >
                   Not Yet
                 </button>
                 <button
                   type="button"
                   onClick={handleConfirmCompletionFromChat}
-                  className="px-3.5 py-1 bg-[#1B4332] hover:bg-[#143326] text-white font-bold rounded-lg transition-all text-xs cursor-pointer shadow-2xs"
+                  className="px-3.5 py-1 bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#339162] text-white dark:text-[#0F1210] font-bold rounded-lg transition-all text-xs cursor-pointer shadow-2xs"
                 >
                   Confirm Completion
                 </button>
@@ -842,8 +842,8 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
 
       {/* Read-Only Informational Banner */}
       {isReadOnly && (
-        <div className="bg-[#E4EEE8] border-b border-[#1B4332]/20 px-4 py-2.5 text-center text-xs font-bold text-[#1B4332] flex items-center justify-center gap-2 shrink-0">
-          <Info className="w-4 h-4 text-[#1B4332] shrink-0" />
+        <div className="bg-[#E4EEE8] dark:bg-[#1C2E24] border-b border-[#1B4332]/20 dark:border-[#3FA873]/30 px-4 py-2.5 text-center text-xs font-bold text-[#1B4332] dark:text-[#3FA873] flex items-center justify-center gap-2 shrink-0">
+          <Info className="w-4 h-4 text-[#1B4332] dark:text-[#3FA873] shrink-0" />
           <span>
             {swap?.status === "completed"
               ? `This swap was completed on ${endedDateFormatted}. This conversation is now read-only.`
@@ -873,8 +873,8 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
 
       {/* Bottom Message Input Bar or Read-Only Locked Bar */}
       {isReadOnly ? (
-        <div className="p-4 bg-white border-t border-[#E6E3DA] text-center text-xs font-semibold text-[#6B6858] flex items-center justify-center gap-2 shrink-0">
-          <Lock className="w-3.5 h-3.5 text-[#6B6858]" />
+        <div className="p-4 bg-white dark:bg-[#181B18] border-t border-[#E6E3DA] dark:border-[#2A2E29] text-center text-xs font-semibold text-[#6B6858] dark:text-[#9C9A8C] flex items-center justify-center gap-2 shrink-0">
+          <Lock className="w-3.5 h-3.5 text-[#6B6858] dark:text-[#9C9A8C]" />
           <span>This conversation is read-only because the swap has ended.</span>
         </div>
       ) : (
@@ -923,9 +923,9 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
   }
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] bg-[#F7F6F2] text-[#16160F] font-sans antialiased flex flex-col overflow-hidden">
+    <div className="h-[100dvh] max-h-[100dvh] bg-[#F7F6F2] dark:bg-[#0F1210] text-[#16160F] dark:text-[#F2F1EC] font-sans antialiased flex flex-col overflow-hidden">
       <Navbar />
-      <div className="flex-1 flex flex-col min-h-0 w-full bg-white overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0 w-full bg-white dark:bg-[#181B18] overflow-hidden">
         {chatContent}
       </div>
     </div>

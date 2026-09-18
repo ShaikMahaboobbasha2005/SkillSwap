@@ -84,24 +84,24 @@ export default function ToastNotification({
         aria-live="polite"
         className="fixed top-5 right-5 z-[10050] max-w-sm w-full animate-slideDown pointer-events-auto select-none"
       >
-        <div className="relative overflow-hidden p-4 rounded-2xl bg-white border border-[#E6E3DA] shadow-xl flex flex-col gap-3 text-[#16160F] backdrop-blur-md transition-all">
+        <div className="relative overflow-hidden p-4 rounded-2xl bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] shadow-xl flex flex-col gap-3 text-[#16160F] dark:text-[#F2F1EC] backdrop-blur-md transition-all">
           {/* Header Row: Message & Countdown Pill */}
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
               <div
-                className="w-7 h-7 rounded-xl bg-[#E4EEE8] text-[#1B4332] border border-[#1B4332]/20 flex items-center justify-center shrink-0 shadow-2xs"
+                className="w-7 h-7 rounded-xl bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] border border-[#1B4332]/20 dark:border-[#3FA873]/30 flex items-center justify-center shrink-0 shadow-2xs"
                 aria-hidden="true"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
               </div>
-              <p className="text-xs font-bold text-[#16160F] tracking-tight leading-snug truncate">
+              <p className="text-xs font-bold text-[#16160F] dark:text-[#F2F1EC] tracking-tight leading-snug truncate">
                 {toast.message}
               </p>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
               {/* Countdown Ticker */}
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#F7F6F2] text-[#6B6858] border border-[#E6E3DA] tabular-nums">
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#F7F6F2] dark:bg-[#202520] text-[#6B6858] dark:text-[#9C9A8C] border border-[#E6E3DA] dark:border-[#2A2E29] tabular-nums">
                 {secondsRemaining}s
               </span>
 
@@ -112,7 +112,7 @@ export default function ToastNotification({
                   onClick={onClose}
                   aria-label="Dismiss notification"
                   title="Dismiss notification"
-                  className="text-[#6B6858] hover:text-[#16160F] p-1 rounded-lg hover:bg-[#F7F6F2] transition-colors cursor-pointer"
+                  className="text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] p-1 rounded-lg hover:bg-[#F7F6F2] dark:hover:bg-[#202520] transition-colors cursor-pointer"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -122,11 +122,11 @@ export default function ToastNotification({
 
           {/* Action Row: Undo Button */}
           {toast.action && (
-            <div className="flex items-center justify-end gap-2 pt-1 border-t border-[#E6E3DA]/60">
+            <div className="flex items-center justify-end gap-2 pt-1 border-t border-[#E6E3DA]/60 dark:border-[#2A2E29]">
               <button
                 type="button"
                 onClick={handleActionClick}
-                className="px-4 py-1.5 bg-[#1B4332] hover:bg-[#143326] text-white text-xs font-bold rounded-xl shadow-2xs hover:shadow-xs active:scale-[0.97] transition-all cursor-pointer inline-flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#3FA873]"
+                className="px-4 py-1.5 bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#338d60] text-white dark:text-[#0F1210] text-xs font-bold rounded-xl shadow-2xs hover:shadow-xs active:scale-[0.97] transition-all cursor-pointer inline-flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[#3FA873]"
                 aria-label={toast.action.label || "Undo"}
               >
                 <RotateCcw className="w-3 h-3" />
@@ -136,7 +136,7 @@ export default function ToastNotification({
           )}
 
           {/* Linear Progress Bar (Pine / Dark Accent #3FA873) */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#E6E3DA]/60 pointer-events-none overflow-hidden">
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#E6E3DA]/60 dark:bg-[#2A2E29] pointer-events-none overflow-hidden">
             <div
               className="h-full bg-[#3FA873] transition-all linear"
               style={{

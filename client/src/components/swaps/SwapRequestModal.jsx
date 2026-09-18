@@ -309,21 +309,21 @@ export default function SwapRequestModal({
         showCloseButton={true}
       />
 
-      <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden text-[#16160F]">
+      <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden text-[#16160F] dark:text-[#F2F1EC]">
         {/* Scrollable Modal Content Body */}
         <div className="p-5 space-y-4 overflow-y-auto flex-1">
           {/* Self-request warning banner */}
           {isSelfRequest && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-center gap-2 font-medium">
-              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+            <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl text-xs text-red-700 dark:text-red-400 flex items-center gap-2 font-medium">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-400" />
               <span>You cannot send a swap request to yourself.</span>
             </div>
           )}
 
           {/* Recipient User Header Summary Card */}
-          <div className="bg-[#F7F6F2] border border-[#E6E3DA] rounded-xl p-3.5 flex items-center justify-between gap-3">
+          <div className="bg-[#F7F6F2] dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl p-3.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-full bg-[#1B4332] text-white font-bold text-sm flex items-center justify-center border border-white shadow-xs shrink-0 overflow-hidden">
+              <div className="w-10 h-10 rounded-full bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] font-bold text-sm flex items-center justify-center border border-white dark:border-[#2A2E29] shadow-xs shrink-0 overflow-hidden">
                 {targetAvatar ? (
                   <img src={targetAvatar} alt={targetName} className="w-full h-full object-cover" />
                 ) : (
@@ -331,30 +331,30 @@ export default function SwapRequestModal({
                 )}
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-[#6B6858] uppercase tracking-wider">Sending Request To</p>
-                <h3 className="text-sm font-extrabold text-[#16160F] truncate">{targetName}</h3>
-                {targetLocation && <p className="text-[11px] text-[#6B6858] truncate">{targetLocation}</p>}
+                <p className="text-xs font-bold text-[#6B6858] dark:text-[#9C9A8C] uppercase tracking-wider">Sending Request To</p>
+                <h3 className="text-sm font-extrabold text-[#16160F] dark:text-[#F2F1EC] truncate">{targetName}</h3>
+                {targetLocation && <p className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C] truncate">{targetLocation}</p>}
               </div>
             </div>
-            <UserCheck className="w-4 h-4 text-[#1B4332] shrink-0" />
+            <UserCheck className="w-4 h-4 text-[#1B4332] dark:text-[#3FA873] shrink-0" />
           </div>
 
           {/* Section 1: Requested Skill */}
           <div className="space-y-1.5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-0.5">
               <div className="flex items-center gap-1.5">
-                <WantedSkillIcon className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#16160F]">
+                <WantedSkillIcon className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400 shrink-0" />
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#16160F] dark:text-[#F2F1EC]">
                   I'm Requesting
                 </label>
               </div>
-              <span className="text-[11px] text-[#6B6858]">
+              <span className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C]">
                 {targetName} is offering {targetOfferedSkills.length > 1 ? "these skills" : "this skill"}.
               </span>
             </div>
 
             {loadingTargetSkills ? (
-              <div className="h-10 bg-[#F7F6F2] border border-[#E6E3DA] rounded-xl animate-pulse flex items-center px-3 text-xs text-[#6B6858]">
+              <div className="h-10 bg-[#F7F6F2] dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl animate-pulse flex items-center px-3 text-xs text-[#6B6858] dark:text-[#9C9A8C]">
                 Loading {targetName}'s offered skills...
               </div>
             ) : targetOfferedSkills.length > 0 ? (
@@ -364,7 +364,7 @@ export default function SwapRequestModal({
                     <select
                       value={wantedSkillId}
                       onChange={(e) => setWantedSkillId(e.target.value)}
-                      className="w-full pl-10 pr-10 py-3 text-xs font-bold bg-[#E4EEE8]/70 hover:bg-[#E4EEE8] border border-[#1B4332]/30 focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] rounded-xl transition-all appearance-none cursor-pointer text-[#1B4332]"
+                      className="w-full pl-10 pr-10 py-3 text-xs font-bold bg-[#E4EEE8]/70 dark:bg-[#1C2E24] hover:bg-[#E4EEE8] dark:hover:bg-[#243B2E] border border-[#1B4332]/30 dark:border-[#3FA873]/40 focus:border-[#1B4332] dark:focus:border-[#3FA873] focus:ring-1 focus:ring-[#1B4332] dark:focus:ring-[#3FA873] rounded-xl transition-all appearance-none cursor-pointer text-[#1B4332] dark:text-[#3FA873]"
                     >
                       {targetOfferedSkills.map((skill) => {
                         const sId = skill._id || skill.skillId || skill.id;
@@ -372,38 +372,38 @@ export default function SwapRequestModal({
                         const levelStr = skill.level ? ` (${skill.level})` : "";
                         const catStr = skill.category ? ` • ${skill.category}` : "";
                         return (
-                          <option key={sId} value={sId} className="bg-white text-[#16160F] font-medium py-1">
+                          <option key={sId} value={sId} className="bg-white dark:bg-[#181B18] text-[#16160F] dark:text-[#F2F1EC] font-medium py-1">
                             {skillName}{levelStr}{catStr}
                           </option>
                         );
                       })}
                     </select>
 
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[#1B4332]">
-                      <WantedSkillIcon className="w-4 h-4 text-[#1B4332]" />
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[#1B4332] dark:text-[#3FA873]">
+                      <WantedSkillIcon className="w-4 h-4 text-[#1B4332] dark:text-[#3FA873]" />
                     </div>
 
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-[#1B4332]">
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-[#1B4332] dark:text-[#3FA873]">
                       <ChevronDown className="w-4 h-4" />
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-[#E4EEE8]/60 border border-[#1B4332]/20 rounded-xl p-3 flex items-center justify-between">
+                  <div className="bg-[#E4EEE8]/60 dark:bg-[#1C2E24] border border-[#1B4332]/20 dark:border-[#3FA873]/30 rounded-xl p-3 flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0">
-                      <WantedSkillIcon className="w-4 h-4 text-[#1B4332] shrink-0" />
+                      <WantedSkillIcon className="w-4 h-4 text-[#1B4332] dark:text-[#3FA873] shrink-0" />
                       <div className="min-w-0">
-                        <span className="text-sm font-bold text-[#1B4332] block truncate">
+                        <span className="text-sm font-bold text-[#1B4332] dark:text-[#3FA873] block truncate">
                           {selectedTargetSkill?.name}
                         </span>
                         {selectedTargetSkill?.category && (
-                          <span className="text-[11px] text-[#6B6858] block truncate">
+                          <span className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C] block truncate">
                             Category: {selectedTargetSkill.category}
                           </span>
                         )}
                       </div>
                     </div>
                     {selectedTargetSkill?.level && (
-                      <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#1B4332] text-white rounded-full shrink-0">
+                      <span className="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] rounded-full shrink-0">
                         {selectedTargetSkill.level}
                       </span>
                     )}
@@ -412,12 +412,12 @@ export default function SwapRequestModal({
 
                 {/* Sub-card metadata preview if multiple skills */}
                 {targetOfferedSkills.length > 1 && selectedTargetSkill && (
-                  <div className="px-3 py-1.5 bg-[#F7F6F2] border border-[#E6E3DA] rounded-lg flex items-center justify-between text-[11px]">
-                    <span className="text-[#6B6858]">
+                  <div className="px-3 py-1.5 bg-[#F7F6F2] dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-lg flex items-center justify-between text-[11px]">
+                    <span className="text-[#6B6858] dark:text-[#9C9A8C]">
                       {selectedTargetSkill.category ? `Category: ${selectedTargetSkill.category}` : "Offered Skill"}
                     </span>
                     {selectedTargetSkill.level && (
-                      <span className="font-bold text-[#1B4332] uppercase">
+                      <span className="font-bold text-[#1B4332] dark:text-[#3FA873] uppercase">
                         {selectedTargetSkill.level}
                       </span>
                     )}
@@ -425,8 +425,8 @@ export default function SwapRequestModal({
                 )}
               </div>
             ) : (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
+              <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl text-xs text-red-700 dark:text-red-400 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-400" />
                 <span>Target user currently has no active skills available for swapping.</span>
               </div>
             )}
@@ -434,7 +434,7 @@ export default function SwapRequestModal({
 
           {/* Visual Exchange Connector */}
           <div className="flex items-center justify-center py-1">
-            <div className="w-8 h-8 rounded-full bg-[#E4EEE8] border border-[#1B4332]/20 flex items-center justify-center text-[#1B4332]">
+            <div className="w-8 h-8 rounded-full bg-[#E4EEE8] dark:bg-[#1C2E24] border border-[#1B4332]/20 dark:border-[#3FA873]/30 flex items-center justify-center text-[#1B4332] dark:text-[#3FA873]">
               <ArrowRight className="w-4 h-4 rotate-90 sm:rotate-90" />
             </div>
           </div>
@@ -443,18 +443,18 @@ export default function SwapRequestModal({
           <div className="space-y-1.5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-0.5">
               <div className="flex items-center gap-1.5">
-                <OfferedSkillIcon className="w-3.5 h-3.5 text-[#1B4332] shrink-0" />
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#16160F]">
+                <OfferedSkillIcon className="w-3.5 h-3.5 text-[#1B4332] dark:text-[#3FA873] shrink-0" />
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#16160F] dark:text-[#F2F1EC]">
                   I'll Offer <span className="text-red-500">*</span>
                 </label>
               </div>
-              <span className="text-[11px] text-[#6B6858]">
+              <span className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C]">
                 Choose one of your skills to exchange.
               </span>
             </div>
 
             {loadingSkills ? (
-              <div className="h-10 bg-[#F7F6F2] border border-[#E6E3DA] rounded-xl animate-pulse flex items-center px-3 text-xs text-[#6B6858]">
+              <div className="h-10 bg-[#F7F6F2] dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl animate-pulse flex items-center px-3 text-xs text-[#6B6858] dark:text-[#9C9A8C]">
                 Loading your offered skills...
               </div>
             ) : ownSkills.length > 0 ? (
@@ -462,24 +462,24 @@ export default function SwapRequestModal({
                 value={offeredSkillId}
                 onChange={(e) => setOfferedSkillId(e.target.value)}
                 required
-                className="w-full h-10 px-3 text-xs font-medium bg-white border border-[#E6E3DA] rounded-xl focus:outline-hidden focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] transition-colors"
+                className="w-full h-10 px-3 text-xs font-medium bg-white dark:bg-[#202520] text-[#16160F] dark:text-[#F2F1EC] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl focus:outline-hidden focus:border-[#1B4332] dark:focus:border-[#3FA873] focus:ring-1 focus:ring-[#1B4332] dark:focus:ring-[#3FA873] transition-colors"
               >
                 {ownSkills.map((skill) => {
                   const sId = skill._id || skill.skillId || skill.id;
                   return (
-                    <option key={sId} value={sId}>
+                    <option key={sId} value={sId} className="bg-white dark:bg-[#181B18] text-[#16160F] dark:text-[#F2F1EC]">
                       {skill.name} {skill.level ? `(${skill.level})` : ""}
                     </option>
                   );
                 })}
               </select>
             ) : (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-xl text-xs text-amber-900 dark:text-amber-300 space-y-1">
                 <div className="flex items-center gap-1.5 font-bold">
-                  <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
+                  <AlertCircle className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0" />
                   <span>No active skills to offer</span>
                 </div>
-                <p className="text-[11px] text-amber-800 leading-relaxed">
+                <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
                   You must add at least one active offered skill to your profile before sending a swap request.
                 </p>
               </div>
@@ -489,10 +489,10 @@ export default function SwapRequestModal({
           {/* Optional Request Message */}
           <div className="space-y-1.5 pt-1">
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#16160F]">
-                Message <span className="text-[#6B6858] font-normal text-[11px] lowercase">(optional)</span>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#16160F] dark:text-[#F2F1EC]">
+                Message <span className="text-[#6B6858] dark:text-[#9C9A8C] font-normal text-[11px] lowercase">(optional)</span>
               </label>
-              <span className="text-[10px] text-[#6B6858]">{message.length}/500</span>
+              <span className="text-[10px] text-[#6B6858] dark:text-[#9C9A8C]">{message.length}/500</span>
             </div>
             <textarea
               rows={3}
@@ -500,18 +500,18 @@ export default function SwapRequestModal({
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder={`Hi ${targetName}, I'd love to swap my skill for your ${selectedTargetSkill?.name || "skill"}!`}
-              className="w-full p-3 text-xs bg-white border border-[#E6E3DA] rounded-xl focus:outline-hidden focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] transition-colors resize-none placeholder:text-[#6B6858]/60"
+              className="w-full p-3 text-xs bg-white dark:bg-[#202520] text-[#16160F] dark:text-[#F2F1EC] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl focus:outline-hidden focus:border-[#1B4332] dark:focus:border-[#3FA873] focus:ring-1 focus:ring-[#1B4332] dark:focus:ring-[#3FA873] transition-colors resize-none placeholder:text-[#6B6858]/60 dark:placeholder:text-[#9C9A8C]/60"
             />
           </div>
         </div>
 
         {/* Pinned Action Footer */}
-        <div className="p-4 sm:px-5 py-3 border-t border-[#E6E3DA] bg-[#F7F6F2] flex items-center justify-end gap-2 shrink-0">
+        <div className="p-4 sm:px-5 py-3 border-t border-[#E6E3DA] dark:border-[#2A2E29] bg-[#F7F6F2] dark:bg-[#181B18] flex items-center justify-end gap-2 shrink-0">
           <button
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="h-9 px-4 text-xs font-semibold text-[#6B6858] hover:text-[#16160F] hover:bg-white rounded-xl transition-colors cursor-pointer disabled:opacity-50 border border-transparent hover:border-[#E6E3DA]"
+            className="h-9 px-4 text-xs font-semibold text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] hover:bg-white dark:hover:bg-[#202520] rounded-xl transition-colors cursor-pointer disabled:opacity-50 border border-transparent hover:border-[#E6E3DA] dark:hover:border-[#2A2E29]"
           >
             Cancel
           </button>
@@ -519,11 +519,11 @@ export default function SwapRequestModal({
           <button
             type="submit"
             disabled={isSendDisabled}
-            className="h-9 px-4 text-xs font-semibold text-white bg-[#1B4332] hover:bg-[#143326] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-[0.98]"
+            className="h-9 px-4 text-xs font-semibold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#339162] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-[0.98]"
           >
             {submitting ? (
               <>
-                <svg className="w-3.5 h-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                <svg className="w-3.5 h-3.5 animate-spin text-white dark:text-[#0F1210]" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>

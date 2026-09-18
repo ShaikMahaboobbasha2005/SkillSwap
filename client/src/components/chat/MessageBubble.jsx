@@ -197,7 +197,7 @@ export default function MessageBubble({
         <button
           type="button"
           onClick={() => setMenuOpen(!menuOpen)}
-          className="w-7 h-7 flex items-center justify-center text-[#6B6858] hover:text-[#16160F] hover:bg-black/5 rounded-full transition-all cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100"
+          className="w-7 h-7 flex items-center justify-center text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-all cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100"
           aria-label="Message options"
         >
           <MoreVertical className="w-3.5 h-3.5" />
@@ -208,7 +208,7 @@ export default function MessageBubble({
           <div
             className={`absolute ${
               isMine ? "right-0" : "left-0"
-            } bottom-full mb-1.5 z-30 w-36 bg-white border border-[#E6E3DA] rounded-xl shadow-lg p-1 animate-in fade-in zoom-in-95 duration-100`}
+            } bottom-full mb-1.5 z-30 w-36 bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl shadow-lg p-1 animate-in fade-in zoom-in-95 duration-100`}
           >
             <button
               type="button"
@@ -218,9 +218,9 @@ export default function MessageBubble({
                   onSelectReply(message);
                 }
               }}
-              className="w-full text-left px-3 py-2 text-xs font-semibold text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332] flex items-center gap-2 transition-colors rounded-lg cursor-pointer"
+              className="w-full text-left px-3 py-2 text-xs font-semibold text-[#16160F] dark:text-[#F2F1EC] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] hover:text-[#1B4332] dark:hover:text-[#3FA873] flex items-center gap-2 transition-colors rounded-lg cursor-pointer"
             >
-              <Reply className="w-3.5 h-3.5 text-[#6B6858]" />
+              <Reply className="w-3.5 h-3.5 text-[#6B6858] dark:text-[#9C9A8C]" />
               <span>Reply</span>
             </button>
 
@@ -231,9 +231,9 @@ export default function MessageBubble({
                   setMenuOpen(false);
                   setShowConfirmModal(true);
                 }}
-                className="w-full text-left px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors rounded-lg cursor-pointer border-t border-[#E6E3DA]/60 mt-0.5 pt-2"
+                className="w-full text-left px-3 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2 transition-colors rounded-lg cursor-pointer border-t border-[#E6E3DA]/60 dark:border-[#2A2E29] mt-0.5 pt-2"
               >
-                <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                <Trash2 className="w-3.5 h-3.5 text-red-500 dark:text-red-400" />
                 <span>Delete message</span>
               </button>
             )}
@@ -257,11 +257,11 @@ export default function MessageBubble({
       className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm leading-relaxed break-words shadow-2xs select-none sm:select-text ${
         isDeleted
           ? isMine
-            ? "bg-[#1B4332]/80 text-white/80 rounded-tr-xs italic"
-            : "bg-[#F7F6F2] text-[#6B6858] border border-[#E6E3DA] rounded-tl-xs italic"
+            ? "bg-[#1B4332]/80 dark:bg-[#1C2E24]/80 text-white/80 dark:text-[#F2F1EC]/70 rounded-tr-xs italic"
+            : "bg-[#F7F6F2] dark:bg-[#181B18] text-[#6B6858] dark:text-[#9C9A8C] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-tl-xs italic"
           : isMine
-          ? "bg-[#1B4332] text-white rounded-tr-xs"
-          : "bg-white text-[#16160F] border border-[#E6E3DA] rounded-tl-xs"
+          ? "bg-[#1B4332] dark:bg-[#1C2E24] text-white dark:text-[#F2F1EC] rounded-tr-xs border border-transparent dark:border-[#3FA873]/30"
+          : "bg-white dark:bg-[#202520] text-[#16160F] dark:text-[#F2F1EC] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-tl-xs"
       }`}
     >
       {/* Quoted Reply Block */}
@@ -276,13 +276,13 @@ export default function MessageBubble({
           }}
           className={`w-full text-left mb-2 p-2 rounded-xl border-l-3 transition-all cursor-pointer ${
             isMine
-              ? "bg-black/20 border-emerald-300 text-white/90 hover:bg-black/30"
-              : "bg-[#F7F6F2] border-[#1B4332] text-[#16160F] hover:bg-zinc-200/80"
+              ? "bg-black/20 dark:bg-black/40 border-emerald-300 text-white/90 hover:bg-black/30"
+              : "bg-[#F7F6F2] dark:bg-[#181B18] border-[#1B4332] dark:border-[#3FA873] text-[#16160F] dark:text-[#F2F1EC] hover:bg-zinc-200/80 dark:hover:bg-[#2A2E29]"
           }`}
         >
           <div
             className={`text-[10px] font-extrabold truncate ${
-              isMine ? "text-emerald-200" : "text-[#1B4332]"
+              isMine ? "text-emerald-200" : "text-[#1B4332] dark:text-[#3FA873]"
             }`}
           >
             {replySenderName}
@@ -309,7 +309,7 @@ export default function MessageBubble({
 
         <span
           className={`inline-flex items-center gap-1 text-[10px] leading-none ml-2.5 select-none float-right mt-1 sm:mt-0.5 ${
-            isMine ? "text-white/75" : "text-[#6B6858]"
+            isMine ? "text-white/75 dark:text-[#9C9A8C]" : "text-[#6B6858] dark:text-[#9C9A8C]"
           }`}
         >
           <span>{timeString}</span>
@@ -317,12 +317,12 @@ export default function MessageBubble({
           {/* Status Ticks for Current User's Non-Deleted Outgoing Messages */}
           {isMine && !isDeleted && (
             <span className="inline-flex items-center ml-0.5 shrink-0">
-              {status === "sent" && <Check className="w-3 h-3 text-white/70" />}
+              {status === "sent" && <Check className="w-3 h-3 text-white/70 dark:text-zinc-400" />}
               {status === "delivered" && (
-                <CheckCheck className="w-3.5 h-3.5 text-white/75" />
+                <CheckCheck className="w-3.5 h-3.5 text-white/75 dark:text-zinc-300" />
               )}
               {status === "read" && (
-                <CheckCheck className="w-3.5 h-3.5 text-emerald-300 font-bold" />
+                <CheckCheck className="w-3.5 h-3.5 text-emerald-300 dark:text-[#3FA873] font-bold" />
               )}
             </span>
           )}
@@ -341,7 +341,7 @@ export default function MessageBubble({
         {/* Mobile Swipe Reply Icon Visual Indicator */}
         {dragX > 5 && !isDeleted && (
           <div
-            className="absolute -left-9 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full bg-[#1B4332] text-white shadow-sm transition-opacity duration-150 z-10 pointer-events-none"
+            className="absolute -left-9 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-full bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] shadow-sm transition-opacity duration-150 z-10 pointer-events-none"
             style={{ opacity: Math.min(1, dragX / 40) }}
           >
             <Reply className="w-3.5 h-3.5" />
@@ -368,16 +368,16 @@ export default function MessageBubble({
           onClick={() => setShowMobileSheet(false)}
         >
           <div
-            className="bg-white border border-[#E6E3DA] rounded-2xl p-3 sm:p-4 max-w-[420px] w-full shadow-2xl animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-150 mx-auto"
+            className="bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl p-3 sm:p-4 max-w-[420px] w-full shadow-2xl animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-150 mx-auto"
             style={{ height: "auto" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-8 h-1 bg-[#E6E3DA] rounded-full mx-auto mb-2 sm:hidden" />
+            <div className="w-8 h-1 bg-[#E6E3DA] dark:bg-[#2A2E29] rounded-full mx-auto mb-2 sm:hidden" />
             <div className="px-1 pb-1.5">
-              <h4 className="text-[10px] font-extrabold text-[#6B6858] uppercase tracking-wider">
+              <h4 className="text-[10px] font-extrabold text-[#6B6858] dark:text-[#9C9A8C] uppercase tracking-wider">
                 Message Options
               </h4>
-              <p className="text-xs text-[#16160F] font-medium leading-snug mt-1 line-clamp-2">
+              <p className="text-xs text-[#16160F] dark:text-[#F2F1EC] font-medium leading-snug mt-1 line-clamp-2">
                 "{message.content}"
               </p>
             </div>
@@ -391,9 +391,9 @@ export default function MessageBubble({
                     onSelectReply(message);
                   }
                 }}
-                className="w-full text-left px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332] flex items-center gap-2.5 transition-colors rounded-xl cursor-pointer min-h-[44px]"
+                className="w-full text-left px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-[#16160F] dark:text-[#F2F1EC] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] hover:text-[#1B4332] dark:hover:text-[#3FA873] flex items-center gap-2.5 transition-colors rounded-xl cursor-pointer min-h-[44px]"
               >
-                <Reply className="w-4 h-4 text-[#1B4332] shrink-0" />
+                <Reply className="w-4 h-4 text-[#1B4332] dark:text-[#3FA873] shrink-0" />
                 <span>Reply</span>
               </button>
 
@@ -404,19 +404,19 @@ export default function MessageBubble({
                     setShowMobileSheet(false);
                     setShowConfirmModal(true);
                   }}
-                  className="w-full text-left px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-red-600 hover:bg-red-50 flex items-center gap-2.5 transition-colors rounded-xl cursor-pointer min-h-[44px] border-t border-[#E6E3DA]/60 mt-1 pt-2.5"
+                  className="w-full text-left px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2.5 transition-colors rounded-xl cursor-pointer min-h-[44px] border-t border-[#E6E3DA]/60 dark:border-[#2A2E29] mt-1 pt-2.5"
                 >
-                  <Trash2 className="w-4 h-4 text-red-500 shrink-0" />
+                  <Trash2 className="w-4 h-4 text-red-500 dark:text-red-400 shrink-0" />
                   <span>Delete message</span>
                 </button>
               )}
             </div>
 
-            <div className="pt-2 mt-1.5 border-t border-[#E6E3DA]">
+            <div className="pt-2 mt-1.5 border-t border-[#E6E3DA] dark:border-[#2A2E29]">
               <button
                 type="button"
                 onClick={() => setShowMobileSheet(false)}
-                className="w-full py-2.5 rounded-xl text-xs font-bold text-[#6B6858] bg-[#F7F6F2] hover:bg-zinc-200 transition-all cursor-pointer min-h-[44px]"
+                className="w-full py-2.5 rounded-xl text-xs font-bold text-[#6B6858] dark:text-[#9C9A8C] bg-[#F7F6F2] dark:bg-[#202520] hover:bg-zinc-200 dark:hover:bg-[#2A2E29] transition-all cursor-pointer min-h-[44px]"
               >
                 Cancel
               </button>
@@ -428,22 +428,22 @@ export default function MessageBubble({
       {/* Confirmation Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white border border-[#E6E3DA] rounded-2xl p-5 max-w-xs w-full shadow-xl space-y-3 animate-in zoom-in-95 duration-150">
+          <div className="bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl p-5 max-w-xs w-full shadow-xl space-y-3 animate-in zoom-in-95 duration-150">
             <div className="space-y-1">
-              <h3 className="text-sm font-extrabold text-[#16160F]">
+              <h3 className="text-sm font-extrabold text-[#16160F] dark:text-[#F2F1EC]">
                 Delete message?
               </h3>
-              <p className="text-xs text-[#6B6858] leading-relaxed">
+              <p className="text-xs text-[#6B6858] dark:text-[#9C9A8C] leading-relaxed">
                 This message will be deleted for everyone.
               </p>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E6E3DA]">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E6E3DA] dark:border-[#2A2E29]">
               <button
                 type="button"
                 onClick={() => setShowConfirmModal(false)}
                 disabled={isDeleting}
-                className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[#16160F] bg-[#F7F6F2] hover:bg-zinc-200 border border-[#E6E3DA] transition-all cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[#16160F] dark:text-[#F2F1EC] bg-[#F7F6F2] dark:bg-[#202520] hover:bg-zinc-200 dark:hover:bg-[#2A2E29] border border-[#E6E3DA] dark:border-[#2A2E29] transition-all cursor-pointer"
               >
                 Cancel
               </button>

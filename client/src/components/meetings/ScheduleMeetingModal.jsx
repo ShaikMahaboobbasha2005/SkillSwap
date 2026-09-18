@@ -73,24 +73,24 @@ export default function ScheduleMeetingModal({
     >
       <form onSubmit={handleSubmit} className="p-5 sm:p-6 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-[#E6E3DA]">
+        <div className="flex items-center justify-between pb-4 border-b border-[#E6E3DA] dark:border-[#2A2E29]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#E4EEE8] text-[#1B4332] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] flex items-center justify-center">
               <Calendar className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-extrabold text-[#16160F]">
+              <h3 className="text-sm sm:text-base font-extrabold text-[#16160F] dark:text-[#F2F1EC]">
                 Schedule Video Session
               </h3>
-              <p className="text-xs text-[#6B6858]">
-                With <strong className="text-[#16160F]">{partnerName}</strong>
+              <p className="text-xs text-[#6B6858] dark:text-[#9C9A8C]">
+                With <strong className="text-[#16160F] dark:text-[#F2F1EC]">{partnerName}</strong>
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-7 h-7 rounded-full bg-[#F7F6F2] hover:bg-[#E6E3DA] text-[#6B6858] hover:text-[#16160F] flex items-center justify-center transition-colors cursor-pointer"
+            className="w-7 h-7 rounded-full bg-[#F7F6F2] dark:bg-[#202520] hover:bg-[#E6E3DA] dark:hover:bg-[#2A2E29] text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] flex items-center justify-center transition-colors cursor-pointer"
             aria-label="Close scheduler"
           >
             <X className="w-4 h-4" />
@@ -99,7 +99,7 @@ export default function ScheduleMeetingModal({
 
         {/* Error Alert */}
         {error && (
-          <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2">
+          <div className="mt-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 text-xs flex items-start gap-2">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -110,7 +110,7 @@ export default function ScheduleMeetingModal({
           {/* Date & Time Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[#16160F] mb-1">
+              <label className="block text-xs font-bold text-[#16160F] dark:text-[#F2F1EC] mb-1">
                 Date <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -120,13 +120,13 @@ export default function ScheduleMeetingModal({
                   min={todayStr}
                   onChange={(e) => setDate(e.target.value)}
                   required
-                  className="w-full px-3 py-2 text-xs sm:text-sm font-medium text-[#16160F] bg-white border border-[#E6E3DA] rounded-xl focus:outline-hidden focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]"
+                  className="w-full px-3 py-2 text-xs sm:text-sm font-medium text-[#16160F] dark:text-[#F2F1EC] bg-white dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl focus:outline-hidden focus:border-[#1B4332] dark:focus:border-[#3FA873] focus:ring-1 focus:ring-[#1B4332] dark:focus:ring-[#3FA873]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[#16160F] mb-1">
+              <label className="block text-xs font-bold text-[#16160F] dark:text-[#F2F1EC] mb-1">
                 Time <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -135,7 +135,7 @@ export default function ScheduleMeetingModal({
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
                   required
-                  className="w-full px-3 py-2 text-xs sm:text-sm font-medium text-[#16160F] bg-white border border-[#E6E3DA] rounded-xl focus:outline-hidden focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]"
+                  className="w-full px-3 py-2 text-xs sm:text-sm font-medium text-[#16160F] dark:text-[#F2F1EC] bg-white dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl focus:outline-hidden focus:border-[#1B4332] dark:focus:border-[#3FA873] focus:ring-1 focus:ring-[#1B4332] dark:focus:ring-[#3FA873]"
                 />
               </div>
             </div>
@@ -143,30 +143,30 @@ export default function ScheduleMeetingModal({
 
           {/* Duration Selector */}
           <div>
-            <label className="block text-xs font-bold text-[#16160F] mb-1 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-[#6B6858]" />
+            <label className="block text-xs font-bold text-[#16160F] dark:text-[#F2F1EC] mb-1 flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-[#6B6858] dark:text-[#9C9A8C]" />
               Estimated Duration
             </label>
             <select
               value={duration}
               onChange={(e) => setDuration(Number(e.target.value))}
-              className="w-full px-3 py-2 text-xs sm:text-sm font-medium text-[#16160F] bg-white border border-[#E6E3DA] rounded-xl focus:outline-hidden focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332]"
+              className="w-full px-3 py-2 text-xs sm:text-sm font-medium text-[#16160F] dark:text-[#F2F1EC] bg-white dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl focus:outline-hidden focus:border-[#1B4332] dark:focus:border-[#3FA873] focus:ring-1 focus:ring-[#1B4332] dark:focus:ring-[#3FA873]"
             >
-              <option value={15}>15 minutes (Quick Sync)</option>
-              <option value={30}>30 minutes (Standard Session)</option>
-              <option value={45}>45 minutes (Focused Learning)</option>
-              <option value={60}>60 minutes (Deep Dive)</option>
+              <option value={15} className="bg-white dark:bg-[#181B18] text-[#16160F] dark:text-[#F2F1EC]">15 minutes (Quick Sync)</option>
+              <option value={30} className="bg-white dark:bg-[#181B18] text-[#16160F] dark:text-[#F2F1EC]">30 minutes (Standard Session)</option>
+              <option value={45} className="bg-white dark:bg-[#181B18] text-[#16160F] dark:text-[#F2F1EC]">45 minutes (Focused Learning)</option>
+              <option value={60} className="bg-white dark:bg-[#181B18] text-[#16160F] dark:text-[#F2F1EC]">60 minutes (Deep Dive)</option>
             </select>
           </div>
 
           {/* Session Topic / Note */}
           <div>
-            <label className="block text-xs font-bold text-[#16160F] mb-1 flex items-center justify-between">
+            <label className="block text-xs font-bold text-[#16160F] dark:text-[#F2F1EC] mb-1 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-[#6B6858]" />
+                <FileText className="w-3.5 h-3.5 text-[#6B6858] dark:text-[#9C9A8C]" />
                 Session Topic or Goal (Optional)
               </span>
-              <span className="text-[10px] text-[#6B6858] font-normal">
+              <span className="text-[10px] text-[#6B6858] dark:text-[#9C9A8C] font-normal">
                 {note.length}/300
               </span>
             </label>
@@ -175,25 +175,25 @@ export default function ScheduleMeetingModal({
               onChange={(e) => setNote(e.target.value.slice(0, 300))}
               placeholder="e.g. Practice React hooks & review UI portfolio samples"
               rows={2}
-              className="w-full px-3 py-2 text-xs sm:text-sm text-[#16160F] placeholder:text-[#6B6858]/60 bg-white border border-[#E6E3DA] rounded-xl focus:outline-hidden focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] resize-none"
+              className="w-full px-3 py-2 text-xs sm:text-sm text-[#16160F] dark:text-[#F2F1EC] placeholder:text-[#6B6858]/60 dark:placeholder:text-[#9C9A8C]/60 bg-white dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl focus:outline-hidden focus:border-[#1B4332] dark:focus:border-[#3FA873] focus:ring-1 focus:ring-[#1B4332] dark:focus:ring-[#3FA873] resize-none"
             />
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-3 border-t border-[#E6E3DA]/60 flex items-center justify-end gap-2">
+        <div className="pt-3 border-t border-[#E6E3DA]/60 dark:border-[#2A2E29] flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-4 py-2 text-xs font-bold text-[#6B6858] hover:text-[#16160F] hover:bg-[#F7F6F2] rounded-xl transition-colors cursor-pointer"
+            className="px-4 py-2 text-xs font-bold text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] rounded-xl transition-colors cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-4 py-2 text-xs font-bold text-white bg-[#1B4332] hover:bg-[#2D6A4F] rounded-xl transition-all shadow-2xs cursor-pointer inline-flex items-center gap-1.5 disabled:opacity-50"
+            className="px-4 py-2 text-xs font-bold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#2D6A4F] dark:hover:bg-[#339162] rounded-xl transition-all shadow-2xs cursor-pointer inline-flex items-center gap-1.5 disabled:opacity-50"
           >
             {isSubmitting ? (
               <span>Scheduling…</span>

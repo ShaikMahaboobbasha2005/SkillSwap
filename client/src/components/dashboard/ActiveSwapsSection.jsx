@@ -26,23 +26,23 @@ export default function ActiveSwapsSection({ swaps = [], loading = false, curren
   const safeSwaps = Array.isArray(swaps) ? swaps.filter(Boolean) : [];
 
   return (
-    <div className="bg-white border border-[#E6E3DA] rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+    <div className="bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between transition-colors duration-150">
       <div>
         {/* Section Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-[#E6E3DA]">
+        <div className="flex items-center justify-between pb-4 border-b border-[#E6E3DA] dark:border-[#2A2E29]">
           <div className="flex items-center gap-2">
-            <h2 className="text-base sm:text-lg font-extrabold text-[#16160F] tracking-tight">
+            <h2 className="text-base sm:text-lg font-extrabold text-[#16160F] dark:text-[#F2F1EC] tracking-tight">
               Active Swaps
             </h2>
             {safeSwaps.length > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#E4EEE8] text-[#1B4332]">
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873]">
                 {safeSwaps.length}
               </span>
             )}
           </div>
           <Link
             to="/chats"
-            className="text-xs font-bold text-[#1B4332] hover:underline inline-flex items-center gap-1 transition-colors"
+            className="text-xs font-bold text-[#1B4332] dark:text-[#3FA873] hover:underline inline-flex items-center gap-1 transition-colors"
           >
             <span>View All Chats</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -54,24 +54,24 @@ export default function ActiveSwapsSection({ swaps = [], loading = false, curren
           {loading ? (
             <div className="space-y-3">
               {[1, 2].map((n) => (
-                <div key={n} className="h-20 bg-zinc-100 animate-pulse rounded-xl" />
+                <div key={n} className="h-20 bg-zinc-100 dark:bg-zinc-800 animate-pulse rounded-xl" />
               ))}
             </div>
           ) : safeSwaps.length === 0 ? (
             /* Empty State */
-            <div className="py-8 text-center px-4 bg-[#F7F6F2] border border-dashed border-[#E6E3DA] rounded-xl">
-              <div className="w-10 h-10 rounded-full bg-white border border-[#E6E3DA] flex items-center justify-center mx-auto text-[#6B6858] mb-3">
-                <ArrowLeftRight className="w-5 h-5 text-[#1B4332]" />
+            <div className="py-8 text-center px-4 bg-[#F7F6F2] dark:bg-[#111412] border border-dashed border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl">
+              <div className="w-10 h-10 rounded-full bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] flex items-center justify-center mx-auto text-[#6B6858] dark:text-[#9C9A8C] mb-3">
+                <ArrowLeftRight className="w-5 h-5 text-[#1B4332] dark:text-[#3FA873]" />
               </div>
-              <h3 className="text-sm font-bold text-[#16160F]">
+              <h3 className="text-sm font-bold text-[#16160F] dark:text-[#F2F1EC]">
                 No active swaps yet
               </h3>
-              <p className="mt-1 text-xs text-[#6B6858] max-w-sm mx-auto">
+              <p className="mt-1 text-xs text-[#6B6858] dark:text-[#9C9A8C] max-w-sm mx-auto">
                 Find someone who can teach what you want to learn and share your knowledge in return.
               </p>
               <Link
                 to="/discover"
-                className="mt-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#1B4332] text-white hover:bg-[#153427] transition-colors"
+                className="mt-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] hover:bg-[#153427] dark:hover:bg-[#338d60] transition-colors"
               >
                 <Compass className="w-3.5 h-3.5" />
                 <span>Discover Skills →</span>
@@ -103,7 +103,7 @@ export default function ActiveSwapsSection({ swaps = [], loading = false, curren
                 return (
                   <div
                     key={swapId}
-                    className="p-3.5 sm:p-4 rounded-xl border border-[#E6E3DA] bg-white hover:border-[#1B4332] transition-all duration-150 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                    className="p-3.5 sm:p-4 rounded-xl border border-[#E6E3DA] dark:border-[#2A2E29] bg-white dark:bg-[#181B18] hover:border-[#1B4332] dark:hover:border-[#3FA873] transition-all duration-150 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
                   >
                     {/* Partner info + Skills */}
                     <div className="flex items-start sm:items-center gap-3 min-w-0">
@@ -112,10 +112,10 @@ export default function ActiveSwapsSection({ swaps = [], loading = false, curren
                           <img
                             src={partnerAvatar}
                             alt={partnerName}
-                            className="w-10 h-10 rounded-full object-cover border border-[#E6E3DA]"
+                            className="w-10 h-10 rounded-full object-cover border border-[#E6E3DA] dark:border-[#2A2E29]"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-[#E4EEE8] text-[#1B4332] font-bold flex items-center justify-center text-sm border border-[#1B4332]/20">
+                          <div className="w-10 h-10 rounded-full bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] font-bold flex items-center justify-center text-sm border border-[#1B4332]/20 dark:border-[#3FA873]/30">
                             {partnerName.charAt(0).toUpperCase()}
                           </div>
                         )}
@@ -125,24 +125,24 @@ export default function ActiveSwapsSection({ swaps = [], loading = false, curren
                         <div className="flex items-center gap-2">
                           <Link
                             to={partnerId ? `/users/${partnerId}` : "#"}
-                            className="text-xs sm:text-sm font-bold text-[#16160F] hover:text-[#1B4332] transition-colors truncate"
+                            className="text-xs sm:text-sm font-bold text-[#16160F] dark:text-[#F2F1EC] hover:text-[#1B4332] dark:hover:text-[#3FA873] transition-colors truncate"
                           >
                             {partnerName}
                           </Link>
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#E4EEE8] text-[#1B4332]">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873]">
                             Active
                           </span>
                         </div>
 
                         {/* Skill Exchange Row */}
-                        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-[#6B6858]">
-                          <span className="inline-flex items-center gap-1 font-semibold text-[#1B4332] bg-[#E4EEE8]/70 px-1.5 py-0.5 rounded text-[11px]">
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-[#6B6858] dark:text-[#9C9A8C]">
+                          <span className="inline-flex items-center gap-1 font-semibold text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8]/70 dark:bg-[#1C2E24]/70 px-1.5 py-0.5 rounded text-[11px]">
                             <OfferedSkillIcon className="w-3 h-3 shrink-0" />
                             <span className="truncate max-w-[120px]">{partnerSkillName}</span>
                           </span>
-                          <span className="text-[#6B6858]">↔</span>
-                          <span className="inline-flex items-center gap-1 font-semibold text-[#16160F] bg-[#F7F6F2] border border-[#E6E3DA] px-1.5 py-0.5 rounded text-[11px]">
-                            <WantedSkillIcon className="w-3 h-3 shrink-0 text-amber-700" />
+                          <span className="text-[#6B6858] dark:text-[#9C9A8C]">↔</span>
+                          <span className="inline-flex items-center gap-1 font-semibold text-[#16160F] dark:text-[#F2F1EC] bg-[#F7F6F2] dark:bg-[#111412] border border-[#E6E3DA] dark:border-[#2A2E29] px-1.5 py-0.5 rounded text-[11px]">
+                            <WantedSkillIcon className="w-3 h-3 shrink-0 text-amber-700 dark:text-amber-400" />
                             <span className="truncate max-w-[120px]">{mySkillName}</span>
                           </span>
                         </div>
@@ -150,10 +150,10 @@ export default function ActiveSwapsSection({ swaps = [], loading = false, curren
                     </div>
 
                     {/* Action Button */}
-                    <div className="flex items-center justify-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#E6E3DA]/60">
+                    <div className="flex items-center justify-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#E6E3DA]/60 dark:border-[#2A2E29]/60">
                       <Link
                         to={`/swaps/${swapId}/chat`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#1B4332] text-white hover:bg-[#153427] transition-colors shrink-0 shadow-2xs"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] hover:bg-[#153427] dark:hover:bg-[#338d60] transition-colors shrink-0 shadow-2xs"
                       >
                         <MessageSquare className="w-3.5 h-3.5" />
                         <span>Open Chat →</span>

@@ -2,15 +2,15 @@ import { AlertTriangle } from "lucide-react";
 
 export default function ErrorState({ error, onRetry }) {
   return (
-    <div className="w-full bg-red-50/80 border border-red-200 rounded-2xl p-6 text-center flex flex-col items-center justify-center space-y-3 my-4 animate-fadeIn">
-      <div className="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center">
+    <div className="w-full bg-red-50/80 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 rounded-2xl p-6 text-center flex flex-col items-center justify-center space-y-3 my-4 animate-fadeIn">
+      <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 flex items-center justify-center">
         <AlertTriangle className="w-6 h-6" />
       </div>
       <div>
-        <h3 className="text-sm font-bold text-red-900">
+        <h3 className="text-sm font-bold text-red-900 dark:text-red-300">
           Unable to load skills
         </h3>
-        <p className="text-xs text-red-700 mt-0.5 max-w-sm">
+        <p className="text-xs text-red-700 dark:text-red-400 mt-0.5 max-w-sm">
           {error || "An error occurred while communicating with the server. Please try again."}
         </p>
       </div>

@@ -652,7 +652,7 @@ export default function PortfolioPage() {
   const backProfileUrl = isOwner ? "/profile" : `/users/${targetUserId}`;
 
   return (
-    <div className="min-h-screen bg-[#F7F6F2] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F7F6F2] dark:bg-[#0F1210] flex flex-col font-sans">
       <Navbar />
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
@@ -662,11 +662,11 @@ export default function PortfolioPage() {
         />
 
         {/* Top Navigation & Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-2xl border border-[#E6E3DA] p-5 sm:p-6 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#181B18] rounded-2xl border border-[#E6E3DA] dark:border-[#2A2E29] p-5 sm:p-6 shadow-xs">
           <div className="flex items-center gap-4">
             <Link
               to={backProfileUrl}
-              className="w-10 h-10 rounded-xl bg-[#F7F6F2] hover:bg-[#E4EEE8] text-[#16160F] hover:text-[#1B4332] border border-[#E6E3DA] flex items-center justify-center transition-all cursor-pointer shrink-0 shadow-2xs"
+              className="w-10 h-10 rounded-xl bg-[#F7F6F2] dark:bg-[#202520] hover:bg-[#E4EEE8] dark:hover:bg-[#2A2E29] text-[#16160F] dark:text-[#F2F1EC] hover:text-[#1B4332] dark:hover:text-[#3FA873] border border-[#E6E3DA] dark:border-[#2A2E29] flex items-center justify-center transition-all cursor-pointer shrink-0 shadow-2xs"
               title="Back to Profile"
               aria-label="Back to Profile"
             >
@@ -674,7 +674,7 @@ export default function PortfolioPage() {
             </Link>
 
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-[#1B4332] text-white font-bold text-base flex items-center justify-center overflow-hidden border-2 border-white shadow-xs shrink-0">
+              <div className="w-12 h-12 rounded-full bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] font-bold text-base flex items-center justify-center overflow-hidden border-2 border-white dark:border-[#181B18] shadow-xs shrink-0">
                 {targetAvatar ? (
                   <img src={targetAvatar} alt={targetName} className="w-full h-full object-cover" />
                 ) : (
@@ -684,20 +684,20 @@ export default function PortfolioPage() {
 
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-lg sm:text-xl font-black text-[#16160F] tracking-tight">
+                  <h1 className="text-lg sm:text-xl font-black text-[#16160F] dark:text-[#F2F1EC] tracking-tight">
                     {isOwner ? "My Portfolio" : `${targetName}'s Portfolio`}
                   </h1>
-                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#E4EEE8] text-[#1B4332] border border-[#1B4332]/20">
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] border border-[#1B4332]/20 dark:border-[#3FA873]/30">
                     {completedItems.length} {completedItems.length === 1 ? "item" : "items"}
                   </span>
                   {isUploadingActive && (
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
-                      <Loader2 className="w-3 h-3 animate-spin text-emerald-600" />
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50 inline-flex items-center gap-1">
+                      <Loader2 className="w-3 h-3 animate-spin text-emerald-600 dark:text-emerald-400" />
                       <span>Uploading...</span>
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-xs text-[#6B6858] mt-0.5 flex-wrap">
+                <div className="flex items-center gap-2 text-xs text-[#6B6858] dark:text-[#9C9A8C] mt-0.5 flex-wrap">
                   {targetLocation && <span>{targetLocation}</span>}
                   <span>Work samples & project media</span>
                 </div>
@@ -713,8 +713,8 @@ export default function PortfolioPage() {
               disabled={isUploadingActive}
               className={`h-10 px-5 text-xs font-bold rounded-xl transition-all shadow-2xs inline-flex items-center justify-center gap-2 shrink-0 self-start sm:self-auto ${
                 isUploadingActive
-                  ? "bg-[#1B4332]/70 text-white cursor-not-allowed opacity-80"
-                  : "text-white bg-[#1B4332] hover:bg-[#143326] cursor-pointer active:scale-[0.98]"
+                  ? "bg-[#1B4332]/70 dark:bg-[#3FA873]/70 text-white dark:text-[#0F1210] cursor-not-allowed opacity-80"
+                  : "text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#348C5E] cursor-pointer active:scale-[0.98]"
               }`}
             >
               {isUploadingActive ? (
@@ -734,14 +734,14 @@ export default function PortfolioPage() {
 
         {/* Filter Tabs Bar */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-1.5 p-1 bg-[#E6E3DA]/50 rounded-xl">
+          <div className="flex items-center gap-1.5 p-1 bg-[#E6E3DA]/50 dark:bg-[#202520] rounded-xl">
             <button
               type="button"
               onClick={() => setTypeFilter("all")}
               className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 ${
                 typeFilter === "all"
-                  ? "bg-white text-[#16160F] shadow-xs"
-                  : "text-[#6B6858] hover:text-[#16160F]"
+                  ? "bg-white dark:bg-[#181B18] text-[#16160F] dark:text-[#F2F1EC] shadow-xs"
+                  : "text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC]"
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
@@ -753,8 +753,8 @@ export default function PortfolioPage() {
               onClick={() => setTypeFilter("image")}
               className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 ${
                 typeFilter === "image"
-                  ? "bg-white text-[#16160F] shadow-xs"
-                  : "text-[#6B6858] hover:text-[#16160F]"
+                  ? "bg-white dark:bg-[#181B18] text-[#16160F] dark:text-[#F2F1EC] shadow-xs"
+                  : "text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC]"
               }`}
             >
               <ImageIcon className="w-3.5 h-3.5" />
@@ -766,8 +766,8 @@ export default function PortfolioPage() {
               onClick={() => setTypeFilter("video")}
               className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer inline-flex items-center gap-1.5 ${
                 typeFilter === "video"
-                  ? "bg-white text-[#16160F] shadow-xs"
-                  : "text-[#6B6858] hover:text-[#16160F]"
+                  ? "bg-white dark:bg-[#181B18] text-[#16160F] dark:text-[#F2F1EC] shadow-xs"
+                  : "text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC]"
               }`}
             >
               <Film className="w-3.5 h-3.5" />
@@ -777,7 +777,7 @@ export default function PortfolioPage() {
 
           {/* Quick Counter Info */}
           {isOwner && (
-            <div className="text-[11px] text-[#6B6858] font-medium hidden sm:block">
+            <div className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C] font-medium hidden sm:block">
               {imageCount}/20 images &middot; {videoCount}/10 videos
             </div>
           )}
@@ -789,7 +789,7 @@ export default function PortfolioPage() {
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
-                className="aspect-square rounded-2xl bg-[#E6E3DA]/60 border border-[#E6E3DA]"
+                className="aspect-square rounded-2xl bg-[#E6E3DA]/60 dark:bg-[#202520]/60 border border-[#E6E3DA] dark:border-[#2A2E29]"
               />
             ))}
           </div>
@@ -797,18 +797,18 @@ export default function PortfolioPage() {
 
         {/* Error State */}
         {!loading && error && (
-          <div className="bg-white rounded-2xl border border-red-200 p-8 text-center shadow-xs space-y-4 max-w-md mx-auto my-8">
-            <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 border border-red-200 flex items-center justify-center mx-auto text-xl font-bold">
+          <div className="bg-white dark:bg-[#181B18] rounded-2xl border border-red-200 dark:border-red-900/50 p-8 text-center shadow-xs space-y-4 max-w-md mx-auto my-8">
+            <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 flex items-center justify-center mx-auto text-xl font-bold">
               <AlertCircle className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-[#16160F]">Failed to load portfolio</h3>
-              <p className="text-xs text-[#6B6858] mt-1">{error}</p>
+              <h3 className="text-sm font-bold text-[#16160F] dark:text-[#F2F1EC]">Failed to load portfolio</h3>
+              <p className="text-xs text-[#6B6858] dark:text-[#9C9A8C] mt-1">{error}</p>
             </div>
             <button
               type="button"
               onClick={fetchPortfolio}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#1B4332] text-white text-xs font-semibold rounded-xl hover:bg-[#143326] transition-all cursor-pointer shadow-2xs"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] text-xs font-semibold rounded-xl hover:bg-[#143326] dark:hover:bg-[#348C5E] transition-all cursor-pointer shadow-2xs"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Try Again</span>
@@ -818,19 +818,19 @@ export default function PortfolioPage() {
 
         {/* Empty State */}
         {!loading && !error && visibleItems.length === 0 && (
-          <div className="bg-white rounded-2xl border border-[#E6E3DA] p-10 text-center shadow-xs space-y-4 max-w-lg mx-auto my-6">
-            <div className="w-14 h-14 rounded-2xl bg-[#E4EEE8] text-[#1B4332] border border-[#1B4332]/20 flex items-center justify-center mx-auto shadow-2xs">
+          <div className="bg-white dark:bg-[#181B18] rounded-2xl border border-[#E6E3DA] dark:border-[#2A2E29] p-10 text-center shadow-xs space-y-4 max-w-lg mx-auto my-6">
+            <div className="w-14 h-14 rounded-2xl bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] border border-[#1B4332]/20 dark:border-[#3FA873]/30 flex items-center justify-center mx-auto shadow-2xs">
               <FolderGit2 className="w-7 h-7" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-[#16160F]">
+              <h3 className="text-sm sm:text-base font-bold text-[#16160F] dark:text-[#F2F1EC]">
                 {typeFilter !== "all"
                   ? `No ${typeFilter}s found`
                   : isOwner
                   ? "Your portfolio is empty"
                   : "No portfolio items yet"}
               </h3>
-              <p className="text-xs text-[#6B6858] mt-1 max-w-sm mx-auto leading-relaxed">
+              <p className="text-xs text-[#6B6858] dark:text-[#9C9A8C] mt-1 max-w-sm mx-auto leading-relaxed">
                 {isOwner
                   ? "Upload photos, short videos, project screenshots, or certificates to showcase your expertise."
                   : `${targetName} has not added any ${typeFilter !== "all" ? typeFilter + " " : ""}portfolio media yet.`}
@@ -842,7 +842,7 @@ export default function PortfolioPage() {
                 type="button"
                 onClick={() => setUploadModalOpen(true)}
                 disabled={isUploadingActive}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1B4332] text-white text-xs font-bold rounded-xl hover:bg-[#143326] transition-all cursor-pointer shadow-2xs active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] text-xs font-bold rounded-xl hover:bg-[#143326] dark:hover:bg-[#348C5E] transition-all cursor-pointer shadow-2xs active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Plus className="w-4 h-4" />
                 <span>Upload Your First Work</span>

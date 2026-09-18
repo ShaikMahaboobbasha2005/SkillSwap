@@ -493,7 +493,7 @@ export default function OwnProfile() {
     : "Jan 2026";
 
   return (
-    <div className="min-h-screen bg-[#F7F6F2] text-[#16160F] antialiased flex flex-col animate-fadeIn">
+    <div className="min-h-screen bg-[#F7F6F2] dark:bg-[#0F1210] text-[#16160F] dark:text-[#F2F1EC] antialiased flex flex-col animate-fadeIn">
       {/* Toast Notification */}
       <ToastNotification toast={toast} onClose={() => setToast({ ...toast, show: false })} />
 
@@ -534,19 +534,19 @@ export default function OwnProfile() {
         
         {/* Error Alert Banner */}
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-2xl flex items-center justify-between animate-fadeIn shadow-2xs">
+          <div className="p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-xs rounded-2xl flex items-center justify-between animate-fadeIn shadow-2xs">
             <div className="flex items-center gap-2">
               <span className="font-bold">⚠️</span>
               <span>{error}</span>
             </div>
-            <button onClick={() => setError("")} className="text-red-500 hover:text-red-700 font-bold ml-2 cursor-pointer">
+            <button onClick={() => setError("")} className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-bold ml-2 cursor-pointer">
               ✕
             </button>
           </div>
         )}
 
         {/* PROFILE HEADER CARD WITH BANNER & HERO AVATAR */}
-        <div className="bg-white rounded-2xl border border-[#E6E3DA] overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
+        <div className="bg-white dark:bg-[#181B18] rounded-2xl border border-[#E6E3DA] dark:border-[#2A2E29] overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
           
           {/* Profile Banner */}
           <ProfileBanner
@@ -566,7 +566,7 @@ export default function OwnProfile() {
               <div className="relative shrink-0 z-20" ref={avatarMenuRef}>
                 <div
                   onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
-                  className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full border-[5px] border-white bg-[#E4EEE8] flex items-center justify-center shadow-xl shadow-black/10 overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-2xl hover:scale-[1.02]"
+                  className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full border-[5px] border-white dark:border-[#181B18] bg-[#E4EEE8] dark:bg-[#202520] flex items-center justify-center shadow-xl shadow-black/10 overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-2xl hover:scale-[1.02]"
                   title="Click for profile photo options"
                   role="button"
                   aria-haspopup="true"
@@ -579,7 +579,7 @@ export default function OwnProfile() {
                       className="w-full h-full object-cover transition-opacity duration-300 select-none"
                     />
                   ) : (
-                    <div className="w-full h-full bg-[#1B4332] text-white flex items-center justify-center font-black text-5xl select-none">
+                    <div className="w-full h-full bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] flex items-center justify-center font-black text-5xl select-none">
                       {profile?.name ? profile.name.charAt(0).toUpperCase() : "U"}
                     </div>
                   )}
@@ -595,7 +595,7 @@ export default function OwnProfile() {
 
                 {/* Contextual Dropdown Menu for Avatar */}
                 {avatarMenuOpen && !uploadingAvatar && (
-                  <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-white border border-[#E6E3DA] rounded-xl shadow-xl py-1.5 z-40 animate-fadeIn space-y-0.5">
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl shadow-xl py-1.5 z-40 animate-fadeIn space-y-0.5">
                     <button
                       type="button"
                       onClick={() => {
@@ -603,9 +603,9 @@ export default function OwnProfile() {
                         console.log("[OwnProfile] Opening AvatarLightboxModal with imageSrc:", currentPicture);
                         setShowAvatarLightbox(true);
                       }}
-                      className="w-full px-3.5 py-2 text-xs font-semibold text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332] transition-colors flex items-center gap-2 cursor-pointer text-left"
+                      className="w-full px-3.5 py-2 text-xs font-semibold text-[#16160F] dark:text-[#F2F1EC] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] hover:text-[#1B4332] dark:hover:text-[#3FA873] transition-colors flex items-center gap-2 cursor-pointer text-left"
                     >
-                      <Eye className="w-3.5 h-3.5 text-[#1B4332]" />
+                      <Eye className="w-3.5 h-3.5 text-[#1B4332] dark:text-[#3FA873]" />
                       <span>View Profile Picture</span>
                     </button>
 
@@ -615,9 +615,9 @@ export default function OwnProfile() {
                         setAvatarMenuOpen(false);
                         avatarFileInputRef.current?.click();
                       }}
-                      className="w-full px-3.5 py-2 text-xs font-semibold text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332] transition-colors flex items-center gap-2 cursor-pointer text-left"
+                      className="w-full px-3.5 py-2 text-xs font-semibold text-[#16160F] dark:text-[#F2F1EC] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] hover:text-[#1B4332] dark:hover:text-[#3FA873] transition-colors flex items-center gap-2 cursor-pointer text-left"
                     >
-                      <Camera className="w-3.5 h-3.5 text-[#1B4332]" />
+                      <Camera className="w-3.5 h-3.5 text-[#1B4332] dark:text-[#3FA873]" />
                       <span>Change Profile Picture</span>
                     </button>
 
@@ -625,9 +625,9 @@ export default function OwnProfile() {
                       <button
                         type="button"
                         onClick={handleRemoveAvatar}
-                        className="w-full px-3.5 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2 cursor-pointer text-left border-t border-[#E6E3DA]/60 mt-0.5 pt-2"
+                        className="w-full px-3.5 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex items-center gap-2 cursor-pointer text-left border-t border-[#E6E3DA]/60 dark:border-[#2A2E29] mt-0.5 pt-2"
                       >
-                        <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                        <Trash2 className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
                         <span>Remove Profile Picture</span>
                       </button>
                     )}
@@ -640,16 +640,16 @@ export default function OwnProfile() {
                 {!isEditing ? (
                   <button
                     onClick={handleEditToggle}
-                    className="w-full sm:w-auto h-10 px-5 text-xs font-bold text-[#16160F] hover:text-[#1B4332] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] hover:border-[#1B4332]/40 rounded-xl transition-all active:scale-[0.98] inline-flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
+                    className="w-full sm:w-auto h-10 px-5 text-xs font-bold text-[#16160F] dark:text-[#F2F1EC] hover:text-[#1B4332] dark:hover:text-[#3FA873] bg-[#F7F6F2] dark:bg-[#202520] hover:bg-[#E4EEE8] dark:hover:bg-[#2A2E29] border border-[#E6E3DA] dark:border-[#2A2E29] hover:border-[#1B4332]/40 dark:hover:border-[#3FA873]/40 rounded-xl transition-all active:scale-[0.98] inline-flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
                   >
-                    <Edit3 className="w-4 h-4 text-[#1B4332]" />
+                    <Edit3 className="w-4 h-4 text-[#1B4332] dark:text-[#3FA873]" />
                     <span>Edit Profile</span>
                   </button>
                 ) : (
                   <button
                     onClick={handleEditToggle}
                     disabled={saving}
-                    className="w-full sm:w-auto h-10 px-4 text-xs font-semibold text-[#6B6858] hover:text-[#16160F] bg-[#F7F6F2] border border-[#E6E3DA] rounded-xl transition-all active:scale-[0.98] cursor-pointer"
+                    className="w-full sm:w-auto h-10 px-4 text-xs font-semibold text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] bg-[#F7F6F2] dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl transition-all active:scale-[0.98] cursor-pointer"
                   >
                     Close Form
                   </button>
@@ -671,23 +671,23 @@ export default function OwnProfile() {
               
               {/* Standalone Full Name & Handle */}
               <div className="space-y-0.5">
-                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-[#16160F]">
+                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-[#16160F] dark:text-[#F2F1EC]">
                   {profile?.name}
                 </h1>
-                <p className="text-xs sm:text-sm font-bold text-[#1B4332]">
+                <p className="text-xs sm:text-sm font-bold text-[#1B4332] dark:text-[#3FA873]">
                   {usernameHandle}
                 </p>
               </div>
 
               {/* Metadata Line */}
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-[#6B6858] pt-0.5">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-[#6B6858] dark:text-[#9C9A8C] pt-0.5">
                 <div className="flex items-center gap-1.5 font-medium">
-                  <MapPin className="w-4 h-4 text-[#1B4332]" />
+                  <MapPin className="w-4 h-4 text-[#1B4332] dark:text-[#3FA873]" />
                   <span>{profile?.location || "Location not set"}</span>
                 </div>
 
                 <div className="flex items-center gap-1.5 font-medium">
-                  <Calendar className="w-4 h-4 text-[#6B6858]" />
+                  <Calendar className="w-4 h-4 text-[#6B6858] dark:text-[#9C9A8C]" />
                   <span>Member since {memberSince}</span>
                 </div>
               </div>
@@ -695,7 +695,7 @@ export default function OwnProfile() {
               {/* Read-Only Bio Presentation */}
               {!isEditing && (
                 <div className="pt-1">
-                  <p className="text-xs sm:text-sm text-[#16160F]/95 leading-relaxed font-normal max-w-2xl">
+                  <p className="text-xs sm:text-sm text-[#16160F]/95 dark:text-[#F2F1EC]/90 leading-relaxed font-normal max-w-2xl">
                     {formData.bio || "No bio added yet. Click 'Edit Profile' to introduce yourself and describe your skill swap interests."}
                   </p>
                 </div>
@@ -716,19 +716,19 @@ export default function OwnProfile() {
 
             {/* EDIT MODE FORM (APPEARS BELOW HEADER IDENTITY) */}
             {isEditing && (
-              <form onSubmit={handleSubmit} className="mt-6 pt-5 border-t border-[#E6E3DA] space-y-4 animate-fadeIn">
+              <form onSubmit={handleSubmit} className="mt-6 pt-5 border-t border-[#E6E3DA] dark:border-[#2A2E29] space-y-4 animate-fadeIn">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-bold text-[#1B4332] uppercase tracking-wider">Edit Profile Information</span>
-                  <span className="text-[11px] text-[#6B6858]">Highlighted fields have unsaved edits</span>
+                  <span className="text-xs font-bold text-[#1B4332] dark:text-[#3FA873] uppercase tracking-wider">Edit Profile Information</span>
+                  <span className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C]">Highlighted fields have unsaved edits</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Full Name Input */}
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="block text-xs font-bold text-[#16160F]">Full Name</label>
+                      <label className="block text-xs font-bold text-[#16160F] dark:text-[#F2F1EC]">Full Name</label>
                       {isNameModified && (
-                        <span className="text-[10px] font-semibold text-[#1B4332] bg-[#E4EEE8] px-2 py-0.5 rounded-full">Modified</span>
+                        <span className="text-[10px] font-semibold text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] px-2 py-0.5 rounded-full">Modified</span>
                       )}
                     </div>
                     <input
@@ -737,8 +737,8 @@ export default function OwnProfile() {
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className={`w-full h-10 px-3.5 text-xs bg-[#F7F6F2] border rounded-xl focus:outline-none focus:border-[#1B4332] text-[#16160F] transition-colors ${
-                        isNameModified ? "border-[#1B4332] bg-[#E4EEE8]/30 font-medium" : "border-[#E6E3DA]"
+                      className={`w-full h-10 px-3.5 text-xs bg-[#F7F6F2] dark:bg-[#202520] border rounded-xl focus:outline-none focus:border-[#1B4332] dark:focus:border-[#3FA873] text-[#16160F] dark:text-[#F2F1EC] transition-colors ${
+                        isNameModified ? "border-[#1B4332] dark:border-[#3FA873] bg-[#E4EEE8]/30 dark:bg-[#1C2E24]/30 font-medium" : "border-[#E6E3DA] dark:border-[#2A2E29]"
                       }`}
                       placeholder="Enter full name"
                     />
@@ -747,17 +747,17 @@ export default function OwnProfile() {
                   {/* Location Input */}
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="block text-xs font-bold text-[#16160F]">Location (City, Country)</label>
+                      <label className="block text-xs font-bold text-[#16160F] dark:text-[#F2F1EC]">Location (City, Country)</label>
                       {isLocationModified && (
-                        <span className="text-[10px] font-semibold text-[#1B4332] bg-[#E4EEE8] px-2 py-0.5 rounded-full">Modified</span>
+                        <span className="text-[10px] font-semibold text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] px-2 py-0.5 rounded-full">Modified</span>
                       )}
                     </div>
                     <input
                       type="text"
                       value={formData.location}
                       onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      className={`w-full h-10 px-3.5 text-xs bg-[#F7F6F2] border rounded-xl focus:outline-none focus:border-[#1B4332] text-[#16160F] transition-colors ${
-                        isLocationModified ? "border-[#1B4332] bg-[#E4EEE8]/30 font-medium" : "border-[#E6E3DA]"
+                      className={`w-full h-10 px-3.5 text-xs bg-[#F7F6F2] dark:bg-[#202520] border rounded-xl focus:outline-none focus:border-[#1B4332] dark:focus:border-[#3FA873] text-[#16160F] dark:text-[#F2F1EC] transition-colors ${
+                        isLocationModified ? "border-[#1B4332] dark:border-[#3FA873] bg-[#E4EEE8]/30 dark:bg-[#1C2E24]/30 font-medium" : "border-[#E6E3DA] dark:border-[#2A2E29]"
                       }`}
                       placeholder="e.g. San Francisco, CA or Bangalore, IN"
                     />
@@ -767,12 +767,12 @@ export default function OwnProfile() {
                 {/* Bio Textarea */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-bold text-[#16160F]">Short Bio</label>
+                    <label className="block text-xs font-bold text-[#16160F] dark:text-[#F2F1EC]">Short Bio</label>
                     <div className="flex items-center gap-2">
                       {isBioModified && (
-                        <span className="text-[10px] font-semibold text-[#1B4332] bg-[#E4EEE8] px-2 py-0.5 rounded-full">Modified</span>
+                        <span className="text-[10px] font-semibold text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] px-2 py-0.5 rounded-full">Modified</span>
                       )}
-                      <span className={`text-[11px] font-semibold ${formData.bio.length >= 150 ? "text-amber-600" : "text-[#6B6858]"}`}>
+                      <span className={`text-[11px] font-semibold ${formData.bio.length >= 150 ? "text-amber-600 dark:text-amber-400" : "text-[#6B6858] dark:text-[#9C9A8C]"}`}>
                         {formData.bio.length} / 160
                       </span>
                     </div>
@@ -783,31 +783,31 @@ export default function OwnProfile() {
                     maxLength={160}
                     value={formData.bio}
                     onChange={handleBioChange}
-                    className={`w-full p-3 text-xs bg-[#F7F6F2] border rounded-xl focus:outline-none focus:border-[#1B4332] text-[#16160F] transition-colors resize-none ${
-                      isBioModified ? "border-[#1B4332] bg-[#E4EEE8]/30 font-medium" : "border-[#E6E3DA]"
+                    className={`w-full p-3 text-xs bg-[#F7F6F2] dark:bg-[#202520] border rounded-xl focus:outline-none focus:border-[#1B4332] dark:focus:border-[#3FA873] text-[#16160F] dark:text-[#F2F1EC] transition-colors resize-none ${
+                      isBioModified ? "border-[#1B4332] dark:border-[#3FA873] bg-[#E4EEE8]/30 dark:bg-[#1C2E24]/30 font-medium" : "border-[#E6E3DA] dark:border-[#2A2E29]"
                     }`}
                     placeholder="Tell other swappers about your experience, background, and learning goals..."
                   />
                 </div>
 
                 {/* SOCIAL LINKS FORM SECTION */}
-                <div className="pt-3 border-t border-[#E6E3DA] space-y-3">
+                <div className="pt-3 border-t border-[#E6E3DA] dark:border-[#2A2E29] space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-xs font-bold text-[#16160F]">Social Links</span>
-                      <p className="text-[11px] text-[#6B6858]">Add your profiles (full URLs) to display as icons on your profile</p>
+                      <span className="text-xs font-bold text-[#16160F] dark:text-[#F2F1EC]">Social Links</span>
+                      <p className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C]">Add your profiles (full URLs) to display as icons on your profile</p>
                     </div>
                     {isSocialLinksModified && (
-                      <span className="text-[10px] font-semibold text-[#1B4332] bg-[#E4EEE8] px-2 py-0.5 rounded-full">Modified</span>
+                      <span className="text-[10px] font-semibold text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] px-2 py-0.5 rounded-full">Modified</span>
                     )}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {/* LinkedIn */}
                     <div>
-                      <label className="block text-[11px] font-bold text-[#16160F] mb-1">LinkedIn URL</label>
+                      <label className="block text-[11px] font-bold text-[#16160F] dark:text-[#F2F1EC] mb-1">LinkedIn URL</label>
                       <div className="relative flex items-center">
-                        <div className="absolute left-3 text-[#6B6858] pointer-events-none">
+                        <div className="absolute left-3 text-[#6B6858] dark:text-[#9C9A8C] pointer-events-none">
                           <Linkedin className="w-4 h-4" />
                         </div>
                         <input
@@ -815,25 +815,25 @@ export default function OwnProfile() {
                           value={formData.socialLinks.linkedin}
                           onChange={(e) => handleSocialLinkChange("linkedin", e.target.value)}
                           placeholder="https://www.linkedin.com/in/example"
-                          className={`w-full h-10 pl-9 pr-3.5 text-xs bg-[#F7F6F2] border rounded-xl focus:outline-none focus:border-[#1B4332] text-[#16160F] transition-colors ${
+                          className={`w-full h-10 pl-9 pr-3.5 text-xs bg-[#F7F6F2] dark:bg-[#202520] border rounded-xl focus:outline-none focus:border-[#1B4332] dark:focus:border-[#3FA873] text-[#16160F] dark:text-[#F2F1EC] transition-colors ${
                             socialErrors.linkedin
-                              ? "border-red-500 bg-red-50/30"
+                              ? "border-red-500 bg-red-50/30 dark:bg-red-950/30"
                               : isFieldSocialModified("linkedin")
-                              ? "border-[#1B4332] bg-[#E4EEE8]/30 font-medium"
-                              : "border-[#E6E3DA]"
+                              ? "border-[#1B4332] dark:border-[#3FA873] bg-[#E4EEE8]/30 dark:bg-[#1C2E24]/30 font-medium"
+                              : "border-[#E6E3DA] dark:border-[#2A2E29]"
                           }`}
                         />
                       </div>
                       {socialErrors.linkedin && (
-                        <p className="text-[10px] text-red-600 font-medium mt-1">{socialErrors.linkedin}</p>
+                        <p className="text-[10px] text-red-600 dark:text-red-400 font-medium mt-1">{socialErrors.linkedin}</p>
                       )}
                     </div>
 
                     {/* GitHub */}
                     <div>
-                      <label className="block text-[11px] font-bold text-[#16160F] mb-1">GitHub URL</label>
+                      <label className="block text-[11px] font-bold text-[#16160F] dark:text-[#F2F1EC] mb-1">GitHub URL</label>
                       <div className="relative flex items-center">
-                        <div className="absolute left-3 text-[#6B6858] pointer-events-none">
+                        <div className="absolute left-3 text-[#6B6858] dark:text-[#9C9A8C] pointer-events-none">
                           <Github className="w-4 h-4" />
                         </div>
                         <input
@@ -841,25 +841,25 @@ export default function OwnProfile() {
                           value={formData.socialLinks.github}
                           onChange={(e) => handleSocialLinkChange("github", e.target.value)}
                           placeholder="https://github.com/example"
-                          className={`w-full h-10 pl-9 pr-3.5 text-xs bg-[#F7F6F2] border rounded-xl focus:outline-none focus:border-[#1B4332] text-[#16160F] transition-colors ${
+                          className={`w-full h-10 pl-9 pr-3.5 text-xs bg-[#F7F6F2] dark:bg-[#202520] border rounded-xl focus:outline-none focus:border-[#1B4332] dark:focus:border-[#3FA873] text-[#16160F] dark:text-[#F2F1EC] transition-colors ${
                             socialErrors.github
-                              ? "border-red-500 bg-red-50/30"
+                              ? "border-red-500 bg-red-50/30 dark:bg-red-950/30"
                               : isFieldSocialModified("github")
-                              ? "border-[#1B4332] bg-[#E4EEE8]/30 font-medium"
-                              : "border-[#E6E3DA]"
+                              ? "border-[#1B4332] dark:border-[#3FA873] bg-[#E4EEE8]/30 dark:bg-[#1C2E24]/30 font-medium"
+                              : "border-[#E6E3DA] dark:border-[#2A2E29]"
                           }`}
                         />
                       </div>
                       {socialErrors.github && (
-                        <p className="text-[10px] text-red-600 font-medium mt-1">{socialErrors.github}</p>
+                        <p className="text-[10px] text-red-600 dark:text-red-400 font-medium mt-1">{socialErrors.github}</p>
                       )}
                     </div>
 
                     {/* Instagram */}
                     <div>
-                      <label className="block text-[11px] font-bold text-[#16160F] mb-1">Instagram URL</label>
+                      <label className="block text-[11px] font-bold text-[#16160F] dark:text-[#F2F1EC] mb-1">Instagram URL</label>
                       <div className="relative flex items-center">
-                        <div className="absolute left-3 text-[#6B6858] pointer-events-none">
+                        <div className="absolute left-3 text-[#6B6858] dark:text-[#9C9A8C] pointer-events-none">
                           <Instagram className="w-4 h-4" />
                         </div>
                         <input
@@ -867,25 +867,25 @@ export default function OwnProfile() {
                           value={formData.socialLinks.instagram}
                           onChange={(e) => handleSocialLinkChange("instagram", e.target.value)}
                           placeholder="https://www.instagram.com/example"
-                          className={`w-full h-10 pl-9 pr-3.5 text-xs bg-[#F7F6F2] border rounded-xl focus:outline-none focus:border-[#1B4332] text-[#16160F] transition-colors ${
+                          className={`w-full h-10 pl-9 pr-3.5 text-xs bg-[#F7F6F2] dark:bg-[#202520] border rounded-xl focus:outline-none focus:border-[#1B4332] dark:focus:border-[#3FA873] text-[#16160F] dark:text-[#F2F1EC] transition-colors ${
                             socialErrors.instagram
-                              ? "border-red-500 bg-red-50/30"
+                              ? "border-red-500 bg-red-50/30 dark:bg-red-950/30"
                               : isFieldSocialModified("instagram")
-                              ? "border-[#1B4332] bg-[#E4EEE8]/30 font-medium"
-                              : "border-[#E6E3DA]"
+                              ? "border-[#1B4332] dark:border-[#3FA873] bg-[#E4EEE8]/30 dark:bg-[#1C2E24]/30 font-medium"
+                              : "border-[#E6E3DA] dark:border-[#2A2E29]"
                           }`}
                         />
                       </div>
                       {socialErrors.instagram && (
-                        <p className="text-[10px] text-red-600 font-medium mt-1">{socialErrors.instagram}</p>
+                        <p className="text-[10px] text-red-600 dark:text-red-400 font-medium mt-1">{socialErrors.instagram}</p>
                       )}
                     </div>
 
                     {/* YouTube */}
                     <div>
-                      <label className="block text-[11px] font-bold text-[#16160F] mb-1">YouTube URL</label>
+                      <label className="block text-[11px] font-bold text-[#16160F] dark:text-[#F2F1EC] mb-1">YouTube URL</label>
                       <div className="relative flex items-center">
-                        <div className="absolute left-3 text-[#6B6858] pointer-events-none">
+                        <div className="absolute left-3 text-[#6B6858] dark:text-[#9C9A8C] pointer-events-none">
                           <Youtube className="w-4 h-4" />
                         </div>
                         <input
@@ -893,25 +893,25 @@ export default function OwnProfile() {
                           value={formData.socialLinks.youtube}
                           onChange={(e) => handleSocialLinkChange("youtube", e.target.value)}
                           placeholder="https://www.youtube.com/@example"
-                          className={`w-full h-10 pl-9 pr-3.5 text-xs bg-[#F7F6F2] border rounded-xl focus:outline-none focus:border-[#1B4332] text-[#16160F] transition-colors ${
+                          className={`w-full h-10 pl-9 pr-3.5 text-xs bg-[#F7F6F2] dark:bg-[#202520] border rounded-xl focus:outline-none focus:border-[#1B4332] dark:focus:border-[#3FA873] text-[#16160F] dark:text-[#F2F1EC] transition-colors ${
                             socialErrors.youtube
-                              ? "border-red-500 bg-red-50/30"
+                              ? "border-red-500 bg-red-50/30 dark:bg-red-950/30"
                               : isFieldSocialModified("youtube")
-                              ? "border-[#1B4332] bg-[#E4EEE8]/30 font-medium"
-                              : "border-[#E6E3DA]"
+                              ? "border-[#1B4332] dark:border-[#3FA873] bg-[#E4EEE8]/30 dark:bg-[#1C2E24]/30 font-medium"
+                              : "border-[#E6E3DA] dark:border-[#2A2E29]"
                           }`}
                         />
                       </div>
                       {socialErrors.youtube && (
-                        <p className="text-[10px] text-red-600 font-medium mt-1">{socialErrors.youtube}</p>
+                        <p className="text-[10px] text-red-600 dark:text-red-400 font-medium mt-1">{socialErrors.youtube}</p>
                       )}
                     </div>
 
                     {/* Personal Website */}
                     <div className="sm:col-span-2">
-                      <label className="block text-[11px] font-bold text-[#16160F] mb-1">Personal Website URL</label>
+                      <label className="block text-[11px] font-bold text-[#16160F] dark:text-[#F2F1EC] mb-1">Personal Website URL</label>
                       <div className="relative flex items-center">
-                        <div className="absolute left-3 text-[#6B6858] pointer-events-none">
+                        <div className="absolute left-3 text-[#6B6858] dark:text-[#9C9A8C] pointer-events-none">
                           <Globe className="w-4 h-4" />
                         </div>
                         <input
@@ -919,17 +919,17 @@ export default function OwnProfile() {
                           value={formData.socialLinks.website}
                           onChange={(e) => handleSocialLinkChange("website", e.target.value)}
                           placeholder="https://example.com"
-                          className={`w-full h-10 pl-9 pr-3.5 text-xs bg-[#F7F6F2] border rounded-xl focus:outline-none focus:border-[#1B4332] text-[#16160F] transition-colors ${
+                          className={`w-full h-10 pl-9 pr-3.5 text-xs bg-[#F7F6F2] dark:bg-[#202520] border rounded-xl focus:outline-none focus:border-[#1B4332] dark:focus:border-[#3FA873] text-[#16160F] dark:text-[#F2F1EC] transition-colors ${
                             socialErrors.website
-                              ? "border-red-500 bg-red-50/30"
+                              ? "border-red-500 bg-red-50/30 dark:bg-red-950/30"
                               : isFieldSocialModified("website")
-                              ? "border-[#1B4332] bg-[#E4EEE8]/30 font-medium"
-                              : "border-[#E6E3DA]"
+                              ? "border-[#1B4332] dark:border-[#3FA873] bg-[#E4EEE8]/30 dark:bg-[#1C2E24]/30 font-medium"
+                              : "border-[#E6E3DA] dark:border-[#2A2E29]"
                           }`}
                         />
                       </div>
                       {socialErrors.website && (
-                        <p className="text-[10px] text-red-600 font-medium mt-1">{socialErrors.website}</p>
+                        <p className="text-[10px] text-red-600 dark:text-red-400 font-medium mt-1">{socialErrors.website}</p>
                       )}
                     </div>
                   </div>
@@ -951,26 +951,26 @@ export default function OwnProfile() {
                   }}
                   className={`p-4 rounded-xl border-2 border-dashed transition-all flex flex-col sm:flex-row items-center justify-between gap-3 ${
                     isDragOverAvatar
-                      ? "border-[#1B4332] bg-[#E4EEE8]/60"
-                      : "border-[#E6E3DA] bg-[#F7F6F2] hover:border-[#1B4332]/40"
+                      ? "border-[#1B4332] dark:border-[#3FA873] bg-[#E4EEE8]/60 dark:bg-[#1C2E24]/60"
+                      : "border-[#E6E3DA] dark:border-[#2A2E29] bg-[#F7F6F2] dark:bg-[#202520] hover:border-[#1B4332]/40 dark:hover:border-[#3FA873]/40"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white border border-[#E6E3DA] flex items-center justify-center text-[#1B4332] shrink-0 shadow-2xs">
+                    <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] flex items-center justify-center text-[#1B4332] dark:text-[#3FA873] shrink-0 shadow-2xs">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-[#16160F]">Profile Photo</p>
-                      <p className="text-[11px] text-[#6B6858]">Drag & drop or click to upload (PNG • JPG • WEBP • Max 5 MB)</p>
+                      <p className="text-xs font-bold text-[#16160F] dark:text-[#F2F1EC]">Profile Photo</p>
+                      <p className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C]">Drag & drop or click to upload (PNG • JPG • WEBP • Max 5 MB)</p>
                     </div>
                   </div>
 
                   <button
                     type="button"
                     onClick={handleAvatarClick}
-                    className="h-8 px-3.5 text-xs font-semibold text-[#16160F] bg-white border border-[#E6E3DA] rounded-lg hover:bg-[#E4EEE8] hover:border-[#1B4332] transition-all cursor-pointer shadow-2xs shrink-0"
+                    className="h-8 px-3.5 text-xs font-semibold text-[#16160F] dark:text-[#F2F1EC] bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] hover:bg-[#E4EEE8] dark:hover:bg-[#2A2E29] hover:border-[#1B4332] dark:hover:border-[#3FA873] transition-all cursor-pointer shadow-2xs shrink-0"
                   >
                     Select Photo
                   </button>
@@ -982,7 +982,7 @@ export default function OwnProfile() {
                     type="button"
                     onClick={handleEditToggle}
                     disabled={saving}
-                    className="w-full sm:w-auto h-10 px-5 text-xs font-semibold text-[#6B6858] hover:text-[#16160F] bg-[#F7F6F2] border border-[#E6E3DA] rounded-xl transition-all active:scale-[0.98] cursor-pointer"
+                    className="w-full sm:w-auto h-10 px-5 text-xs font-semibold text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] bg-[#F7F6F2] dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl transition-all active:scale-[0.98] cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -990,14 +990,14 @@ export default function OwnProfile() {
                   <button
                     type="submit"
                     disabled={!isFormDirty || saving}
-                    className={`w-full sm:w-auto h-10 px-6 text-xs font-semibold text-white rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
+                    className={`w-full sm:w-auto h-10 px-6 text-xs font-semibold rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
                       isFormDirty && !saving
-                        ? "bg-[#1B4332] hover:bg-[#143326] shadow-sm hover:shadow-md cursor-pointer"
-                        : "bg-[#1B4332]/50 cursor-not-allowed"
+                        ? "bg-[#1B4332] hover:bg-[#143326] dark:bg-[#3FA873] dark:text-[#0F1210] dark:hover:bg-[#348C5E] text-white shadow-sm hover:shadow-md cursor-pointer"
+                        : "bg-[#1B4332]/50 dark:bg-[#3FA873]/50 text-white dark:text-[#0F1210]/60 cursor-not-allowed"
                     }`}
                   >
                     {saving && (
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                     )}
                     <span>Save Changes</span>
                   </button>

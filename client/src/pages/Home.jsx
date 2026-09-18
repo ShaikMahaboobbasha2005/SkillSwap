@@ -152,7 +152,7 @@ export default function Home() {
   const currentUserId = user?._id || user?.id;
 
   return (
-    <div className="min-h-screen bg-[#F7F6F2] text-[#16160F] flex flex-col font-sans antialiased">
+    <div className="min-h-screen bg-[#F7F6F2] dark:bg-[#0F1210] text-[#16160F] dark:text-[#F2F1EC] flex flex-col font-sans antialiased transition-colors duration-150">
       {/* Centralized Shared Navigation Bar */}
       <Navbar />
 

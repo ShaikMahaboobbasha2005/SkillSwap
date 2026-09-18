@@ -94,7 +94,7 @@ export default function DiscoverCard({ user, onRequestSwap }) {
   const renderRating = () => {
     if (!rating || rating === 0) {
       return (
-        <span className="text-[11px] font-semibold text-[#6B6858]">
+        <span className="text-[11px] font-semibold text-[#6B6858] dark:text-[#9C9A8C]">
           No ratings yet
         </span>
       );
@@ -102,7 +102,7 @@ export default function DiscoverCard({ user, onRequestSwap }) {
     return (
       <div className="flex items-center gap-1">
         <Star className="w-3.5 h-3.5 fill-[#B8860B] text-[#B8860B]" />
-        <span className="text-xs font-bold text-[#16160F]">
+        <span className="text-xs font-bold text-[#16160F] dark:text-[#F2F1EC]">
           {Number(rating).toFixed(1)}
         </span>
       </div>
@@ -111,12 +111,12 @@ export default function DiscoverCard({ user, onRequestSwap }) {
 
   return (
     <article
-      className="bg-white border border-[#E6E3DA] rounded-2xl overflow-hidden shadow-xs hover:border-[#1B4332]/40 transition-all duration-300 flex flex-col justify-between group"
+      className="bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl overflow-hidden shadow-xs hover:border-[#1B4332]/40 dark:hover:border-[#3FA873]/50 transition-all duration-300 flex flex-col justify-between group"
       aria-label={`Profile card for ${name}`}
     >
       <div>
         {/* Responsive Banner Header Area */}
-        <div className="relative h-16 sm:h-20 bg-[#F7F6F2] overflow-hidden border-b border-[#E6E3DA]/60">
+        <div className="relative h-16 sm:h-20 bg-[#F7F6F2] dark:bg-[#121512] overflow-hidden border-b border-[#E6E3DA]/60 dark:border-[#2A2E29]">
           {banner ? (
             <img
               src={banner}
@@ -124,14 +124,14 @@ export default function DiscoverCard({ user, onRequestSwap }) {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-r from-[#E4EEE8]/60 via-[#F7F6F2] to-[#E4EEE8]/40" />
+            <div className="w-full h-full bg-gradient-to-r from-[#E4EEE8]/60 via-[#F7F6F2] to-[#E4EEE8]/40 dark:from-[#1C2E24]/60 dark:via-[#121512] dark:to-[#1C2E24]/40" />
           )}
         </div>
 
         {/* User Profile Header: Avatar, Name, Location, Rating */}
-        <div className="px-5 pt-0 relative pb-3 border-b border-[#E6E3DA]/60">
+        <div className="px-5 pt-0 relative pb-3 border-b border-[#E6E3DA]/60 dark:border-[#2A2E29]">
           <div className="flex items-end justify-between -mt-5 sm:-mt-6 mb-2">
-            <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-[#1B4332] text-white font-bold text-sm sm:text-base flex items-center justify-center border-2 border-white shadow-sm overflow-hidden shrink-0">
+            <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-[#1B4332] dark:bg-[#1C2E24] text-white dark:text-[#3FA873] font-bold text-sm sm:text-base flex items-center justify-center border-2 border-white dark:border-[#181B18] shadow-sm overflow-hidden shrink-0">
               {avatar ? (
                 <img src={avatar} alt={name} className="w-full h-full object-cover" />
               ) : name ? (
@@ -144,18 +144,18 @@ export default function DiscoverCard({ user, onRequestSwap }) {
             {/* Rating & Completed Swaps Metadata */}
             <div className="flex items-center gap-3 mb-0.5">
               {renderRating()}
-              <div className="flex items-center gap-1 text-[11px] font-medium text-[#6B6858]">
-                <Handshake className="w-3.5 h-3.5 text-[#1B4332]" />
+              <div className="flex items-center gap-1 text-[11px] font-medium text-[#6B6858] dark:text-[#9C9A8C]">
+                <Handshake className="w-3.5 h-3.5 text-[#1B4332] dark:text-[#3FA873]" />
                 <span>{completedSwaps || 0} Swaps</span>
               </div>
             </div>
           </div>
 
           <div>
-            <h3 className="text-sm sm:text-base font-extrabold text-[#16160F] group-hover:text-[#1B4332] transition-colors truncate">
+            <h3 className="text-sm sm:text-base font-extrabold text-[#16160F] dark:text-[#F2F1EC] group-hover:text-[#1B4332] dark:group-hover:text-[#3FA873] transition-colors truncate">
               {name}
             </h3>
-            <div className="flex items-center gap-1 mt-0.5 text-[11px] text-[#6B6858]">
+            <div className="flex items-center gap-1 mt-0.5 text-[11px] text-[#6B6858] dark:text-[#9C9A8C]">
               <MapPin className="w-3 h-3 shrink-0" />
               <span className="truncate">{location || "Location not specified"}</span>
             </div>
@@ -167,8 +167,8 @@ export default function DiscoverCard({ user, onRequestSwap }) {
           {/* Offering Skills Section */}
           <div>
             <div className="flex items-center gap-1.5 mb-2">
-              <OfferedSkillIcon className="w-3.5 h-3.5 text-[#1B4332]" />
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#16160F]">
+              <OfferedSkillIcon className="w-3.5 h-3.5 text-[#1B4332] dark:text-[#3FA873]" />
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#16160F] dark:text-[#F2F1EC]">
                 Offering Skills
               </h4>
             </div>
@@ -183,8 +183,8 @@ export default function DiscoverCard({ user, onRequestSwap }) {
                       key={sId || s.name}
                       className={`px-2.5 py-1 text-xs font-semibold rounded-full inline-flex items-center gap-1 transition-colors ${
                         isMatch
-                          ? "text-[#1B4332] bg-[#E4EEE8] border border-[#1B4332]/60 font-bold shadow-2xs"
-                          : "text-[#1B4332] bg-[#E4EEE8]/70 border border-[#1B4332]/20"
+                          ? "text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] border border-[#1B4332]/60 dark:border-[#3FA873]/60 font-bold shadow-2xs"
+                          : "text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8]/70 dark:bg-[#1C2E24]/60 border border-[#1B4332]/20 dark:border-[#3FA873]/20"
                       }`}
                       title={s.level ? `Level: ${s.level}` : undefined}
                     >
@@ -202,7 +202,7 @@ export default function DiscoverCard({ user, onRequestSwap }) {
                   <button
                     type="button"
                     onClick={() => setIsOfferingExpanded(true)}
-                    className="px-2.5 py-1 text-xs font-bold text-[#1B4332] bg-white hover:bg-[#E4EEE8] border border-[#1B4332]/30 rounded-full transition-colors cursor-pointer shrink-0"
+                    className="px-2.5 py-1 text-xs font-bold text-[#1B4332] dark:text-[#3FA873] bg-white dark:bg-[#202520] hover:bg-[#E4EEE8] dark:hover:bg-[#1C2E24] border border-[#1B4332]/30 dark:border-[#3FA873]/30 rounded-full transition-colors cursor-pointer shrink-0"
                     title="Click to view all offering skills"
                   >
                     +{extraOfferingCount} more
@@ -213,14 +213,14 @@ export default function DiscoverCard({ user, onRequestSwap }) {
                   <button
                     type="button"
                     onClick={() => setIsOfferingExpanded(false)}
-                    className="px-2.5 py-1 text-xs font-bold text-[#6B6858] hover:text-[#16160F] bg-white hover:bg-[#F7F6F2] border border-[#E6E3DA] rounded-full transition-colors cursor-pointer shrink-0"
+                    className="px-2.5 py-1 text-xs font-bold text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] bg-white dark:bg-[#202520] hover:bg-[#F7F6F2] dark:hover:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-full transition-colors cursor-pointer shrink-0"
                   >
                     Show less
                   </button>
                 )}
               </div>
             ) : (
-              <p className="text-xs text-[#6B6858] italic">
+              <p className="text-xs text-[#6B6858] dark:text-[#9C9A8C] italic">
                 No skills specified to offer
               </p>
             )}
@@ -229,8 +229,8 @@ export default function DiscoverCard({ user, onRequestSwap }) {
           {/* Learning Skills Section */}
           <div>
             <div className="flex items-center gap-1.5 mb-2">
-              <WantedSkillIcon className="w-3.5 h-3.5 text-amber-700" />
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#16160F]">
+              <WantedSkillIcon className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#16160F] dark:text-[#F2F1EC]">
                 Learning Skills
               </h4>
             </div>
@@ -245,8 +245,8 @@ export default function DiscoverCard({ user, onRequestSwap }) {
                       key={sId || s.name}
                       className={`px-2.5 py-1 text-xs font-semibold rounded-full transition-colors ${
                         isMatch
-                          ? "text-amber-950 bg-amber-100 border border-amber-400 font-bold shadow-2xs"
-                          : "text-amber-900 bg-amber-50 border border-amber-200"
+                          ? "text-amber-950 dark:text-amber-200 bg-amber-100 dark:bg-amber-950/60 border border-amber-400 dark:border-amber-700 font-bold shadow-2xs"
+                          : "text-amber-900 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40"
                       }`}
                     >
                       {s.name}
@@ -258,7 +258,7 @@ export default function DiscoverCard({ user, onRequestSwap }) {
                   <button
                     type="button"
                     onClick={() => setIsLearningExpanded(true)}
-                    className="px-2.5 py-1 text-xs font-bold text-amber-900 bg-white hover:bg-amber-50 border border-amber-300 rounded-full transition-colors cursor-pointer shrink-0"
+                    className="px-2.5 py-1 text-xs font-bold text-amber-900 dark:text-amber-300 bg-white dark:bg-[#202520] hover:bg-amber-50 dark:hover:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-full transition-colors cursor-pointer shrink-0"
                     title="Click to view all learning skills"
                   >
                     +{extraLearningCount} more
@@ -269,14 +269,14 @@ export default function DiscoverCard({ user, onRequestSwap }) {
                   <button
                     type="button"
                     onClick={() => setIsLearningExpanded(false)}
-                    className="px-2.5 py-1 text-xs font-bold text-[#6B6858] hover:text-[#16160F] bg-white hover:bg-[#F7F6F2] border border-[#E6E3DA] rounded-full transition-colors cursor-pointer shrink-0"
+                    className="px-2.5 py-1 text-xs font-bold text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] bg-white dark:bg-[#202520] hover:bg-[#F7F6F2] dark:hover:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-full transition-colors cursor-pointer shrink-0"
                   >
                     Show less
                   </button>
                 )}
               </div>
             ) : (
-              <p className="text-xs text-[#6B6858] italic">
+              <p className="text-xs text-[#6B6858] dark:text-[#9C9A8C] italic">
                 No skills specified to learn
               </p>
             )}
@@ -286,10 +286,10 @@ export default function DiscoverCard({ user, onRequestSwap }) {
 
       {/* Card Footer Action Buttons */}
       <div className="px-5 pb-5 pt-0">
-        <div className="flex items-center gap-2 pt-3 border-t border-[#E6E3DA]/60">
+        <div className="flex items-center gap-2 pt-3 border-t border-[#E6E3DA]/60 dark:border-[#2A2E29]">
           <Link
             to={`/users/${userId}`}
-            className="flex-1 h-9 text-xs font-semibold text-[#1B4332] bg-[#E4EEE8] hover:bg-[#1B4332] hover:text-white border border-[#1B4332]/20 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-[0.98]"
+            className="flex-1 h-9 text-xs font-semibold text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] hover:bg-[#1B4332] dark:hover:bg-[#3FA873] hover:text-white dark:hover:text-[#0F1210] border border-[#1B4332]/20 dark:border-[#3FA873]/30 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-[0.98]"
           >
             <UserCheck className="w-3.5 h-3.5" />
             <span>View Profile</span>
@@ -299,7 +299,7 @@ export default function DiscoverCard({ user, onRequestSwap }) {
             type="button"
             onClick={onRequestSwap && !isSelfCard ? () => onRequestSwap(user) : undefined}
             disabled={!onRequestSwap || isSelfCard}
-            className="h-9 px-3.5 text-xs font-semibold text-white bg-[#1B4332] hover:bg-[#143326] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98] shadow-2xs shrink-0"
+            className="h-9 px-3.5 text-xs font-semibold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#338d60] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98] shadow-2xs shrink-0"
             title={
               isSelfCard
                 ? "You cannot request a swap with yourself"

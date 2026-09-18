@@ -20,13 +20,13 @@ export default function ActiveFilterChips({
 
   return (
     <div className="w-full flex items-center flex-wrap gap-2 pt-1 animate-fadeIn">
-      <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B6858] mr-1">
+      <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B6858] dark:text-[#9C9A8C] mr-1">
         Active Filters:
       </span>
 
       {/* Search Chip */}
       {search && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-[#1B4332] bg-[#E4EEE8] border border-[#1B4332]/20 rounded-full transition-all">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] border border-[#1B4332]/20 dark:border-[#3FA873]/30 rounded-full transition-all">
           <span>Search: "{search}"</span>
           <button
             type="button"
@@ -41,7 +41,7 @@ export default function ActiveFilterChips({
 
       {/* Category Chip */}
       {category && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-[#1B4332] bg-[#E4EEE8] border border-[#1B4332]/20 rounded-full transition-all">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] border border-[#1B4332]/20 dark:border-[#3FA873]/30 rounded-full transition-all">
           <span>Category: {category}</span>
           <button
             type="button"
@@ -56,7 +56,7 @@ export default function ActiveFilterChips({
 
       {/* Type Chip */}
       {type && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-[#1B4332] bg-[#E4EEE8] border border-[#1B4332]/20 rounded-full transition-all">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] border border-[#1B4332]/20 dark:border-[#3FA873]/30 rounded-full transition-all">
           <span>Type: {type === "Offer" ? "Offer" : "Learn"}</span>
           <button
             type="button"
@@ -71,7 +71,7 @@ export default function ActiveFilterChips({
 
       {/* Level Chip */}
       {level && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-[#1B4332] bg-[#E4EEE8] border border-[#1B4332]/20 rounded-full transition-all">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] border border-[#1B4332]/20 dark:border-[#3FA873]/30 rounded-full transition-all">
           <span>Level: {level}</span>
           <button
             type="button"
@@ -86,7 +86,7 @@ export default function ActiveFilterChips({
 
       {/* Sort Chip */}
       {isSortActive && (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-[#1B4332] bg-[#E4EEE8] border border-[#1B4332]/20 rounded-full transition-all">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] border border-[#1B4332]/20 dark:border-[#3FA873]/30 rounded-full transition-all">
           <span>
             Sort:{" "}
             {sort === "oldest"
@@ -112,7 +112,7 @@ export default function ActiveFilterChips({
       <button
         type="button"
         onClick={onClearAll}
-        className="px-3 py-1 text-xs font-bold text-red-600 hover:underline transition-all cursor-pointer ml-auto"
+        className="px-3 py-1 text-xs font-bold text-red-600 dark:text-red-400 hover:underline transition-all cursor-pointer ml-auto"
       >
         Clear All
       </button>

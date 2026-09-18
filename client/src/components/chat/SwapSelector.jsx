@@ -103,12 +103,12 @@ export default function SwapSelector({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs text-[#6B6858] hover:text-[#1B4332] transition-colors cursor-pointer rounded-lg px-1.5 py-0.5 hover:bg-[#E4EEE8]/60 border-none outline-none ring-0 shadow-none"
+        className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#1B4332] dark:hover:text-[#3FA873] transition-colors cursor-pointer rounded-lg px-1.5 py-0.5 hover:bg-[#E4EEE8]/60 dark:hover:bg-[#1C2E24]/60 border-none outline-none ring-0 shadow-none"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label="Select skill swap"
       >
-        <MatchesIcon className="w-3 h-3 text-[#1B4332] shrink-0" />
+        <MatchesIcon className="w-3 h-3 text-[#1B4332] dark:text-[#3FA873] shrink-0" />
         <span className="font-semibold truncate">
           {activeSkills.offered} ↔ {activeSkills.learned}
         </span>
@@ -121,9 +121,9 @@ export default function SwapSelector({
 
       {/* Dropdown panel */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1.5 z-50 min-w-[220px] max-w-[300px] bg-white border border-[#E6E3DA] rounded-2xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className="absolute top-full left-0 mt-1.5 z-50 min-w-[220px] max-w-[300px] bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
           <div className="px-3 pt-2.5 pb-1.5">
-            <p className="text-[10px] font-bold text-[#6B6858] uppercase tracking-wider">
+            <p className="text-[10px] font-bold text-[#6B6858] dark:text-[#9C9A8C] uppercase tracking-wider">
               Select Skill Swap
             </p>
           </div>
@@ -153,13 +153,13 @@ export default function SwapSelector({
                   }}
                   className={`w-full text-left px-2.5 py-2 rounded-xl text-xs transition-all cursor-pointer flex items-center gap-2 border-none outline-none ring-0 shadow-none ${
                     isActive
-                      ? "bg-[#E4EEE8] text-[#1B4332] font-bold"
-                      : "text-[#16160F] hover:bg-[#F7F6F2] font-medium"
+                      ? "bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] font-bold"
+                      : "text-[#16160F] dark:text-[#F2F1EC] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] font-medium"
                   }`}
                 >
                   <span
                     className={`w-4 shrink-0 flex items-center justify-center ${
-                      isActive ? "text-[#1B4332]" : "text-transparent"
+                      isActive ? "text-[#1B4332] dark:text-[#3FA873]" : "text-transparent"
                     }`}
                   >
                     <Check className="w-3.5 h-3.5" />

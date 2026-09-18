@@ -29,10 +29,10 @@ export default function FilterPanel({
   activeFilterCount = 0,
 }) {
   const selectClasses = (isActive) =>
-    `h-10 px-3 text-xs bg-white text-[#16160F] border rounded-xl focus:outline-none focus:border-[#1B4332] focus:ring-2 focus:ring-[#1B4332]/20 transition-all cursor-pointer font-medium ${
+    `h-10 px-3 text-xs bg-white dark:bg-[#121512] text-[#16160F] dark:text-[#F2F1EC] border rounded-xl focus:outline-none focus:border-[#1B4332] dark:focus:border-[#3FA873] focus:ring-2 focus:ring-[#1B4332]/20 dark:focus:ring-[#3FA873]/20 transition-all cursor-pointer font-medium ${
       isActive
-        ? "border-[#1B4332] bg-[#E4EEE8]/40"
-        : "border-[#E6E3DA]"
+        ? "border-[#1B4332] dark:border-[#3FA873] bg-[#E4EEE8]/40 dark:bg-[#1C2E24]/60"
+        : "border-[#E6E3DA] dark:border-[#2A2E29]"
     }`;
 
   return (
@@ -112,12 +112,12 @@ export default function FilterPanel({
         <button
           type="button"
           onClick={onOpenMobileDrawer}
-          className="h-10 px-4 text-xs font-bold text-[#16160F] bg-white border border-[#E6E3DA] rounded-xl flex items-center gap-2 hover:bg-[#F7F6F2] transition-colors cursor-pointer"
+          className="h-10 px-4 text-xs font-bold text-[#16160F] dark:text-[#F2F1EC] bg-white dark:bg-[#121512] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl flex items-center gap-2 hover:bg-[#F7F6F2] dark:hover:bg-[#181B18] transition-colors cursor-pointer"
         >
-          <SlidersHorizontal className="w-4 h-4 text-[#1B4332]" />
+          <SlidersHorizontal className="w-4 h-4 text-[#1B4332] dark:text-[#3FA873]" />
           <span>Filters & Sort</span>
           {activeFilterCount > 0 && (
-            <span className="w-5 h-5 rounded-full bg-[#1B4332] text-white text-[10px] flex items-center justify-center font-extrabold">
+            <span className="w-5 h-5 rounded-full bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] text-[10px] flex items-center justify-center font-extrabold">
               {activeFilterCount}
             </span>
           )}

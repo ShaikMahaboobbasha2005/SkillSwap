@@ -18,18 +18,18 @@ export default function RecentActivitySection({
   const displayItems = safeNotifications.slice(0, 5);
 
   return (
-    <div className="bg-white border border-[#E6E3DA] rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+    <div className="bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between">
       <div>
         {/* Section Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-[#E6E3DA]">
+        <div className="flex items-center justify-between pb-4 border-b border-[#E6E3DA] dark:border-[#2A2E29]">
           <div className="flex items-center gap-2">
-            <h2 className="text-base sm:text-lg font-extrabold text-[#16160F] tracking-tight">
+            <h2 className="text-base sm:text-lg font-extrabold text-[#16160F] dark:text-[#F2F1EC] tracking-tight">
               Recent Activity
             </h2>
           </div>
           <Link
             to="/notifications"
-            className="text-xs font-bold text-[#1B4332] hover:underline inline-flex items-center gap-1 transition-colors"
+            className="text-xs font-bold text-[#1B4332] dark:text-[#3FA873] hover:underline inline-flex items-center gap-1 transition-colors"
           >
             <span>View All</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -41,19 +41,19 @@ export default function RecentActivitySection({
           {loading ? (
             <div className="space-y-3">
               {[1, 2].map((n) => (
-                <div key={n} className="h-16 bg-zinc-100 animate-pulse rounded-xl" />
+                <div key={n} className="h-16 bg-zinc-100 dark:bg-[#202520] animate-pulse rounded-xl" />
               ))}
             </div>
           ) : displayItems.length === 0 ? (
             /* Empty State */
-            <div className="py-8 text-center px-4 bg-[#F7F6F2] border border-dashed border-[#E6E3DA] rounded-xl">
-              <div className="w-10 h-10 rounded-full bg-white border border-[#E6E3DA] flex items-center justify-center mx-auto text-[#6B6858] mb-3">
-                <Bell className="w-5 h-5 text-[#6B6858]" />
+            <div className="py-8 text-center px-4 bg-[#F7F6F2] dark:bg-[#121512] border border-dashed border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl">
+              <div className="w-10 h-10 rounded-full bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] flex items-center justify-center mx-auto text-[#6B6858] dark:text-[#9C9A8C] mb-3">
+                <Bell className="w-5 h-5 text-[#6B6858] dark:text-[#9C9A8C]" />
               </div>
-              <h3 className="text-sm font-bold text-[#16160F]">
+              <h3 className="text-sm font-bold text-[#16160F] dark:text-[#F2F1EC]">
                 No recent activity
               </h3>
-              <p className="mt-1 text-xs text-[#6B6858] max-w-sm mx-auto">
+              <p className="mt-1 text-xs text-[#6B6858] dark:text-[#9C9A8C] max-w-sm mx-auto">
                 Notifications and updates about swap requests, sessions, and reviews will appear here.
               </p>
             </div>

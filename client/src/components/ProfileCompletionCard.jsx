@@ -51,44 +51,44 @@ export default function ProfileCompletionCard({
   const percentage = Math.round((completedCount / 5) * 100);
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E6E3DA] p-5 sm:p-6 shadow-xs hover:shadow-md transition-all duration-200">
+    <div className="bg-white dark:bg-[#181B18] rounded-2xl border border-[#E6E3DA] dark:border-[#2A2E29] p-5 sm:p-6 shadow-xs hover:shadow-md transition-all duration-200">
       <div className="flex items-center justify-between gap-3 mb-2">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#E4EEE8] text-[#1B4332] flex items-center justify-center font-bold text-sm">
+          <div className="w-8 h-8 rounded-xl bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] flex items-center justify-center font-bold text-sm">
             ✨
           </div>
           <div>
-            <h3 className="text-sm font-bold text-[#16160F]">Profile Completion</h3>
+            <h3 className="text-sm font-bold text-[#16160F] dark:text-[#F2F1EC]">Profile Completion</h3>
           </div>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-xl font-extrabold text-[#1B4332]">{percentage}%</span>
+          <span className="text-xl font-extrabold text-[#1B4332] dark:text-[#3FA873]">{percentage}%</span>
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full bg-[#F7F6F2] rounded-full h-2.5 overflow-hidden border border-[#E6E3DA] my-2.5">
+      <div className="w-full bg-[#F7F6F2] dark:bg-[#202520] rounded-full h-2.5 overflow-hidden border border-[#E6E3DA] dark:border-[#2A2E29] my-2.5">
         <div
-          className="bg-[#1B4332] h-full rounded-full transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1)"
+          className="bg-[#1B4332] dark:bg-[#3FA873] h-full rounded-full transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1)"
           style={{ width: `${percentage}%` }}
         />
       </div>
 
       {/* Helper Text */}
-      <p className="text-[11px] font-medium text-[#6B6858] mb-3">
+      <p className="text-[11px] font-medium text-[#6B6858] dark:text-[#9C9A8C] mb-3">
         Complete your skills to improve matching.
       </p>
 
       {/* Checklist */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-[#E6E3DA]/60">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-[#E6E3DA]/60 dark:border-[#2A2E29]/60">
         {items.map((item) => (
           <div
             key={item.id}
             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
               item.completed
-                ? "bg-[#E4EEE8]/80 text-[#1B4332] border border-[#1B4332]/20"
-                : "bg-[#F7F6F2] text-[#6B6858] border border-[#E6E3DA]"
+                ? "bg-[#E4EEE8]/80 dark:bg-[#1C2E24]/80 text-[#1B4332] dark:text-[#3FA873] border border-[#1B4332]/20 dark:border-[#3FA873]/30"
+                : "bg-[#F7F6F2] dark:bg-[#202520] text-[#6B6858] dark:text-[#9C9A8C] border border-[#E6E3DA] dark:border-[#2A2E29]"
             }`}
           >
             <span className="font-bold text-xs">

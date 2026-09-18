@@ -21,7 +21,7 @@ export default function DateSeparator({ date }) {
       aria-label={`Date: ${label}`}
       className="w-full flex items-center justify-center my-3 sm:my-4 text-center select-none"
     >
-      <span className="px-3 py-0.5 sm:py-1 text-[11px] font-semibold text-[#6B6858] bg-[#E4EEE8]/70 border border-[#1B4332]/10 rounded-full shadow-2xs shrink-0 tracking-wide max-w-[90%] truncate">
+      <span className="px-3 py-0.5 sm:py-1 text-[11px] font-semibold text-[#6B6858] dark:text-[#9C9A8C] bg-[#E4EEE8]/70 dark:bg-[#1C2E24]/70 border border-[#1B4332]/10 dark:border-[#3FA873]/20 rounded-full shadow-2xs shrink-0 tracking-wide max-w-[90%] truncate">
         {label}
       </span>
     </div>

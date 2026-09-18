@@ -80,23 +80,23 @@ export default function PublicProfile() {
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-[#F7F6F2] text-[#16160F] antialiased flex flex-col animate-fadeIn">
+      <div className="min-h-screen bg-[#F7F6F2] dark:bg-[#0F1210] text-[#16160F] dark:text-[#F2F1EC] antialiased flex flex-col animate-fadeIn">
         <Navbar />
 
         <main className="max-w-md mx-auto px-4 py-16 text-center flex-1">
-          <div className="bg-white rounded-2xl border border-[#E6E3DA] p-8 shadow-sm space-y-4">
-            <div className="w-12 h-12 bg-red-50 text-red-600 rounded-2xl mx-auto flex items-center justify-center font-bold text-xl border border-red-200 shadow-2xs">
+          <div className="bg-white dark:bg-[#181B18] rounded-2xl border border-[#E6E3DA] dark:border-[#2A2E29] p-8 shadow-sm space-y-4">
+            <div className="w-12 h-12 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-2xl mx-auto flex items-center justify-center font-bold text-xl border border-red-200 dark:border-red-900/50 shadow-2xs">
               !
             </div>
             <div>
-              <h2 className="text-base font-bold text-[#16160F]">{error || "User not found"}</h2>
-              <p className="text-xs text-[#6B6858] mt-1">
+              <h2 className="text-base font-bold text-[#16160F] dark:text-[#F2F1EC]">{error || "User not found"}</h2>
+              <p className="text-xs text-[#6B6858] dark:text-[#9C9A8C] mt-1">
                 The user profile you requested does not exist or may have been removed.
               </p>
             </div>
             <Link
               to="/"
-              className="inline-block px-5 py-2.5 bg-[#1B4332] text-white text-xs font-semibold rounded-xl hover:bg-[#143326] transition-all active:scale-[0.98] shadow-2xs"
+              className="inline-block px-5 py-2.5 bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] text-xs font-semibold rounded-xl hover:bg-[#143326] dark:hover:bg-[#348C5E] transition-all active:scale-[0.98] shadow-2xs"
             >
               Return to Home
             </Link>
@@ -123,7 +123,7 @@ export default function PublicProfile() {
     "";
 
   return (
-    <div className="min-h-screen bg-[#F7F6F2] text-[#16160F] antialiased flex flex-col animate-fadeIn">
+    <div className="min-h-screen bg-[#F7F6F2] dark:bg-[#0F1210] text-[#16160F] dark:text-[#F2F1EC] antialiased flex flex-col animate-fadeIn">
       {/* Navigation Header */}
       <Navbar />
 
@@ -131,7 +131,7 @@ export default function PublicProfile() {
       <main className="max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 space-y-6">
         
         {/* PROFILE HEADER CARD */}
-        <div className="bg-white rounded-2xl border border-[#E6E3DA] overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
+        <div className="bg-white dark:bg-[#181B18] rounded-2xl border border-[#E6E3DA] dark:border-[#2A2E29] overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
           
           {/* Profile Banner */}
           <ProfileBanner
@@ -147,7 +147,7 @@ export default function PublicProfile() {
               <div className="relative shrink-0 z-20" ref={avatarMenuRef}>
                 <div
                   onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
-                  className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full border-[5px] border-white bg-[#E4EEE8] flex items-center justify-center shadow-xl shadow-black/10 overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-2xl hover:scale-[1.02]"
+                  className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full border-[5px] border-white dark:border-[#181B18] bg-[#E4EEE8] dark:bg-[#202520] flex items-center justify-center shadow-xl shadow-black/10 overflow-hidden transition-all duration-300 cursor-pointer hover:shadow-2xl hover:scale-[1.02]"
                   title="Click to view profile photo"
                   role="button"
                   aria-haspopup="true"
@@ -160,7 +160,7 @@ export default function PublicProfile() {
                       className="w-full h-full object-cover select-none"
                     />
                   ) : (
-                    <div className="w-full h-full bg-[#1B4332] text-white flex items-center justify-center font-black text-5xl select-none">
+                    <div className="w-full h-full bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] flex items-center justify-center font-black text-5xl select-none">
                       {profile.name ? profile.name.charAt(0).toUpperCase() : "U"}
                     </div>
                   )}
@@ -168,7 +168,7 @@ export default function PublicProfile() {
 
                 {/* Contextual Dropdown Menu for Avatar */}
                 {avatarMenuOpen && (
-                  <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-white border border-[#E6E3DA] rounded-xl shadow-xl py-1.5 z-40 animate-fadeIn">
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl shadow-xl py-1.5 z-40 animate-fadeIn">
                     <button
                       type="button"
                       onClick={() => {
@@ -176,9 +176,9 @@ export default function PublicProfile() {
                         console.log("[PublicProfile] Opening AvatarLightboxModal with imageSrc:", currentPicture);
                         setShowAvatarLightbox(true);
                       }}
-                      className="w-full px-3.5 py-2 text-xs font-semibold text-[#16160F] hover:bg-[#F7F6F2] hover:text-[#1B4332] transition-colors flex items-center gap-2 cursor-pointer text-left"
+                      className="w-full px-3.5 py-2 text-xs font-semibold text-[#16160F] dark:text-[#F2F1EC] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] hover:text-[#1B4332] dark:hover:text-[#3FA873] transition-colors flex items-center gap-2 cursor-pointer text-left"
                     >
-                      <Eye className="w-3.5 h-3.5 text-[#1B4332]" />
+                      <Eye className="w-3.5 h-3.5 text-[#1B4332] dark:text-[#3FA873]" />
                       <span>View Profile Picture</span>
                     </button>
                   </div>
@@ -191,7 +191,7 @@ export default function PublicProfile() {
                   type="button"
                   onClick={() => setSwapModalOpen(true)}
                   disabled={isSelf}
-                  className="w-full sm:w-auto h-10 px-5 text-xs font-semibold text-white bg-[#1B4332] hover:bg-[#143326] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all active:scale-[0.98] inline-flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
+                  className="w-full sm:w-auto h-10 px-5 text-xs font-semibold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#348C5E] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all active:scale-[0.98] inline-flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
                   title={isSelf ? "You cannot request a swap with yourself" : "Request Skill Swap"}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,30 +205,30 @@ export default function PublicProfile() {
             {/* Profile Info Details */}
             <div className="space-y-3 text-center sm:text-left">
               <div>
-                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-[#16160F]">
+                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-[#16160F] dark:text-[#F2F1EC]">
                   {profile.name}
                 </h1>
-                <p className="text-xs sm:text-sm font-bold text-[#1B4332] mt-0.5">
+                <p className="text-xs sm:text-sm font-bold text-[#1B4332] dark:text-[#3FA873] mt-0.5">
                   {usernameHandle}
                 </p>
               </div>
 
               {/* Metadata Line */}
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-[#6B6858] pt-0.5">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-[#6B6858] dark:text-[#9C9A8C] pt-0.5">
                 <div className="flex items-center gap-1.5 font-medium">
-                  <MapPin className="w-4 h-4 text-[#1B4332]" />
+                  <MapPin className="w-4 h-4 text-[#1B4332] dark:text-[#3FA873]" />
                   <span>{profile.location || "Location not set"}</span>
                 </div>
 
                 <div className="flex items-center gap-1.5 font-medium">
-                  <Calendar className="w-4 h-4 text-[#6B6858]" />
+                  <Calendar className="w-4 h-4 text-[#6B6858] dark:text-[#9C9A8C]" />
                   <span>Member since {memberSince}</span>
                 </div>
               </div>
 
               {/* Read-Only Bio Presentation */}
               <div className="pt-1">
-                <p className="text-xs sm:text-sm text-[#16160F]/95 leading-relaxed font-normal max-w-2xl">
+                <p className="text-xs sm:text-sm text-[#16160F]/95 dark:text-[#F2F1EC]/90 leading-relaxed font-normal max-w-2xl">
                   {profile.bio || "No bio added yet."}
                 </p>
               </div>

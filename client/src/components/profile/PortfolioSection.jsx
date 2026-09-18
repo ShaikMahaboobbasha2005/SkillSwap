@@ -173,7 +173,7 @@ export default function PortfolioSection({
   return (
     <section
       aria-label="Portfolio preview"
-      className="bg-white rounded-2xl border border-[#E6E3DA] p-5 sm:p-6 shadow-xs hover:shadow-md transition-all duration-300 space-y-4"
+      className="bg-white dark:bg-[#181B18] rounded-2xl border border-[#E6E3DA] dark:border-[#2A2E29] p-5 sm:p-6 shadow-xs hover:shadow-md transition-all duration-300 space-y-4"
     >
       <ToastNotification
         toast={toast}
@@ -183,15 +183,15 @@ export default function PortfolioSection({
       {/* Portfolio Header Bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#1B4332]" />
-          <h2 className="text-sm font-extrabold text-[#16160F]">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#1B4332] dark:bg-[#3FA873]" />
+          <h2 className="text-sm font-extrabold text-[#16160F] dark:text-[#F2F1EC]">
             Portfolio {totalCount > 0 && `(${totalCount})`}
           </h2>
         </div>
 
         <Link
           to={targetPortfolioUrl}
-          className="text-xs font-semibold text-[#1B4332] hover:text-[#143326] hover:underline transition-colors inline-flex items-center gap-1 cursor-pointer"
+          className="text-xs font-semibold text-[#1B4332] dark:text-[#3FA873] hover:text-[#143326] dark:hover:text-[#52B788] hover:underline transition-colors inline-flex items-center gap-1 cursor-pointer"
         >
           <span>View all</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -204,7 +204,7 @@ export default function PortfolioSection({
           {Array.from({ length: 3 }).map((_, idx) => (
             <div
               key={idx}
-              className="aspect-square rounded-xl bg-[#E6E3DA]/60 border border-[#E6E3DA]"
+              className="aspect-square rounded-xl bg-[#E6E3DA]/60 dark:bg-[#2A2E29]/60 border border-[#E6E3DA] dark:border-[#2A2E29]"
             />
           ))}
         </div>
@@ -212,13 +212,13 @@ export default function PortfolioSection({
 
       {/* Empty State */}
       {!loading && totalCount === 0 && (
-        <div className="bg-[#F7F6F2] border border-[#E6E3DA] rounded-xl p-6 text-center space-y-3">
-          <div className="w-10 h-10 rounded-xl bg-[#E4EEE8] border border-[#1B4332]/20 flex items-center justify-center text-[#1B4332] mx-auto shadow-2xs">
+        <div className="bg-[#F7F6F2] dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl p-6 text-center space-y-3">
+          <div className="w-10 h-10 rounded-xl bg-[#E4EEE8] dark:bg-[#1C2E24] border border-[#1B4332]/20 dark:border-[#3FA873]/30 flex items-center justify-center text-[#1B4332] dark:text-[#3FA873] mx-auto shadow-2xs">
             <FolderGit2 className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-xs font-bold text-[#16160F]">No portfolio items yet</h3>
-            <p className="text-[11px] text-[#6B6858] mt-0.5 max-w-sm mx-auto leading-relaxed">
+            <h3 className="text-xs font-bold text-[#16160F] dark:text-[#F2F1EC]">No portfolio items yet</h3>
+            <p className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C] mt-0.5 max-w-sm mx-auto leading-relaxed">
               {isOwner
                 ? "Showcase your work, projects, images, and videos here."
                 : `${userName} hasn't added any portfolio items yet.`}
@@ -228,7 +228,7 @@ export default function PortfolioSection({
           {isOwner && (
             <Link
               to="/portfolio"
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#1B4332] text-white text-xs font-bold rounded-lg hover:bg-[#143326] transition-all shadow-2xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] text-xs font-bold rounded-lg hover:bg-[#143326] dark:hover:bg-[#339162] transition-all shadow-2xs cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Your First Work</span>
@@ -249,7 +249,7 @@ export default function PortfolioSection({
               <div
                 key={item._id || item.id || idx}
                 onClick={() => handleOpenLightbox(idx)}
-                className="group relative aspect-square rounded-xl overflow-hidden bg-[#F7F6F2] border border-[#E6E3DA] hover:border-[#1B4332]/50 transition-all duration-300 shadow-2xs cursor-pointer select-none"
+                className="group relative aspect-square rounded-xl overflow-hidden bg-[#F7F6F2] dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] hover:border-[#1B4332]/50 dark:hover:border-[#3FA873]/50 transition-all duration-300 shadow-2xs cursor-pointer select-none"
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
@@ -270,7 +270,7 @@ export default function PortfolioSection({
                 {/* Video Play Indicator Badge */}
                 {isVideo && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-xs text-white flex items-center justify-center shadow-xs group-hover:bg-[#1B4332]/90 transition-all">
+                    <div className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-xs text-white flex items-center justify-center shadow-xs group-hover:bg-[#1B4332]/90 dark:group-hover:bg-[#3FA873]/90 transition-all">
                       <Play className="w-3.5 h-3.5 fill-white ml-0.5" />
                     </div>
                   </div>

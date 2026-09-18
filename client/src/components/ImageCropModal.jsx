@@ -132,10 +132,10 @@ export default function ImageCropModal({
       </div>
 
       {/* Controls & Sliders */}
-      <div className="p-5 space-y-4 bg-white">
+      <div className="p-5 space-y-4 bg-white dark:bg-[#181B18]">
         {/* Zoom Slider */}
         <div className="flex items-center space-x-3">
-          <span className="text-xs font-semibold text-[#6B6858]">Zoom</span>
+          <span className="text-xs font-semibold text-[#6B6858] dark:text-[#9C9A8C]">Zoom</span>
           <input
             type="range"
             min={1}
@@ -143,19 +143,19 @@ export default function ImageCropModal({
             step={0.05}
             value={zoom}
             onChange={(e) => setZoom(Number(e.target.value))}
-            className="flex-1 accent-[#1B4332] h-1.5 bg-[#E6E3DA] rounded-lg cursor-pointer"
+            className="flex-1 accent-[#1B4332] dark:accent-[#3FA873] h-1.5 bg-[#E6E3DA] dark:bg-[#2A2E29] rounded-lg cursor-pointer"
           />
-          <span className="text-xs font-semibold text-[#16160F] w-8 text-right">
+          <span className="text-xs font-semibold text-[#16160F] dark:text-[#F2F1EC] w-8 text-right">
             {Math.round(zoom * 100)}%
           </span>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-between pt-2 border-t border-[#E6E3DA]/60">
+        <div className="flex items-center justify-between pt-2 border-t border-[#E6E3DA]/60 dark:border-[#2A2E29]/60">
           <button
             type="button"
             onClick={handleReset}
-            className="px-3.5 py-1.5 text-xs font-semibold text-[#6B6858] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] rounded-xl transition-all cursor-pointer"
+            className="px-3.5 py-1.5 text-xs font-semibold text-[#6B6858] dark:text-[#9C9A8C] bg-[#F7F6F2] dark:bg-[#202520] hover:bg-[#E4EEE8] dark:hover:bg-[#1C2E24] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl transition-all cursor-pointer"
           >
             Reset Zoom
           </button>
@@ -165,7 +165,7 @@ export default function ImageCropModal({
               type="button"
               onClick={onCancel}
               disabled={processing}
-              className="px-4 py-2 text-xs font-semibold text-[#6B6858] hover:text-[#16160F] bg-[#F7F6F2] border border-[#E6E3DA] rounded-xl transition-all cursor-pointer"
+              className="px-4 py-2 text-xs font-semibold text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] bg-[#F7F6F2] dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl transition-all cursor-pointer"
             >
               Cancel
             </button>
@@ -174,10 +174,10 @@ export default function ImageCropModal({
               type="button"
               onClick={handleSave}
               disabled={processing}
-              className="px-5 py-2 text-xs font-semibold text-white bg-[#1B4332] hover:bg-[#143326] rounded-xl transition-all active:scale-[0.98] flex items-center gap-1.5 shadow-2xs cursor-pointer"
+              className="px-5 py-2 text-xs font-semibold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#339162] rounded-xl transition-all active:scale-[0.98] flex items-center gap-1.5 shadow-2xs cursor-pointer"
             >
               {processing && (
-                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-3.5 h-3.5 border-2 border-white dark:border-[#0F1210] border-t-transparent rounded-full animate-spin"></div>
               )}
               <span>Save Crop</span>
             </button>

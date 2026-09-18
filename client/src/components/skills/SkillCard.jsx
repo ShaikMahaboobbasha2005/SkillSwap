@@ -11,15 +11,15 @@ export default function SkillCard({ skill, isOwner = false, onEdit, onDelete }) 
     <div
       className={`rounded-2xl border p-5 flex flex-col justify-between shadow-xs transition-all duration-200 group relative ${
         isInactive && isOwner
-          ? "bg-[#F7F6F2]/60 border-[#E6E3DA] opacity-85 hover:opacity-100 hover:border-[#6B6858]/40"
-          : "bg-white border-[#E6E3DA] hover:shadow-md hover:-translate-y-0.5 hover:border-[#1B4332]/30"
+          ? "bg-[#F7F6F2]/60 dark:bg-[#202520]/60 border-[#E6E3DA] dark:border-[#2A2E29] opacity-85 hover:opacity-100 hover:border-[#6B6858]/40 dark:hover:border-[#9C9A8C]/40"
+          : "bg-white dark:bg-[#181B18] border-[#E6E3DA] dark:border-[#2A2E29] hover:shadow-md hover:-translate-y-0.5 hover:border-[#1B4332]/30 dark:hover:border-[#3FA873]/30"
       }`}
     >
       <div>
         {/* Header: Title & Owner Actions / Badges */}
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex items-center flex-wrap gap-2 min-w-0">
-            <h3 className="text-sm font-extrabold text-[#16160F] truncate tracking-tight">
+            <h3 className="text-sm font-extrabold text-[#16160F] dark:text-[#F2F1EC] truncate tracking-tight">
               {skill.name}
             </h3>
 
@@ -27,18 +27,18 @@ export default function SkillCard({ skill, isOwner = false, onEdit, onDelete }) 
             {isOwner && (
               isInactive ? (
                 <span
-                  className="shrink-0 text-[10px] font-semibold text-[#6B6858] bg-[#F7F6F2] px-2 py-0.5 rounded-full border border-[#E6E3DA] flex items-center gap-1"
+                  className="shrink-0 text-[10px] font-semibold text-[#6B6858] dark:text-[#9C9A8C] bg-[#F7F6F2] dark:bg-[#202520] px-2 py-0.5 rounded-full border border-[#E6E3DA] dark:border-[#2A2E29] flex items-center gap-1"
                   title="Inactive skill (hidden from community)"
                 >
-                  <EyeOff className="w-3 h-3 text-[#6B6858]" />
+                  <EyeOff className="w-3 h-3 text-[#6B6858] dark:text-[#9C9A8C]" />
                   <span>Inactive • Hidden from community</span>
                 </span>
               ) : (
                 <span
-                  className="shrink-0 text-[10px] font-semibold text-[#1B4332] bg-[#E4EEE8] px-2 py-0.5 rounded-full border border-[#1B4332]/20 flex items-center gap-1"
+                  className="shrink-0 text-[10px] font-semibold text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] px-2 py-0.5 rounded-full border border-[#1B4332]/20 dark:border-[#3FA873]/30 flex items-center gap-1"
                   title="Active skill (available to community)"
                 >
-                  <CheckCircle2 className="w-3 h-3 text-[#1B4332]" />
+                  <CheckCircle2 className="w-3 h-3 text-[#1B4332] dark:text-[#3FA873]" />
                   <span>Active</span>
                 </span>
               )
@@ -52,7 +52,7 @@ export default function SkillCard({ skill, isOwner = false, onEdit, onDelete }) 
                 type="button"
                 onClick={() => onEdit(skill)}
                 aria-label={`Edit ${skill.name}`}
-                className="w-7 h-7 rounded-lg text-[#6B6858] hover:text-[#1B4332] hover:bg-[#E4EEE8] flex items-center justify-center transition-colors cursor-pointer"
+                className="w-7 h-7 rounded-lg text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#1B4332] dark:hover:text-[#3FA873] hover:bg-[#E4EEE8] dark:hover:bg-[#1C2E24] flex items-center justify-center transition-colors cursor-pointer"
                 title="Edit Skill"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,7 +63,7 @@ export default function SkillCard({ skill, isOwner = false, onEdit, onDelete }) 
                 type="button"
                 onClick={() => onDelete(skill)}
                 aria-label={`Delete ${skill.name}`}
-                className="w-7 h-7 rounded-lg text-[#6B6858] hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors cursor-pointer"
+                className="w-7 h-7 rounded-lg text-[#6B6858] dark:text-[#9C9A8C] hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 flex items-center justify-center transition-colors cursor-pointer"
                 title="Delete Skill"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -82,15 +82,15 @@ export default function SkillCard({ skill, isOwner = false, onEdit, onDelete }) 
 
         {/* Description */}
         {skill.description && (
-          <p className="text-xs text-[#6B6858] leading-relaxed line-clamp-3 font-normal">
+          <p className="text-xs text-[#6B6858] dark:text-[#9C9A8C] leading-relaxed line-clamp-3 font-normal">
             {skill.description}
           </p>
         )}
       </div>
 
       {/* Footer Timestamp / Tag */}
-      <div className="mt-3 pt-2.5 border-t border-[#E6E3DA]/60 flex items-center justify-between text-[10px] text-[#6B6858]">
-        <span className="font-semibold text-[#1B4332]/80">
+      <div className="mt-3 pt-2.5 border-t border-[#E6E3DA]/60 dark:border-[#2A2E29]/60 flex items-center justify-between text-[10px] text-[#6B6858] dark:text-[#9C9A8C]">
+        <span className="font-semibold text-[#1B4332]/80 dark:text-[#3FA873]/80">
           {skill.type === "Offer" ? "Available to Teach" : "Seeking to Learn"}
         </span>
       </div>

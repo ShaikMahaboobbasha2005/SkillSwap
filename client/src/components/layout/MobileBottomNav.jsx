@@ -78,7 +78,7 @@ export default function MobileBottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E6E3DA] md:hidden pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-2px_8px_rgba(0,0,0,0.03)] transition-all"
+      className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#181B18]/95 backdrop-blur-md border-t border-[#E6E3DA] dark:border-[#2A2E29] md:hidden pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-2px_8px_rgba(0,0,0,0.03)] transition-colors duration-150"
       aria-label="Mobile Navigation"
       role="navigation"
     >
@@ -92,10 +92,10 @@ export default function MobileBottomNav() {
             <Link
               key={item.to}
               to={item.to}
-              className={`flex flex-col items-center justify-center py-1 px-1 min-h-[48px] rounded-xl transition-colors focus-visible:ring-2 focus-visible:ring-[#1B4332] focus-visible:outline-none ${
+              className={`flex flex-col items-center justify-center py-1 px-1 min-h-[48px] rounded-xl transition-colors focus-visible:ring-2 focus-visible:ring-[#1B4332] dark:focus-visible:ring-[#3FA873] focus-visible:outline-none ${
                 item.isActive
-                  ? "text-[#1B4332]"
-                  : "text-[#6B6858] hover:text-[#16160F]"
+                  ? "text-[#1B4332] dark:text-[#3FA873]"
+                  : "text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC]"
               }`}
               aria-label={
                 item.badgeCount > 0
@@ -114,7 +114,7 @@ export default function MobileBottomNav() {
                 />
                 {item.badgeCount > 0 && (
                   <span
-                    className="absolute -top-1.5 -right-2.5 min-w-[17px] h-[17px] px-1 text-[9px] font-extrabold rounded-full bg-[#1B4332] text-white flex items-center justify-center border-2 border-white shadow-xs leading-none"
+                    className="absolute -top-1.5 -right-2.5 min-w-[17px] h-[17px] px-1 text-[9px] font-extrabold rounded-full bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] flex items-center justify-center border-2 border-white dark:border-[#181B18] shadow-xs leading-none"
                     aria-hidden="true"
                   >
                     {displayBadge}
@@ -131,7 +131,7 @@ export default function MobileBottomNav() {
               {/* Subtle active indicator micro-dot */}
               <div
                 className={`w-1 h-1 rounded-full mt-0.5 transition-opacity duration-150 ${
-                  item.isActive ? "bg-[#1B4332] opacity-100" : "opacity-0"
+                  item.isActive ? "bg-[#1B4332] dark:bg-[#3FA873] opacity-100" : "opacity-0"
                 }`}
                 aria-hidden="true"
               />

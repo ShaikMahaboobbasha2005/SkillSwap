@@ -268,30 +268,26 @@
     - Created `RecentActivitySection.jsx` displaying the latest 5 notifications via `NotificationItem compact={true}` with full Phase 11.2 deep-linking preserved.
     - Implemented a 2-column desktop grid (7 cols operational, 5 cols triage & feeds) that gracefully stacks on mobile with centralized safe-area bottom navigation clearance.
 - **Done =** Authenticated Home page is a polished, actionable personal dashboard with 0 build errors, zero backend changes, and no regressions across existing workflows.
-  - **Phase 12 — Settings Page Foundation (Completed):**
-    - **Settings Route (`/settings`):** Mounted authenticated `SettingsPage.jsx` at `/settings` under `ProtectedRoute` within the shared application shell (`AppLayout`), with zero duplicate routes.
-    - **Account Section:**
-      - **My Profile:** Displays user avatar, display name, account role badge (Admin / Member), and location (only if present) with a direct "My Profile →" link navigating to `/profile` reusing existing `useAuth` context.
-      - **Email (Read-Only):** Displays the currently authenticated user's email inside a read-only lock field with clear helper text ("Email changes aren't currently supported.") and zero fabricated verified-badge claims or fake editing functionality.
-      - **Account Information:** Displays authenticated metadata (User ID with one-click copy to clipboard showing a temporary "Copied" visual feedback state, Account Role from existing user schema, and formatted "Member Since" from `createdAt`), with zero invented status fields.
-    - **Preferences — Appearance (Dark Mode Preparation):**
-      - Prepares the interface for upcoming Dark Mode implementation with three visual tiles: System, Light, and Dark.
-      - Light is highlighted as current/active matching the application's default light theme (`#F7F6F2` / `#FFFFFF` / `#1B4332`).
-      - System and Dark tiles are visually disabled and clearly marked "Coming soon" with zero fake theme toggling or state fabrication. Full Dark Mode remains scheduled for its dedicated Phase 12 sub-phase.
-    - **Notifications Section:**
-      - Reflects existing in-app real-time notification infrastructure (Swap requests, Meeting reminders, Partner reviews) delivered via `NotificationBell` and Socket.IO.
-      - Email notification and digest preferences are presented as disabled and marked "Coming soon" with no invented backend APIs or fake client persistence.
-    - **Account Actions Section:**
-      - Reuses the existing authentication context (`useAuth().logout()`) with an inline two-step confirmation state ("Are you sure you want to log out?" with `[Log out]` and `[Cancel]`) to prevent accidental sign-outs.
-    - **Mobile Navigation Architecture Integration:**
-      - Mobile profile avatar menu in the top header now navigates directly to `/settings`, preserving the clean avatar trigger and eliminating hamburger menus.
-      - Mobile bottom navigation bar remains strictly preserved with 5 destinations (Home, Matches, Discover, Swaps, Chats), with zero Profile or Settings items injected.
-      - Seamless clearance above the fixed mobile bottom navigation bar via centralized `AppLayout` safe-area bottom padding.
-    - **Desktop Navigation Integration:**
-      - Top-right account dropdown panel seamlessly opens `/settings` with active route highlight styling, preserving existing desktop navigation.
-    - **Responsive Design & Accessibility:**
-      - Validated for viewports from 320px, 360px, 375px, 390px, 414px, 430px, 768px, to 1024px+ with zero horizontal overflow, comfortable touch targets, semantic buttons/labels, and accessible disabled states.
-- **Done =** Authenticated Settings page foundation is fully implemented at `/settings`, integrated with existing authentication context, profile avatar dropdowns, and design tokens, with 0 build errors, zero backend changes, and zero regressions.
+  - **Phase 12.2 — Complete Dark Mode Implementation (Completed):**
+    - **Real Theme Switching (`ThemeContext.jsx` & `useTheme.js`):** Implemented client-side theme management supporting three distinct modes: `System`, `Light`, and `Dark`. Persisted in `localStorage` under `skillswap_theme` with default `"system"`.
+    - **Anti-FOUC Architecture (`index.html`):** Synchronous inline script inside `<head>` evaluating `skillswap_theme` and `prefers-color-scheme: dark` before React or CSS render to eliminate white flashes on page loads.
+    - **Reactive OS Media Listener:** Dynamically responds to OS/browser dark mode changes in real time when mode is set to `"system"`.
+    - **Tailwind CSS v4 Integration (`index.css`):** Configured `@custom-variant dark (&:where(.dark, .dark *));`, dark design tokens in `@theme`, CSS variables, skeleton shimmer animations, and high-contrast dark focus rings.
+    - **Settings Appearance Section (`SettingsPage.jsx`):** Replaced previous "Coming soon" tiles with real, interactive theme selectors (`Monitor`, `Sun`, `Moon` icons) showing active selection rings and instant theme updates.
+    - **Complete Application-Wide Dark Styling:**
+      - **Shell & Navigation:** `AppLayout.jsx`, `Navbar.jsx`, `MobileBottomNav.jsx`.
+      - **Global Modals & Overlays:** `Modal.jsx`, `ConfirmModal.jsx`, `ToastNotification.jsx`.
+      - **Dashboard:** `Home.jsx`, `DashboardHero.jsx`, `DashboardStats.jsx`, `ActiveSwapsSection.jsx`, `PendingRequestsSection.jsx`, `RecommendedMatchesSection.jsx`, `RecentActivitySection.jsx`.
+      - **Discover:** `DiscoverPage.jsx`, `SearchBar.jsx`, `FilterPanel.jsx`, `FilterDrawer.jsx`, `ActiveFilterChips.jsx`, `DiscoverCard.jsx`, `EmptyState.jsx`, `Pagination.jsx`, `LoadingSkeleton.jsx`, `ErrorState.jsx`.
+      - **Recommendations:** `RecommendationsPage.jsx`, `RecommendationCard.jsx`, `RecommendationSkeleton.jsx`, `RecommendationEmptyState.jsx`, `RecommendationErrorState.jsx`.
+      - **Swap Requests & Workflow:** `SwapRequestsPage.jsx`, `SwapRequestCard.jsx`, `EmptySwapState.jsx`, `SwapRequestSkeleton.jsx`, `IncomingRequests.jsx`, `OutgoingRequests.jsx`, `SwapRequestModal.jsx`, `RatingModal.jsx`.
+      - **Chat & Video Meetings:** `ChatsPage.jsx`, `ChatPage.jsx`, `ConversationList.jsx`, `ChatHeader.jsx`, `SwapSelector.jsx`, `DateSeparator.jsx`, `UnreadDivider.jsx`, `MessageBubble.jsx`, `MessageInput.jsx`, `EmojiPicker.jsx`, `MessageList.jsx`, `MeetingMessageCard.jsx`, `MeetingOptionsModal.jsx`, `ScheduleMeetingModal.jsx`, `JitsiMeetingModal.jsx`.
+      - **Notifications:** `NotificationBadge.jsx`, `NotificationBell.jsx`, `NotificationItem.jsx`, `NotificationSkeleton.jsx`, `NotificationsPage.jsx`.
+      - **Profile & Skills:** `OwnProfile.jsx`, `PublicProfile.jsx`, `AnimatedStatCard.jsx`, `ProfileCompletionCard.jsx`, `ProfileSkeleton.jsx`, `ProfileBanner.jsx`, `ImageCropModal.jsx`, `CompactProfileStats.jsx`, `SocialLinksRow.jsx`, `AvatarLightboxModal.jsx`, `ReviewCard.jsx`, `ReviewsSection.jsx`, `PortfolioSection.jsx`, `CategoryBadge.jsx`, `LevelBadge.jsx`, `DeleteSkillDialog.jsx`, `SkillCard.jsx`, `SkillModal.jsx`, `SkillsSection.jsx`.
+      - **Portfolio Module:** `PortfolioPage.jsx`, `PortfolioCard.jsx`, `PortfolioUploadModal.jsx`, `PortfolioEditModal.jsx`, `PortfolioReactionsModal.jsx`, `PortfolioReportModal.jsx`, `PortfolioLightbox.jsx`, `ReactionPicker.jsx`.
+      - **Authentication Pages:** `Login.jsx`, `Signup.jsx`.
+    - **Architecture Decisions:** Purely client-side persistence (`localStorage`) with zero backend API or MongoDB schema changes. Star rating gold `#B8860B` strictly preserved across both themes. High-contrast, minimal palette: warm charcoal `#0F1210` background, `#181B18` card surfaces, `#2A2E29` crisp borders, `#F2F1EC` primary text, `#9C9A8C` muted text, and `#3FA873` Pine Green accent.
+- **Done =** SkillSwap features a complete, production-grade Dark Mode across all views, with instant theme switching in Settings, synchronous anti-FOUC protection, zero build errors, and full documentation synchronization.
 
 ---
 

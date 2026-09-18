@@ -95,15 +95,15 @@ export default function PortfolioEditModal({
       <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
         {/* Error Alert */}
         {error && (
-          <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2 animate-fadeIn">
+          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-xs flex items-start gap-2 animate-fadeIn">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
         {/* Media Thumbnail Preview */}
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-[#F7F6F2] border border-[#E6E3DA]">
-          <div className="w-14 h-14 rounded-lg overflow-hidden bg-black shrink-0 border border-[#E6E3DA]">
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-[#F7F6F2] dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29]">
+          <div className="w-14 h-14 rounded-lg overflow-hidden bg-black shrink-0 border border-[#E6E3DA] dark:border-[#2A2E29]">
             <img
               src={thumbnailUrl}
               alt="Media thumbnail"
@@ -111,10 +111,10 @@ export default function PortfolioEditModal({
             />
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-bold text-[#16160F] truncate">
+            <p className="text-xs font-bold text-[#16160F] dark:text-[#F2F1EC] truncate">
               {isVideo ? "Video Media" : "Image Media"}
             </p>
-            <p className="text-[11px] text-[#6B6858] mt-0.5">
+            <p className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C] mt-0.5">
               Media content cannot be replaced. You can edit the caption and linked skill.
             </p>
           </div>
@@ -123,10 +123,10 @@ export default function PortfolioEditModal({
         {/* Caption Field */}
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <label htmlFor="edit-portfolio-caption" className="text-xs font-bold text-[#16160F]">
-              Caption <span className="text-[#6B6858] font-normal">(Optional)</span>
+            <label htmlFor="edit-portfolio-caption" className="text-xs font-bold text-[#16160F] dark:text-[#F2F1EC]">
+              Caption <span className="text-[#6B6858] dark:text-[#9C9A8C] font-normal">(Optional)</span>
             </label>
-            <span className="text-[10px] text-[#6B6858] font-medium">
+            <span className="text-[10px] text-[#6B6858] dark:text-[#9C9A8C] font-medium">
               {caption.length}/500
             </span>
           </div>
@@ -138,22 +138,22 @@ export default function PortfolioEditModal({
             onChange={(e) => setCaption(e.target.value)}
             disabled={saving}
             placeholder="Describe your work, tools used, or project context..."
-            className="w-full px-3.5 py-2.5 text-xs text-[#16160F] bg-white border border-[#E6E3DA] rounded-xl focus:outline-none focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] placeholder:text-[#6B6858]/60 resize-none transition-all disabled:opacity-50"
+            className="w-full px-3.5 py-2.5 text-xs text-[#16160F] dark:text-[#F2F1EC] bg-white dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl focus:outline-none focus:border-[#1B4332] dark:focus:border-[#3FA873] focus:ring-1 focus:ring-[#1B4332] dark:focus:ring-[#3FA873] placeholder:text-[#6B6858]/60 dark:placeholder:text-[#9C9A8C]/60 resize-none transition-all disabled:opacity-50"
           />
         </div>
 
         {/* Skill Link Dropdown */}
         <div className="space-y-1">
-          <label htmlFor="edit-portfolio-skill" className="text-xs font-bold text-[#16160F] flex items-center gap-1.5">
-            <Tag className="w-3 h-3 text-[#1B4332]" />
-            <span>Link to Offered Skill <span className="text-[#6B6858] font-normal">(Optional)</span></span>
+          <label htmlFor="edit-portfolio-skill" className="text-xs font-bold text-[#16160F] dark:text-[#F2F1EC] flex items-center gap-1.5">
+            <Tag className="w-3 h-3 text-[#1B4332] dark:text-[#3FA873]" />
+            <span>Link to Offered Skill <span className="text-[#6B6858] dark:text-[#9C9A8C] font-normal">(Optional)</span></span>
           </label>
           <select
             id="edit-portfolio-skill"
             value={selectedSkillId}
             onChange={(e) => setSelectedSkillId(e.target.value)}
             disabled={saving}
-            className="w-full px-3.5 py-2.5 text-xs text-[#16160F] bg-white border border-[#E6E3DA] rounded-xl focus:outline-none focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] transition-all disabled:opacity-50 cursor-pointer"
+            className="w-full px-3.5 py-2.5 text-xs text-[#16160F] dark:text-[#F2F1EC] bg-white dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl focus:outline-none focus:border-[#1B4332] dark:focus:border-[#3FA873] focus:ring-1 focus:ring-[#1B4332] dark:focus:ring-[#3FA873] transition-all disabled:opacity-50 cursor-pointer"
           >
             <option value="">No linked skill</option>
             {userSkills.map((skill) => (
@@ -165,12 +165,12 @@ export default function PortfolioEditModal({
         </div>
 
         {/* Modal Actions */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E6E3DA]">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E6E3DA] dark:border-[#2A2E29]">
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="px-4 py-2 text-xs font-semibold text-[#16160F] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] rounded-xl transition-all cursor-pointer disabled:opacity-50"
+            className="px-4 py-2 text-xs font-semibold text-[#16160F] dark:text-[#F2F1EC] bg-[#F7F6F2] dark:bg-[#202520] hover:bg-[#E4EEE8] dark:hover:bg-[#2A2E29] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl transition-all cursor-pointer disabled:opacity-50"
           >
             Cancel
           </button>
@@ -178,7 +178,7 @@ export default function PortfolioEditModal({
           <button
             type="submit"
             disabled={saving}
-            className="px-5 py-2 text-xs font-bold text-white bg-[#1B4332] hover:bg-[#143326] rounded-xl transition-all active:scale-[0.98] shadow-2xs cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5"
+            className="px-5 py-2 text-xs font-bold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#348C5E] rounded-xl transition-all active:scale-[0.98] shadow-2xs cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5"
           >
             {saving ? (
               <>

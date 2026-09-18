@@ -64,10 +64,10 @@ export default function PortfolioCard({
 
   return (
     <div
-      className={`group relative aspect-square w-full rounded-2xl overflow-hidden bg-[#F7F6F2] border transition-all duration-300 shadow-xs select-none ${
+      className={`group relative aspect-square w-full rounded-2xl overflow-hidden bg-[#F7F6F2] dark:bg-[#181B18] border transition-all duration-300 shadow-xs select-none ${
         isTemp
-          ? "border-[#1B4332]/30 cursor-default"
-          : "border-[#E6E3DA] hover:border-[#1B4332]/40 cursor-pointer"
+          ? "border-[#1B4332]/30 dark:border-[#3FA873]/30 cursor-default"
+          : "border-[#E6E3DA] dark:border-[#2A2E29] hover:border-[#1B4332]/40 dark:hover:border-[#3FA873]/40 cursor-pointer"
       }`}
       onClick={handleCardClick}
       role={isTemp ? "region" : "button"}
@@ -247,7 +247,7 @@ export default function PortfolioCard({
                     e.stopPropagation();
                     onEdit?.(item);
                   }}
-                  className="w-7 h-7 rounded-lg bg-white/90 hover:bg-white text-[#16160F] hover:text-[#1B4332] flex items-center justify-center transition-all shadow-xs cursor-pointer active:scale-95"
+                  className="w-7 h-7 rounded-lg bg-white/90 hover:bg-white dark:bg-[#202520]/90 dark:hover:bg-[#202520] text-[#16160F] hover:text-[#1B4332] dark:text-[#F2F1EC] dark:hover:text-[#3FA873] flex items-center justify-center transition-all shadow-xs cursor-pointer active:scale-95"
                   title="Edit Caption / Skill"
                   aria-label="Edit portfolio item"
                 >

@@ -141,5 +141,39 @@ Avatar:  fully circular
 - **Mobile (<768px):** single-column stacking, chat room list (`/chats`) and active chat thread (`/swaps/:swapId/chat`) render on separate views with an explicit header back arrow link. Expanded hamburger menu renders a compact stacked list (Home, Discover Skills, Swap Requests [badge right], Chats [badge right], My Profile, subtle Logout divider) closing automatically upon navigation. Portfolio grid drops to 2 columns.
 
 ## 9. Accessibility Notes
-- Maintain sufficient contrast between `ink`/`ink-muted` and `bg`/`surface` per WCAG AA
+- Maintain sufficient contrast between `ink`/`ink-muted` and `bg`/`surface` per WCAG AA (≥ 4.5:1 for normal text, ≥ 3:1 for large text and UI components)
 - Gold (`#B8860B` / `#D4A017`) reserved strictly for ratings — never used as a primary interactive color, avoiding confusion with action buttons
+- Interactive surfaces in dark mode provide high contrast focus rings (`focus-visible:ring-2 focus-visible:ring-[#3FA873]`)
+
+## 10. Dark Mode System Architecture & Specifications (Phase 12)
+
+### 10.1 Theme Tokens & Color Palette
+Dark mode preserves SkillSwap's classy, minimal, and premium aesthetic through carefully balanced warm charcoal tones and restrained Pine Green accents:
+
+| Token | Light Hex | Dark Hex | Role / Implementation |
+|---|---|---|---|
+| Background (`bg`) | `#F7F6F2` | `#0F1210` | Deep warm charcoal page backdrop |
+| Surface / Cards (`surface`) | `#FFFFFF` | `#181B18` | Elevated card surfaces, panels, modals |
+| Elevated Surfaces | `#F7F6F2` | `#202520` | Secondary surfaces, input fields, dropdown menus |
+| Interactive / Hover | `#E4EEE8` | `#242A24` / `#2A2E29` | Item hover states, pressed states, active chips |
+| Borders / Dividers | `#E6E3DA` | `#2A2E29` | Crisp, low-contrast 1px architectural dividers |
+| Primary Ink (`ink`) | `#16160F` | `#F2F1EC` | High-contrast off-white body text and headings |
+| Muted Ink (`ink-muted`) | `#6B6858` | `#9C9A8C` | Secondary metadata, dates, labels, counters |
+| Accent (Pine Green) | `#1B4332` | `#3FA873` | Interactive buttons, badges, highlights |
+| Accent Soft (Badges) | `#E4EEE8` | `#1C2E24` | Green badge backgrounds with `#3FA873`/30 borders |
+| Rating Gold | `#B8860B` | `#B8860B` | Strictly reserved for star ratings across both themes |
+
+### 10.2 Technical Implementation & Anti-FOUC Architecture
+1. **Synchronous Anti-FOUC Script (`index.html`)**:
+   An inline `<script>` tags executes inside `<head>` synchronously prior to CSS parsing or React mounting:
+   - Reads `localStorage.getItem("skillswap_theme") || "system"`
+   - If `"dark"`, or if `"system"` and `window.matchMedia("(prefers-color-scheme: dark)").matches`, immediately adds the class `.dark` to `document.documentElement` (`<html>`).
+   - Prevents white flashing on page refreshes and initial page loads.
+2. **Tailwind CSS v4 Custom Variant (`index.css`)**:
+   Declared `@custom-variant dark (&:where(.dark, .dark *));` to ensure `.dark` class targeting applies universally across nested components and React Portals.
+3. **Reactive System Listener (`ThemeContext.jsx`)**:
+   When set to `"system"`, a media query listener `window.matchMedia("(prefers-color-scheme: dark)")` listens for OS-level theme changes in real time and toggles the `dark` class automatically without user reload.
+4. **Settings Page Appearance Selector (`SettingsPage.jsx`)**:
+   Replaced "Coming soon" tiles with real interactive buttons for `System`, `Light`, and `Dark`. Displays active selection indicators, live preview feedback, and persists selection instantly to `localStorage`.
+5. **Portalled Modals & Overlays**:
+   All modals (`Modal.jsx`, `ConfirmModal.jsx`, `ImageCropModal.jsx`, `AvatarLightboxModal.jsx`, `SkillModal.jsx`, `DeleteSkillDialog.jsx`, `SwapRequestModal.jsx`, `RatingModal.jsx`, `MeetingOptionsModal.jsx`, `ScheduleMeetingModal.jsx`, `JitsiMeetingModal.jsx`, `PortfolioUploadModal.jsx`, `PortfolioEditModal.jsx`, `PortfolioReactionsModal.jsx`, `PortfolioReportModal.jsx`) inherit `.dark` from `document.documentElement`, ensuring zero theme mismatches.

@@ -100,8 +100,8 @@ export default function RatingModal({
     >
       <form onSubmit={handleSubmit} className="p-6 space-y-5">
         {/* Partner Header */}
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-[#F7F6F2] border border-[#E6E3DA]">
-          <div className="w-10 h-10 rounded-full bg-[#1B4332] text-white font-bold text-sm flex items-center justify-center border-2 border-white shadow-xs shrink-0 overflow-hidden">
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-[#F7F6F2] dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29]">
+          <div className="w-10 h-10 rounded-full bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] font-bold text-sm flex items-center justify-center border-2 border-white dark:border-[#2A2E29] shadow-xs shrink-0 overflow-hidden">
             {partnerAvatar ? (
               <img src={partnerAvatar} alt={partnerName} className="w-full h-full object-cover" />
             ) : (
@@ -109,23 +109,23 @@ export default function RatingModal({
             )}
           </div>
           <div className="min-w-0">
-            <h4 className="text-xs font-bold text-[#16160F] truncate">{partnerName}</h4>
-            <p className="text-[11px] text-[#6B6858]">How was your skill swap experience?</p>
+            <h4 className="text-xs font-bold text-[#16160F] dark:text-[#F2F1EC] truncate">{partnerName}</h4>
+            <p className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C]">How was your skill swap experience?</p>
           </div>
         </div>
 
         {/* Swap Skill Context Badge */}
         {(offeredName || wantedName) && (
-          <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-white border border-[#E6E3DA] shadow-2xs">
+          <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-white dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] shadow-2xs">
             <div className="flex items-center gap-1.5 min-w-0">
-              <div className="w-5 h-5 rounded-md bg-[#E4EEE8] text-[#1B4332] flex items-center justify-center shrink-0">
+              <div className="w-5 h-5 rounded-md bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] flex items-center justify-center shrink-0">
                 <ArrowLeftRight className="w-3 h-3" />
               </div>
-              <span className="text-xs font-bold text-[#16160F] truncate">
+              <span className="text-xs font-bold text-[#16160F] dark:text-[#F2F1EC] truncate">
                 {offeredName && wantedName ? `${offeredName} ↔ ${wantedName}` : offeredName || wantedName}
               </span>
             </div>
-            <span className="text-[10px] font-semibold text-[#6B6858] px-1.5 py-0.5 rounded bg-[#F7F6F2] border border-[#E6E3DA] shrink-0">
+            <span className="text-[10px] font-semibold text-[#6B6858] dark:text-[#9C9A8C] px-1.5 py-0.5 rounded bg-[#F7F6F2] dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] shrink-0">
               Skill Swap
             </span>
           </div>
@@ -133,15 +133,15 @@ export default function RatingModal({
 
         {/* Server Error Alert */}
         {serverError && (
-          <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-400" />
             <span>{serverError}</span>
           </div>
         )}
 
         {/* Star Rating Selector */}
         <div className="space-y-2 text-center">
-          <label className="text-xs font-bold text-[#16160F] block">
+          <label className="text-xs font-bold text-[#16160F] dark:text-[#F2F1EC] block">
             Select Rating <span className="text-red-500">*</span>
           </label>
           <div className="flex items-center justify-center gap-2 pt-1">
@@ -155,13 +155,13 @@ export default function RatingModal({
                   onMouseEnter={() => setHoveredStars(num)}
                   onMouseLeave={() => setHoveredStars(0)}
                   aria-label={`Rate ${num} ${num === 1 ? "star" : "stars"}`}
-                  className="p-1 rounded-lg hover:bg-amber-50 transition-transform active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1B4332]"
+                  className="p-1 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-transform active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1B4332] dark:focus:ring-[#3FA873]"
                 >
                   <Star
                     className={`w-7 h-7 transition-colors ${
                       isFilled
                         ? "fill-amber-400 text-amber-400 drop-shadow-xs"
-                        : "text-zinc-300 hover:text-amber-300"
+                        : "text-zinc-300 dark:text-zinc-600 hover:text-amber-300 dark:hover:text-amber-400"
                     }`}
                   />
                 </button>
@@ -169,17 +169,17 @@ export default function RatingModal({
             })}
           </div>
           {validationError && (
-            <p className="text-xs font-semibold text-red-600 mt-1">{validationError}</p>
+            <p className="text-xs font-semibold text-red-600 dark:text-red-400 mt-1">{validationError}</p>
           )}
         </div>
 
         {/* Optional Review Textarea */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
-            <label htmlFor="review-textarea" className="font-bold text-[#16160F]">
-              Review <span className="text-[#6B6858] font-normal">(optional)</span>
+            <label htmlFor="review-textarea" className="font-bold text-[#16160F] dark:text-[#F2F1EC]">
+              Review <span className="text-[#6B6858] dark:text-[#9C9A8C] font-normal">(optional)</span>
             </label>
-            <span className="text-[11px] font-medium text-[#6B6858]">
+            <span className="text-[11px] font-medium text-[#6B6858] dark:text-[#9C9A8C]">
               {review.length} / 500
             </span>
           </div>
@@ -190,24 +190,24 @@ export default function RatingModal({
             value={review}
             onChange={(e) => setReview(e.target.value)}
             placeholder={`Share feedback on your skill exchange with ${partnerName}...`}
-            className="w-full text-xs p-3 rounded-xl border border-[#E6E3DA] bg-[#F7F6F2] text-[#16160F] placeholder-[#6B6858] focus:bg-white focus:border-[#1B4332] focus:ring-2 focus:ring-[#1B4332]/20 outline-none transition-all resize-none"
+            className="w-full text-xs p-3 rounded-xl border border-[#E6E3DA] dark:border-[#2A2E29] bg-[#F7F6F2] dark:bg-[#202520] text-[#16160F] dark:text-[#F2F1EC] placeholder-[#6B6858] dark:placeholder-[#9C9A8C]/60 focus:bg-white dark:focus:bg-[#181B18] focus:border-[#1B4332] dark:focus:border-[#3FA873] focus:ring-2 focus:ring-[#1B4332]/20 dark:focus:ring-[#3FA873]/20 outline-none transition-all resize-none"
           />
         </div>
 
         {/* Modal Action Buttons */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E6E3DA]">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E6E3DA] dark:border-[#2A2E29]">
           <button
             type="button"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="px-4 py-2 text-xs font-semibold text-[#16160F] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] rounded-xl transition-all cursor-pointer disabled:opacity-50"
+            className="px-4 py-2 text-xs font-semibold text-[#16160F] dark:text-[#F2F1EC] bg-[#F7F6F2] dark:bg-[#202520] hover:bg-[#E4EEE8] dark:hover:bg-[#2A2E29] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl transition-all cursor-pointer disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-5 py-2 text-xs font-bold text-white bg-[#1B4332] hover:bg-[#143326] rounded-xl transition-all shadow-2xs active:scale-[0.98] disabled:opacity-50 cursor-pointer inline-flex items-center gap-1.5"
+            className="px-5 py-2 text-xs font-bold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#339162] rounded-xl transition-all shadow-2xs active:scale-[0.98] disabled:opacity-50 cursor-pointer inline-flex items-center gap-1.5"
           >
             {isSubmitting ? (
               <>

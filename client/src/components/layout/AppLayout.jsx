@@ -37,7 +37,7 @@ export default function AppLayout() {
 
   return (
     <div
-      className={`w-full min-h-screen flex flex-col ${
+      className={`w-full min-h-screen flex flex-col bg-[#F7F6F2] dark:bg-[#0F1210] text-[#16160F] dark:text-[#F2F1EC] transition-colors duration-150 ${
         needsSharedBottomSpacing
           ? "pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-0"
           : ""

@@ -86,17 +86,17 @@ export default function Modal({
       aria-modal="true"
     >
       <div
-        className={`relative bg-white border border-[#E6E3DA] rounded-2xl w-full ${maxWidth} overflow-hidden shadow-2xl animate-slideDown flex flex-col my-auto max-h-[90vh] ${className}`}
+        className={`relative bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl w-full ${maxWidth} overflow-hidden shadow-2xl animate-slideDown flex flex-col my-auto max-h-[90vh] ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
-          <div className="px-5 py-3.5 border-b border-[#E6E3DA] flex items-center justify-between bg-[#F7F6F2] shrink-0">
-            <h2 className="text-sm font-bold text-[#16160F]">{title}</h2>
+          <div className="px-5 py-3.5 border-b border-[#E6E3DA] dark:border-[#2A2E29] flex items-center justify-between bg-[#F7F6F2] dark:bg-[#121512] shrink-0">
+            <h2 className="text-sm font-bold text-[#16160F] dark:text-[#F2F1EC]">{title}</h2>
             {showCloseButton && (
               <button
                 type="button"
                 onClick={onClose}
-                className="text-[#6B6858] hover:text-[#16160F] text-sm font-bold transition-colors cursor-pointer"
+                className="text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] text-sm font-bold transition-colors cursor-pointer"
                 aria-label="Close modal"
               >
                 ✕
@@ -108,7 +108,7 @@ export default function Modal({
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-3.5 right-3.5 z-10 text-[#6B6858] hover:text-[#16160F] text-sm font-bold transition-colors cursor-pointer w-7 h-7 rounded-full bg-[#F7F6F2] hover:bg-[#E4EEE8] flex items-center justify-center border border-[#E6E3DA]"
+            className="absolute top-3.5 right-3.5 z-10 text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] text-sm font-bold transition-colors cursor-pointer w-7 h-7 rounded-full bg-[#F7F6F2] dark:bg-[#202520] hover:bg-[#E4EEE8] dark:hover:bg-[#1C2E24] flex items-center justify-center border border-[#E6E3DA] dark:border-[#2A2E29]"
             aria-label="Close modal"
           >
             ✕

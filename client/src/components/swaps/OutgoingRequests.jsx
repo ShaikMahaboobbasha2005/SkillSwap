@@ -119,19 +119,19 @@ export default function OutgoingRequests({
 
   if (error) {
     return (
-      <div className="bg-white border border-red-200 rounded-2xl p-8 text-center shadow-xs space-y-4 max-w-md mx-auto my-6">
-        <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 border border-red-200 flex items-center justify-center mx-auto text-xl font-bold">
+      <div className="bg-white dark:bg-[#181B18] border border-red-200 dark:border-red-900/40 rounded-2xl p-8 text-center shadow-xs space-y-4 max-w-md mx-auto my-6">
+        <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/50 flex items-center justify-center mx-auto text-xl font-bold">
           <AlertCircle className="w-6 h-6" />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-[#16160F]">Failed to load outgoing requests</h3>
-          <p className="text-xs text-[#6B6858] mt-1">{error}</p>
+          <h3 className="text-sm font-bold text-[#16160F] dark:text-[#F2F1EC]">Failed to load outgoing requests</h3>
+          <p className="text-xs text-[#6B6858] dark:text-[#9C9A8C] mt-1">{error}</p>
         </div>
         {onRetry && (
           <button
             type="button"
             onClick={onRetry}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#1B4332] text-white text-xs font-semibold rounded-xl hover:bg-[#143326] transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] text-xs font-semibold rounded-xl hover:bg-[#143326] dark:hover:bg-[#339162] transition-all cursor-pointer shadow-2xs"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Try Again</span>

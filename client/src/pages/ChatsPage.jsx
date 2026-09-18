@@ -204,23 +204,23 @@ export default function ChatsPage() {
   const hasActiveChat = activeUserId && activeSwapId;
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] bg-[#F7F6F2] text-[#16160F] font-sans antialiased flex flex-col overflow-hidden">
+    <div className="h-[100dvh] max-h-[100dvh] bg-[#F7F6F2] dark:bg-[#0F1210] text-[#16160F] dark:text-[#F2F1EC] font-sans antialiased flex flex-col overflow-hidden">
       {/* Top Application Navbar */}
       <Navbar />
 
       {/* Main Two-Panel Chat Workspace (Full Viewport Height & Width Layout) */}
-      <div className="flex-1 flex min-h-0 w-full bg-white overflow-hidden">
+      <div className="flex-1 flex min-h-0 w-full bg-white dark:bg-[#181B18] overflow-hidden">
         {/* Left Sidebar: Conversation List (Fixed 300px width on desktop) */}
         <aside
-          className={`w-full md:w-[300px] md:min-w-[300px] md:max-w-[300px] border-r border-[#E6E3DA] flex flex-col bg-white shrink-0 overflow-hidden ${
+          className={`w-full md:w-[300px] md:min-w-[300px] md:max-w-[300px] border-r border-[#E6E3DA] dark:border-[#2A2E29] flex flex-col bg-white dark:bg-[#181B18] shrink-0 overflow-hidden ${
             hasActiveChat ? "hidden md:flex" : "flex"
           }`}
         >
           <div className="px-3.5 pt-3 pb-1 shrink-0">
-            <h2 className="text-sm font-extrabold text-[#16160F]">
+            <h2 className="text-sm font-extrabold text-[#16160F] dark:text-[#F2F1EC]">
               Conversations
             </h2>
-            <p className="text-[11px] text-[#6B6858]">
+            <p className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C]">
               Your active accepted skill swaps
             </p>
           </div>
@@ -235,7 +235,7 @@ export default function ChatsPage() {
 
         {/* Right Main Panel: Active Chat Workspace or Neutral Empty State */}
         <main
-          className={`flex-1 flex flex-col min-w-0 bg-[#F7F6F2] overflow-hidden ${
+          className={`flex-1 flex flex-col min-w-0 bg-[#F7F6F2] dark:bg-[#0F1210] overflow-hidden ${
             hasActiveChat ? "flex" : "hidden md:flex"
           }`}
         >
@@ -247,14 +247,14 @@ export default function ChatsPage() {
               onSwapChange={handleSwapChange}
             />
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#F7F6F2]">
-              <div className="w-14 h-14 rounded-2xl bg-[#E4EEE8] text-[#1B4332] border border-[#1B4332]/20 flex items-center justify-center mb-3 shadow-2xs">
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#F7F6F2] dark:bg-[#0F1210]">
+              <div className="w-14 h-14 rounded-2xl bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] border border-[#1B4332]/20 dark:border-[#3FA873]/30 flex items-center justify-center mb-3 shadow-2xs">
                 <MessageSquareDashed className="w-7 h-7" />
               </div>
-              <h3 className="text-base font-extrabold text-[#16160F] mb-1">
+              <h3 className="text-base font-extrabold text-[#16160F] dark:text-[#F2F1EC] mb-1">
                 Select a conversation
               </h3>
-              <p className="text-xs text-[#6B6858] max-w-xs leading-relaxed">
+              <p className="text-xs text-[#6B6858] dark:text-[#9C9A8C] max-w-xs leading-relaxed">
                 Choose an accepted skill swap from the left sidebar to start messaging.
               </p>
             </div>

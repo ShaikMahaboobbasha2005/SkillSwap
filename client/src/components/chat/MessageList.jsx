@@ -296,8 +296,8 @@ export default function MessageList({
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
-        <div className="flex flex-col items-center gap-2 text-[#6B6858]">
-          <div className="w-6 h-6 border-2 border-[#1B4332] border-t-transparent rounded-full animate-spin" />
+        <div className="flex flex-col items-center gap-2 text-[#6B6858] dark:text-[#9C9A8C]">
+          <div className="w-6 h-6 border-2 border-[#1B4332] dark:border-[#3FA873] border-t-transparent rounded-full animate-spin" />
           <span className="text-xs font-semibold">Loading messages…</span>
         </div>
       </div>
@@ -306,14 +306,14 @@ export default function MessageList({
 
   if (!messages || messages.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#F7F6F2]">
-        <div className="w-12 h-12 rounded-2xl bg-[#E4EEE8] text-[#1B4332] border border-[#1B4332]/20 flex items-center justify-center mb-3">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-[#F7F6F2] dark:bg-[#0F1210]">
+        <div className="w-12 h-12 rounded-2xl bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] border border-[#1B4332]/20 dark:border-[#3FA873]/30 flex items-center justify-center mb-3">
           <MessageSquareDashed className="w-6 h-6" />
         </div>
-        <h3 className="text-sm font-bold text-[#16160F] mb-1">
+        <h3 className="text-sm font-bold text-[#16160F] dark:text-[#F2F1EC] mb-1">
           No messages yet
         </h3>
-        <p className="text-xs text-[#6B6858] max-w-xs">
+        <p className="text-xs text-[#6B6858] dark:text-[#9C9A8C] max-w-xs">
           {isReadOnly
             ? "No messages were exchanged during this swap."
             : "Start the conversation about your skill swap. Send a friendly message below!"}
@@ -327,7 +327,7 @@ export default function MessageList({
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-4 py-3 sm:px-6 space-y-1 scrollbar-thin scrollbar-thumb-zinc-300 pr-2 min-h-0"
+        className="flex-1 overflow-y-auto px-4 py-3 sm:px-6 space-y-1 scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-[#2A2E29] pr-2 min-h-0"
       >
         {messages.map((msg, index) => {
           const msgIdStr = (msg._id || msg.id)?.toString();
@@ -373,7 +373,7 @@ export default function MessageList({
         <button
           type="button"
           onClick={scrollToBottom}
-          className="absolute bottom-3 right-4 sm:right-6 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#E6E3DA] text-[#1B4332] font-bold text-xs shadow-md hover:bg-[#F7F6F2] hover:border-[#1B4332]/30 active:scale-95 transition-all cursor-pointer animate-in fade-in duration-200"
+          className="absolute bottom-3 right-4 sm:right-6 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] text-[#1B4332] dark:text-[#3FA873] font-bold text-xs shadow-md hover:bg-[#F7F6F2] dark:hover:bg-[#202520] hover:border-[#1B4332]/30 dark:hover:border-[#3FA873]/30 active:scale-95 transition-all cursor-pointer animate-in fade-in duration-200"
           aria-label={
             newMessagesBelow > 0
               ? `Scroll to bottom, ${newMessagesBelow} new message${newMessagesBelow > 1 ? "s" : ""}`
@@ -382,7 +382,7 @@ export default function MessageList({
         >
           <ArrowDown className="w-4 h-4 stroke-[2.5]" />
           {newMessagesBelow > 0 && (
-            <span className="bg-[#1B4332] text-white text-[11px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none">
+            <span className="bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] text-[11px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none">
               {newMessagesBelow > 99 ? "99+" : newMessagesBelow}
             </span>
           )}

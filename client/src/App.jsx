@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
 import { SocketProvider } from "./context/SocketContext";
 import { SwapProvider } from "./context/SwapContext";
@@ -24,10 +25,11 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
-      <AuthProvider>
-        <SocketProvider>
-          <NotificationProvider>
-            <SwapProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <SocketProvider>
+            <NotificationProvider>
+              <SwapProvider>
               <Routes>
                 {/* Public Auth Routes */}
                 <Route path="/login" element={<Login />} />
@@ -65,8 +67,9 @@ function App() {
           </NotificationProvider>
         </SocketProvider>
       </AuthProvider>
-    </Router>
-  );
+    </ThemeProvider>
+  </Router>
+);
 }
 
 export default App;

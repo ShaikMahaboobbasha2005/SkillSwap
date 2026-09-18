@@ -74,7 +74,7 @@ export default function SocialLinksRow({ socialLinks, className = "" }) {
           role="listitem"
           aria-label={`Visit ${label} (opens in a new tab)`}
           title={label}
-          className="w-9 h-9 sm:w-8.5 sm:h-8.5 rounded-xl border border-[#E6E3DA] bg-[#F7F6F2] hover:bg-[#E4EEE8] text-[#6B6858] hover:text-[#1B4332] hover:border-[#1B4332]/40 transition-all flex items-center justify-center shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332] active:scale-95 cursor-pointer"
+          className="w-9 h-9 sm:w-8.5 sm:h-8.5 rounded-xl border border-[#E6E3DA] dark:border-[#2A2E29] bg-[#F7F6F2] dark:bg-[#202520] hover:bg-[#E4EEE8] dark:hover:bg-[#1C2E24] text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#1B4332] dark:hover:text-[#3FA873] hover:border-[#1B4332]/40 dark:hover:border-[#3FA873]/40 transition-all flex items-center justify-center shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332] dark:focus-visible:ring-[#3FA873] active:scale-95 cursor-pointer"
         >
           <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
         </a>

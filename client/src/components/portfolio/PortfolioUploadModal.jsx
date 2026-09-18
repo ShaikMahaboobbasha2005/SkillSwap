@@ -211,7 +211,7 @@ export default function PortfolioUploadModal({
       <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
         {/* Error Alert */}
         {error && (
-          <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2 animate-fadeIn">
+          <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-xs flex items-start gap-2 animate-fadeIn">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
@@ -229,8 +229,8 @@ export default function PortfolioUploadModal({
             onClick={() => fileInputRef.current?.click()}
             className={`border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center space-y-3 ${
               isDragOver
-                ? "border-[#1B4332] bg-[#E4EEE8]/40"
-                : "border-[#E6E3DA] bg-[#F7F6F2] hover:border-[#1B4332]/50 hover:bg-[#E4EEE8]/20"
+                ? "border-[#1B4332] dark:border-[#3FA873] bg-[#E4EEE8]/40 dark:bg-[#1C2E24]/40"
+                : "border-[#E6E3DA] dark:border-[#2A2E29] bg-[#F7F6F2] dark:bg-[#202520] hover:border-[#1B4332]/50 dark:hover:border-[#3FA873]/50 hover:bg-[#E4EEE8]/20 dark:hover:bg-[#1C2E24]/20"
             }`}
           >
             <input
@@ -245,31 +245,31 @@ export default function PortfolioUploadModal({
               className="hidden"
             />
 
-            <div className="w-12 h-12 rounded-2xl bg-[#E4EEE8] text-[#1B4332] border border-[#1B4332]/20 flex items-center justify-center shadow-2xs">
+            <div className="w-12 h-12 rounded-2xl bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] border border-[#1B4332]/20 dark:border-[#3FA873]/30 flex items-center justify-center shadow-2xs">
               <UploadCloud className="w-6 h-6" />
             </div>
 
             <div>
-              <p className="text-xs sm:text-sm font-bold text-[#16160F]">
-                Drag and drop your media here, or <span className="text-[#1B4332] underline">browse</span>
+              <p className="text-xs sm:text-sm font-bold text-[#16160F] dark:text-[#F2F1EC]">
+                Drag and drop your media here, or <span className="text-[#1B4332] dark:text-[#3FA873] underline">browse</span>
               </p>
-              <p className="text-[11px] text-[#6B6858] mt-1">
+              <p className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C] mt-1">
                 Images (JPG, PNG, WEBP ≤ 10MB) &middot; Videos (MP4, WEBM ≤ 50MB, max 60s)
               </p>
             </div>
 
             {/* Limits Info Pills */}
             <div className="flex items-center gap-2 pt-1">
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white border border-[#E6E3DA] text-[#6B6858]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] text-[#6B6858] dark:text-[#9C9A8C]">
                 Images: {currentImageCount}/20
               </span>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white border border-[#E6E3DA] text-[#6B6858]">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] text-[#6B6858] dark:text-[#9C9A8C]">
                 Videos: {currentVideoCount}/10
               </span>
             </div>
           </div>
         ) : (
-          <div className="relative rounded-2xl overflow-hidden border border-[#E6E3DA] bg-black aspect-video max-h-56 flex items-center justify-center group">
+          <div className="relative rounded-2xl overflow-hidden border border-[#E6E3DA] dark:border-[#2A2E29] bg-black aspect-video max-h-56 flex items-center justify-center group">
             {mediaType === "video" ? (
               <video
                 src={previewUrl}
@@ -321,10 +321,10 @@ export default function PortfolioUploadModal({
         {/* Optional Caption Field */}
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <label htmlFor="portfolio-caption" className="text-xs font-bold text-[#16160F]">
-              Caption <span className="text-[#6B6858] font-normal">(Optional)</span>
+            <label htmlFor="portfolio-caption" className="text-xs font-bold text-[#16160F] dark:text-[#F2F1EC]">
+              Caption <span className="text-[#6B6858] dark:text-[#9C9A8C] font-normal">(Optional)</span>
             </label>
-            <span className="text-[10px] text-[#6B6858] font-medium">
+            <span className="text-[10px] text-[#6B6858] dark:text-[#9C9A8C] font-medium">
               {caption.length}/500
             </span>
           </div>
@@ -335,21 +335,21 @@ export default function PortfolioUploadModal({
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
             placeholder="Describe your work, tools used, or project context..."
-            className="w-full px-3.5 py-2.5 text-xs text-[#16160F] bg-white border border-[#E6E3DA] rounded-xl focus:outline-none focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] placeholder:text-[#6B6858]/60 resize-none transition-all"
+            className="w-full px-3.5 py-2.5 text-xs text-[#16160F] dark:text-[#F2F1EC] bg-white dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl focus:outline-none focus:border-[#1B4332] dark:focus:border-[#3FA873] focus:ring-1 focus:ring-[#1B4332] dark:focus:ring-[#3FA873] placeholder:text-[#6B6858]/60 dark:placeholder:text-[#9C9A8C]/60 resize-none transition-all"
           />
         </div>
 
         {/* Optional Skill Link Dropdown */}
         <div className="space-y-1">
-          <label htmlFor="portfolio-skill" className="text-xs font-bold text-[#16160F] flex items-center gap-1.5">
-            <Tag className="w-3 h-3 text-[#1B4332]" />
-            <span>Link to Offered Skill <span className="text-[#6B6858] font-normal">(Optional)</span></span>
+          <label htmlFor="portfolio-skill" className="text-xs font-bold text-[#16160F] dark:text-[#F2F1EC] flex items-center gap-1.5">
+            <Tag className="w-3 h-3 text-[#1B4332] dark:text-[#3FA873]" />
+            <span>Link to Offered Skill <span className="text-[#6B6858] dark:text-[#9C9A8C] font-normal">(Optional)</span></span>
           </label>
           <select
             id="portfolio-skill"
             value={selectedSkillId}
             onChange={(e) => setSelectedSkillId(e.target.value)}
-            className="w-full px-3.5 py-2.5 text-xs text-[#16160F] bg-white border border-[#E6E3DA] rounded-xl focus:outline-none focus:border-[#1B4332] focus:ring-1 focus:ring-[#1B4332] transition-all cursor-pointer"
+            className="w-full px-3.5 py-2.5 text-xs text-[#16160F] dark:text-[#F2F1EC] bg-white dark:bg-[#202520] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl focus:outline-none focus:border-[#1B4332] dark:focus:border-[#3FA873] focus:ring-1 focus:ring-[#1B4332] dark:focus:ring-[#3FA873] transition-all cursor-pointer"
           >
             <option value="">No linked skill</option>
             {userSkills.map((skill) => (
@@ -361,11 +361,11 @@ export default function PortfolioUploadModal({
         </div>
 
         {/* Modal Actions */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E6E3DA]">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E6E3DA] dark:border-[#2A2E29]">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-[#16160F] bg-[#F7F6F2] hover:bg-[#E4EEE8] border border-[#E6E3DA] rounded-xl transition-all cursor-pointer"
+            className="px-4 py-2 text-xs font-semibold text-[#16160F] dark:text-[#F2F1EC] bg-[#F7F6F2] dark:bg-[#202520] hover:bg-[#E4EEE8] dark:hover:bg-[#2A2E29] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl transition-all cursor-pointer"
           >
             Cancel
           </button>
@@ -377,7 +377,7 @@ export default function PortfolioUploadModal({
               isUploadingActive ||
               (mediaType === "video" && videoDuration > MAX_VIDEO_DURATION_SEC)
             }
-            className="px-5 py-2 text-xs font-bold text-white bg-[#1B4332] hover:bg-[#143326] rounded-xl transition-all active:scale-[0.98] shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1.5"
+            className="px-5 py-2 text-xs font-bold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#348C5E] rounded-xl transition-all active:scale-[0.98] shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1.5"
           >
             {isUploadingActive ? (
               <span>Upload in progress...</span>

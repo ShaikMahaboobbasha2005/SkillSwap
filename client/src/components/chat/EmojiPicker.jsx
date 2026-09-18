@@ -98,10 +98,10 @@ export default function EmojiPicker({ onSelectEmoji, onClose }) {
   return (
     <div
       ref={containerRef}
-      className="absolute right-0 bottom-full mb-2 z-40 w-[min(320px,calc(100vw-24px))] bg-white border border-[#E6E3DA] rounded-2xl shadow-xl p-2 sm:p-2.5 animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[260px] overflow-hidden"
+      className="absolute right-0 bottom-full mb-2 z-40 w-[min(320px,calc(100vw-24px))] bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl shadow-xl p-2 sm:p-2.5 animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[260px] overflow-hidden"
     >
       {/* Category Tabs Header */}
-      <div className="flex items-center justify-between border-b border-[#E6E3DA] pb-1.5 mb-1.5 shrink-0 gap-1 overflow-x-auto scrollbar-none">
+      <div className="flex items-center justify-between border-b border-[#E6E3DA] dark:border-[#2A2E29] pb-1.5 mb-1.5 shrink-0 gap-1 overflow-x-auto scrollbar-none">
         {EMOJI_CATEGORIES.map((cat) => {
           const IconComp = cat.icon;
           const isActive = activeTab === cat.id;
@@ -113,8 +113,8 @@ export default function EmojiPicker({ onSelectEmoji, onClose }) {
               title={cat.label}
               className={`p-1.5 rounded-lg transition-colors cursor-pointer shrink-0 flex items-center justify-center ${
                 isActive
-                  ? "bg-[#1B4332] text-white"
-                  : "text-[#6B6858] hover:text-[#16160F] hover:bg-[#F7F6F2]"
+                  ? "bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210]"
+                  : "text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] hover:bg-[#F7F6F2] dark:hover:bg-[#202520]"
               }`}
             >
               <IconComp className="w-3.5 h-3.5" />
@@ -124,14 +124,14 @@ export default function EmojiPicker({ onSelectEmoji, onClose }) {
       </div>
 
       {/* Emoji Grid Container */}
-      <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-zinc-300">
+      <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-zinc-300 dark:scrollbar-thumb-[#2A2E29]">
         <div className="grid grid-cols-7 gap-1 text-center">
           {currentCategory.emojis.map((emoji, index) => (
             <button
               key={`${activeTab}-${index}`}
               type="button"
               onClick={() => onSelectEmoji(emoji)}
-              className="h-8 w-8 flex items-center justify-center text-lg sm:text-xl rounded-lg hover:bg-[#F7F6F2] active:scale-95 transition-all cursor-pointer select-none"
+              className="h-8 w-8 flex items-center justify-center text-lg sm:text-xl rounded-lg hover:bg-[#F7F6F2] dark:hover:bg-[#202520] active:scale-95 transition-all cursor-pointer select-none"
               aria-label={`Insert ${emoji}`}
             >
               {emoji}

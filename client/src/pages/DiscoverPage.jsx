@@ -104,7 +104,7 @@ export default function DiscoverPage() {
   ].filter(Boolean).length;
 
   return (
-    <div className="min-h-screen bg-[#F7F6F2] text-[#16160F] font-sans antialiased flex flex-col">
+    <div className="min-h-screen bg-[#F7F6F2] dark:bg-[#0F1210] text-[#16160F] dark:text-[#F2F1EC] font-sans antialiased flex flex-col">
       {/* Centralized Shared Top Navigation */}
       <Navbar />
 
@@ -112,21 +112,21 @@ export default function DiscoverPage() {
       <main className="max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 space-y-6">
         {/* Page Header */}
         <header className="space-y-1.5" ref={resultsTopRef}>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#E4EEE8] text-[#1B4332] text-[11px] font-semibold border border-[#1B4332]/10 mb-0.5">
-            <ArrowLeftRight className="w-3 h-3 text-[#1B4332]" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] text-[11px] font-semibold border border-[#1B4332]/10 dark:border-[#3FA873]/20 mb-0.5">
+            <ArrowLeftRight className="w-3 h-3 text-[#1B4332] dark:text-[#3FA873]" />
             <span>Learn ↔ Share</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#16160F]">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#16160F] dark:text-[#F2F1EC]">
             Discover Skills
           </h1>
-          <p className="text-xs sm:text-sm text-[#6B6858] max-w-2xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#6B6858] dark:text-[#9C9A8C] max-w-2xl leading-relaxed">
             Discover people who can teach what you want to learn—and skills you can share in return.
           </p>
         </header>
 
         {/* Persistent Search & Filter Container (Airbnb-inspired Layout) */}
         <section
-          className="bg-white border border-[#E6E3DA] rounded-2xl p-4 sm:p-5 shadow-xs space-y-4"
+          className="bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl p-4 sm:p-5 shadow-xs space-y-4"
           aria-label="Skill search and filter controls"
         >
           {/* Top Search Bar */}

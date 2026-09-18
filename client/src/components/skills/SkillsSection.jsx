@@ -176,12 +176,12 @@ export default function SkillsSection({
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {[1, 2].map((i) => (
-          <div key={i} className="bg-white rounded-2xl border border-[#E6E3DA] p-6 shadow-sm space-y-4">
-            <div className="h-5 bg-[#E6E3DA] rounded-md w-32 animate-shimmer"></div>
-            <div className="h-3 bg-[#E6E3DA] rounded-md w-48 animate-shimmer"></div>
+          <div key={i} className="bg-white dark:bg-[#181B18] rounded-2xl border border-[#E6E3DA] dark:border-[#2A2E29] p-6 shadow-sm space-y-4">
+            <div className="h-5 bg-[#E6E3DA] dark:bg-[#2A2E29] rounded-md w-32 animate-shimmer"></div>
+            <div className="h-3 bg-[#E6E3DA] dark:bg-[#2A2E29] rounded-md w-48 animate-shimmer"></div>
             <div className="grid grid-cols-1 gap-3 pt-2">
-              <div className="h-24 bg-[#E6E3DA]/60 rounded-2xl animate-shimmer"></div>
-              <div className="h-24 bg-[#E6E3DA]/60 rounded-2xl animate-shimmer"></div>
+              <div className="h-24 bg-[#E6E3DA]/60 dark:bg-[#2A2E29]/60 rounded-2xl animate-shimmer"></div>
+              <div className="h-24 bg-[#E6E3DA]/60 dark:bg-[#2A2E29]/60 rounded-2xl animate-shimmer"></div>
             </div>
           </div>
         ))}
@@ -221,19 +221,19 @@ export default function SkillsSection({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* SKILLS OFFERED SECTION */}
-        <div className="bg-white rounded-2xl border border-[#E6E3DA] p-5 sm:p-6 flex flex-col justify-between shadow-xs hover:shadow-md transition-all duration-300">
+        <div className="bg-white dark:bg-[#181B18] rounded-2xl border border-[#E6E3DA] dark:border-[#2A2E29] p-5 sm:p-6 flex flex-col justify-between shadow-xs hover:shadow-md transition-all duration-300">
           <div>
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
-                <OfferedSkillIcon className="w-4 h-4 text-[#1B4332]" />
-                <h2 className="text-sm font-extrabold text-[#16160F]">Skills Offered</h2>
+                <OfferedSkillIcon className="w-4 h-4 text-[#1B4332] dark:text-[#3FA873]" />
+                <h2 className="text-sm font-extrabold text-[#16160F] dark:text-[#F2F1EC]">Skills Offered</h2>
               </div>
               <div className="flex items-center gap-2">
                 <span
                   className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
                     offeredSkills.length >= 5
-                      ? "text-amber-800 bg-amber-50 border-amber-200 font-bold"
-                      : "text-[#1B4332] bg-[#E4EEE8] border-[#1B4332]/20"
+                      ? "text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/40 font-bold"
+                      : "text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] border-[#1B4332]/20 dark:border-[#3FA873]/30"
                   }`}
                   title="Maximum 5 offering skills (Active + Inactive)"
                 >
@@ -244,7 +244,7 @@ export default function SkillsSection({
                     type="button"
                     onClick={() => handleOpenAddModal("Offer")}
                     disabled={offeredSkills.length >= 5}
-                    className="h-7 px-2.5 text-[11px] font-bold text-white bg-[#1B4332] hover:bg-[#143326] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg transition-all active:scale-[0.98] inline-flex items-center gap-1 shadow-2xs cursor-pointer"
+                    className="h-7 px-2.5 text-[11px] font-bold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#339162] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg transition-all active:scale-[0.98] inline-flex items-center gap-1 shadow-2xs cursor-pointer"
                     title={
                       offeredSkills.length >= 5
                         ? "Maximum of 5 offering skills reached. Delete an existing skill to add another."
@@ -258,7 +258,7 @@ export default function SkillsSection({
                   <button
                     type="button"
                     onClick={() => setOfferedExpanded((prev) => !prev)}
-                    className="h-7 w-7 rounded-lg text-[#6B6858] hover:text-[#16160F] hover:bg-[#F7F6F2] border border-transparent hover:border-[#E6E3DA] transition-all flex items-center justify-center cursor-pointer"
+                    className="h-7 w-7 rounded-lg text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] border border-transparent hover:border-[#E6E3DA] dark:hover:border-[#2A2E29] transition-all flex items-center justify-center cursor-pointer"
                     title={offeredExpanded ? "Show fewer skills" : "Show all skills"}
                     aria-label={offeredExpanded ? "Collapse skills offered" : "Expand skills offered"}
                   >
@@ -271,9 +271,9 @@ export default function SkillsSection({
                 )}
               </div>
             </div>
-            <p className="text-[11px] text-[#6B6858] mb-2">Skills available to teach and mentor other members</p>
+            <p className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C] mb-2">Skills available to teach and mentor other members</p>
             {isOwner && offeredSkills.length >= 5 && (
-              <p className="text-[11px] font-medium text-amber-800 bg-amber-50/80 border border-amber-200/60 rounded-lg p-2 mb-3">
+              <p className="text-[11px] font-medium text-amber-800 dark:text-amber-300 bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/40 rounded-lg p-2 mb-3">
                 Maximum of 5 offering skills reached. Delete an existing skill to add another.
               </p>
             )}
@@ -297,7 +297,7 @@ export default function SkillsSection({
                     <button
                       type="button"
                       onClick={() => setOfferedExpanded((prev) => !prev)}
-                      className="text-xs font-semibold text-[#1B4332] hover:text-[#143326] hover:underline transition-all cursor-pointer py-1 inline-flex items-center gap-1"
+                      className="text-xs font-semibold text-[#1B4332] dark:text-[#3FA873] hover:text-[#143326] dark:hover:text-[#52B788] hover:underline transition-all cursor-pointer py-1 inline-flex items-center gap-1"
                     >
                       {offeredExpanded ? (
                         <>
@@ -327,19 +327,19 @@ export default function SkillsSection({
         </div>
 
         {/* SKILLS WANTED SECTION */}
-        <div className="bg-white rounded-2xl border border-[#E6E3DA] p-5 sm:p-6 flex flex-col justify-between shadow-xs hover:shadow-md transition-all duration-300">
+        <div className="bg-white dark:bg-[#181B18] rounded-2xl border border-[#E6E3DA] dark:border-[#2A2E29] p-5 sm:p-6 flex flex-col justify-between shadow-xs hover:shadow-md transition-all duration-300">
           <div>
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-2">
-                <WantedSkillIcon className="w-4 h-4 text-amber-700" />
-                <h2 className="text-sm font-extrabold text-[#16160F]">Skills Wanted</h2>
+                <WantedSkillIcon className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                <h2 className="text-sm font-extrabold text-[#16160F] dark:text-[#F2F1EC]">Skills Wanted</h2>
               </div>
               <div className="flex items-center gap-2">
                 <span
                   className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
                     wantedSkills.length >= 5
-                      ? "text-amber-800 bg-amber-50 border-amber-200 font-bold"
-                      : "text-[#16160F] bg-[#F7F6F2] border-[#E6E3DA]"
+                      ? "text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/40 font-bold"
+                      : "text-[#16160F] dark:text-[#F2F1EC] bg-[#F7F6F2] dark:bg-[#202520] border-[#E6E3DA] dark:border-[#2A2E29]"
                   }`}
                   title="Maximum 5 learning skills (Active + Inactive)"
                 >
@@ -350,7 +350,7 @@ export default function SkillsSection({
                     type="button"
                     onClick={() => handleOpenAddModal("Learn")}
                     disabled={wantedSkills.length >= 5}
-                    className="h-7 px-2.5 text-[11px] font-bold text-white bg-[#1B4332] hover:bg-[#143326] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg transition-all active:scale-[0.98] inline-flex items-center gap-1 shadow-2xs cursor-pointer"
+                    className="h-7 px-2.5 text-[11px] font-bold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#339162] disabled:opacity-40 disabled:cursor-not-allowed rounded-lg transition-all active:scale-[0.98] inline-flex items-center gap-1 shadow-2xs cursor-pointer"
                     title={
                       wantedSkills.length >= 5
                         ? "Maximum of 5 learning skills reached. Delete an existing skill to add another."
@@ -364,7 +364,7 @@ export default function SkillsSection({
                   <button
                     type="button"
                     onClick={() => setWantedExpanded((prev) => !prev)}
-                    className="h-7 w-7 rounded-lg text-[#6B6858] hover:text-[#16160F] hover:bg-[#F7F6F2] border border-transparent hover:border-[#E6E3DA] transition-all flex items-center justify-center cursor-pointer"
+                    className="h-7 w-7 rounded-lg text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] border border-transparent hover:border-[#E6E3DA] dark:border-[#2A2E29] transition-all flex items-center justify-center cursor-pointer"
                     title={wantedExpanded ? "Show fewer skills" : "Show all skills"}
                     aria-label={wantedExpanded ? "Collapse skills wanted" : "Expand skills wanted"}
                   >
@@ -377,9 +377,9 @@ export default function SkillsSection({
                 )}
               </div>
             </div>
-            <p className="text-[11px] text-[#6B6858] mb-2">Skills looking to learn from community mentors</p>
+            <p className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C] mb-2">Skills looking to learn from community mentors</p>
             {isOwner && wantedSkills.length >= 5 && (
-              <p className="text-[11px] font-medium text-amber-800 bg-amber-50/80 border border-amber-200/60 rounded-lg p-2 mb-3">
+              <p className="text-[11px] font-medium text-amber-800 dark:text-amber-300 bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/40 rounded-lg p-2 mb-3">
                 Maximum of 5 learning skills reached. Delete an existing skill to add another.
               </p>
             )}
@@ -403,7 +403,7 @@ export default function SkillsSection({
                     <button
                       type="button"
                       onClick={() => setWantedExpanded((prev) => !prev)}
-                      className="text-xs font-semibold text-[#1B4332] hover:text-[#143326] hover:underline transition-all cursor-pointer py-1 inline-flex items-center gap-1"
+                      className="text-xs font-semibold text-[#1B4332] dark:text-[#3FA873] hover:text-[#143326] dark:hover:text-[#52B788] hover:underline transition-all cursor-pointer py-1 inline-flex items-center gap-1"
                     >
                       {wantedExpanded ? (
                         <>

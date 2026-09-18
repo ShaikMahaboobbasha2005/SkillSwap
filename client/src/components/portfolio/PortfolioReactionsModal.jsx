@@ -105,12 +105,12 @@ export default function PortfolioReactionsModal({
     >
       <div className="flex flex-col max-h-[82vh]">
         {/* Polished Header */}
-        <div className="px-5 py-4 border-b border-[#E6E3DA] flex items-center justify-between bg-white shrink-0">
+        <div className="px-5 py-4 border-b border-[#E6E3DA] dark:border-[#2A2E29] flex items-center justify-between bg-white dark:bg-[#181B18] shrink-0">
           <div>
-            <h2 className="text-base font-extrabold text-[#16160F] tracking-tight">
+            <h2 className="text-base font-extrabold text-[#16160F] dark:text-[#F2F1EC] tracking-tight">
               Reactions
             </h2>
-            <p className="text-xs text-[#6B6858] font-medium mt-0.5">
+            <p className="text-xs text-[#6B6858] dark:text-[#9C9A8C] font-medium mt-0.5">
               {totalCount === 1
                 ? "1 person reacted"
                 : `${totalCount} people reacted`}
@@ -120,7 +120,7 @@ export default function PortfolioReactionsModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#F7F6F2] hover:bg-[#E4EEE8] text-[#6B6858] hover:text-[#16160F] flex items-center justify-center transition-all cursor-pointer text-sm font-bold border border-[#E6E3DA] active:scale-95"
+            className="w-8 h-8 rounded-full bg-[#F7F6F2] dark:bg-[#202520] hover:bg-[#E4EEE8] dark:hover:bg-[#2A2E29] text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] flex items-center justify-center transition-all cursor-pointer text-sm font-bold border border-[#E6E3DA] dark:border-[#2A2E29] active:scale-95"
             title="Close (Esc)"
             aria-label="Close modal"
           >
@@ -130,14 +130,14 @@ export default function PortfolioReactionsModal({
 
         {/* Category Filter Tabs Bar */}
         {totalCount > 0 && (
-          <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-[#E6E3DA] bg-[#F7F6F2] overflow-x-auto shrink-0 scrollbar-none">
+          <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-[#E6E3DA] dark:border-[#2A2E29] bg-[#F7F6F2] dark:bg-[#202520] overflow-x-auto shrink-0 scrollbar-none">
             <button
               type="button"
               onClick={() => setActiveTab("all")}
               className={`px-3 py-1 text-xs font-bold rounded-full transition-all cursor-pointer shrink-0 ${
                 activeTab === "all"
-                  ? "bg-[#1B4332] text-white shadow-xs"
-                  : "bg-white text-[#6B6858] hover:text-[#16160F] border border-[#E6E3DA]"
+                  ? "bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] shadow-xs"
+                  : "bg-white dark:bg-[#181B18] text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] border border-[#E6E3DA] dark:border-[#2A2E29]"
               }`}
             >
               All {totalCount}
@@ -149,8 +149,8 @@ export default function PortfolioReactionsModal({
                 onClick={() => setActiveTab("impressive")}
                 className={`px-3 py-1 text-xs font-bold rounded-full transition-all cursor-pointer shrink-0 inline-flex items-center gap-1 ${
                   activeTab === "impressive"
-                    ? "bg-[#1B4332] text-white shadow-xs"
-                    : "bg-white text-[#6B6858] hover:text-[#16160F] border border-[#E6E3DA]"
+                    ? "bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] shadow-xs"
+                    : "bg-white dark:bg-[#181B18] text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] border border-[#E6E3DA] dark:border-[#2A2E29]"
                 }`}
               >
                 <span>🔥</span>
@@ -164,8 +164,8 @@ export default function PortfolioReactionsModal({
                 onClick={() => setActiveTab("like")}
                 className={`px-3 py-1 text-xs font-bold rounded-full transition-all cursor-pointer shrink-0 inline-flex items-center gap-1 ${
                   activeTab === "like"
-                    ? "bg-[#1B4332] text-white shadow-xs"
-                    : "bg-white text-[#6B6858] hover:text-[#16160F] border border-[#E6E3DA]"
+                    ? "bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] shadow-xs"
+                    : "bg-white dark:bg-[#181B18] text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] border border-[#E6E3DA] dark:border-[#2A2E29]"
                 }`}
               >
                 <span>👍</span>
@@ -179,8 +179,8 @@ export default function PortfolioReactionsModal({
                 onClick={() => setActiveTab("great_work")}
                 className={`px-3 py-1 text-xs font-bold rounded-full transition-all cursor-pointer shrink-0 inline-flex items-center gap-1 ${
                   activeTab === "great_work"
-                    ? "bg-[#1B4332] text-white shadow-xs"
-                    : "bg-white text-[#6B6858] hover:text-[#16160F] border border-[#E6E3DA]"
+                    ? "bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] shadow-xs"
+                    : "bg-white dark:bg-[#181B18] text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] border border-[#E6E3DA] dark:border-[#2A2E29]"
                 }`}
               >
                 <span>👏</span>
@@ -194,8 +194,8 @@ export default function PortfolioReactionsModal({
                 onClick={() => setActiveTab("creative")}
                 className={`px-3 py-1 text-xs font-bold rounded-full transition-all cursor-pointer shrink-0 inline-flex items-center gap-1 ${
                   activeTab === "creative"
-                    ? "bg-[#1B4332] text-white shadow-xs"
-                    : "bg-white text-[#6B6858] hover:text-[#16160F] border border-[#E6E3DA]"
+                    ? "bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] shadow-xs"
+                    : "bg-white dark:bg-[#181B18] text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#16160F] dark:hover:text-[#F2F1EC] border border-[#E6E3DA] dark:border-[#2A2E29]"
                 }`}
               >
                 <span>💡</span>
@@ -213,13 +213,13 @@ export default function PortfolioReactionsModal({
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="flex items-center justify-between p-2.5 animate-pulse">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#E6E3DA]/80" />
+                    <div className="w-10 h-10 rounded-full bg-[#E6E3DA]/80 dark:bg-[#2A2E29]/80" />
                     <div className="space-y-1.5">
-                      <div className="w-28 h-3 rounded bg-[#E6E3DA]" />
-                      <div className="w-16 h-2.5 rounded bg-[#E6E3DA]/60" />
+                      <div className="w-28 h-3 rounded bg-[#E6E3DA] dark:bg-[#2A2E29]" />
+                      <div className="w-16 h-2.5 rounded bg-[#E6E3DA]/60 dark:bg-[#2A2E29]/60" />
                     </div>
                   </div>
-                  <div className="w-7 h-7 rounded-full bg-[#E6E3DA]" />
+                  <div className="w-7 h-7 rounded-full bg-[#E6E3DA] dark:bg-[#2A2E29]" />
                 </div>
               ))}
             </div>
@@ -227,7 +227,7 @@ export default function PortfolioReactionsModal({
 
           {/* Error State */}
           {!loading && error && (
-            <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2 my-2">
+            <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-xs flex items-center gap-2 my-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
@@ -236,12 +236,12 @@ export default function PortfolioReactionsModal({
           {/* Empty State */}
           {!loading && !error && filteredReactions.length === 0 && (
             <div className="py-12 text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-[#E4EEE8] text-[#1B4332] border border-[#1B4332]/20 flex items-center justify-center mx-auto shadow-2xs">
+              <div className="w-12 h-12 rounded-2xl bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] border border-[#1B4332]/20 dark:border-[#3FA873]/30 flex items-center justify-center mx-auto shadow-2xs">
                 <Users className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-xs font-bold text-[#16160F]">No reactions yet</p>
-                <p className="text-[11px] text-[#6B6858] mt-0.5">
+                <p className="text-xs font-bold text-[#16160F] dark:text-[#F2F1EC]">No reactions yet</p>
+                <p className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C] mt-0.5">
                   Be the first to appreciate this work!
                 </p>
               </div>
@@ -278,14 +278,14 @@ export default function PortfolioReactionsModal({
                     }
                     className={`flex items-center justify-between p-2.5 rounded-xl transition-all select-none border border-transparent ${
                       isSelf
-                        ? "bg-[#F7F6F2]/60 cursor-default"
-                        : "hover:bg-[#F7F6F2] active:bg-[#E4EEE8] cursor-pointer group hover:border-[#E6E3DA] focus:outline-none focus:ring-2 focus:ring-[#1B4332]/40"
+                        ? "bg-[#F7F6F2]/60 dark:bg-[#202520]/60 cursor-default"
+                        : "hover:bg-[#F7F6F2] dark:hover:bg-[#202520] active:bg-[#E4EEE8] dark:active:bg-[#2A2E29] cursor-pointer group hover:border-[#E6E3DA] dark:hover:border-[#2A2E29] focus:outline-none focus:ring-2 focus:ring-[#1B4332]/40 dark:focus:ring-[#3FA873]/40"
                     }`}
                     title={isSelf ? "Your reaction" : `View ${displayName}'s profile`}
                   >
                     {/* Left: Avatar + Name + Subtitle */}
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className={`w-10 h-10 rounded-full bg-[#1B4332] text-white font-bold text-xs flex items-center justify-center overflow-hidden border border-[#E6E3DA] shrink-0 shadow-2xs ${!isSelf ? "group-hover:scale-105 transition-transform" : ""}`}>
+                      <div className={`w-10 h-10 rounded-full bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] font-bold text-xs flex items-center justify-center overflow-hidden border border-[#E6E3DA] dark:border-[#2A2E29] shrink-0 shadow-2xs ${!isSelf ? "group-hover:scale-105 transition-transform" : ""}`}>
                         {avatar ? (
                           <img
                             src={avatar}
@@ -299,7 +299,7 @@ export default function PortfolioReactionsModal({
 
                       <div className="truncate">
                         <div className="flex items-center gap-1.5">
-                          <p className={`text-xs font-bold truncate ${isSelf ? "text-[#1B4332]" : "text-[#16160F] group-hover:text-[#1B4332] transition-colors"}`}>
+                          <p className={`text-xs font-bold truncate ${isSelf ? "text-[#1B4332] dark:text-[#3FA873]" : "text-[#16160F] dark:text-[#F2F1EC] group-hover:text-[#1B4332] dark:group-hover:text-[#3FA873] transition-colors"}`}>
                             {displayName}
                           </p>
                           {!isSelf && (
@@ -310,16 +310,16 @@ export default function PortfolioReactionsModal({
                           )}
                         </div>
                         {isSelf ? (
-                          <p className="text-[11px] text-[#6B6858] font-medium flex items-center gap-1 mt-0.5">
+                          <p className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C] font-medium flex items-center gap-1 mt-0.5">
                             <span>{config.emoji}</span>
                             <span>{config.label}</span>
                           </p>
                         ) : location ? (
-                          <p className="text-[11px] text-[#6B6858] font-medium truncate mt-0.5">
+                          <p className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C] font-medium truncate mt-0.5">
                             {location}
                           </p>
                         ) : (
-                          <p className="text-[11px] text-[#6B6858] font-medium flex items-center gap-1 mt-0.5">
+                          <p className="text-[11px] text-[#6B6858] dark:text-[#9C9A8C] font-medium flex items-center gap-1 mt-0.5">
                             <span>{config.emoji}</span>
                             <span>{config.label}</span>
                           </p>
@@ -329,7 +329,7 @@ export default function PortfolioReactionsModal({
 
                     {/* Right: Reaction Emoji Badge */}
                     <div
-                      className={`w-8 h-8 rounded-full bg-[#E4EEE8] border border-[#1B4332]/20 flex items-center justify-center text-base shrink-0 shadow-2xs ${!isSelf ? "group-hover:scale-110 transition-transform" : ""}`}
+                      className={`w-8 h-8 rounded-full bg-[#E4EEE8] dark:bg-[#1C2E24] border border-[#1B4332]/20 dark:border-[#3FA873]/30 flex items-center justify-center text-base shrink-0 shadow-2xs ${!isSelf ? "group-hover:scale-110 transition-transform" : ""}`}
                       title={config.label}
                     >
                       <span>{config.emoji}</span>
