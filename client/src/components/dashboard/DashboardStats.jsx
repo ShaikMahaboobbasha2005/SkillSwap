@@ -82,15 +82,15 @@ export default function DashboardStats({
             <Link
               key={stat.label}
               to={stat.to}
-              className="group bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl p-4 sm:p-5 hover:border-[#1B4332] dark:hover:border-[#3FA873] hover:shadow-xs transition-all duration-150 flex flex-col justify-between relative"
+              className="motion-card-interactive group bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl p-4 sm:p-5 hover:border-[#1B4332] dark:hover:border-[#3FA873] hover:shadow-xs flex flex-col justify-between relative"
             >
               <div className="flex items-start justify-between gap-2">
                 <div
-                  className={`w-7 h-7 rounded-lg ${stat.badgeColor} flex items-center justify-center shrink-0 border border-black/5 dark:border-white/5`}
+                  className={`w-7 h-7 rounded-lg ${stat.badgeColor} flex items-center justify-center shrink-0 border border-black/5 dark:border-white/5 transition-transform duration-200 group-hover:scale-105`}
                 >
                   <Icon className={`w-3.5 h-3.5 ${stat.iconColor}`} />
                 </div>
-                <ArrowUpRight className="w-3.5 h-3.5 text-[#6B6858] dark:text-[#9C9A8C] opacity-0 group-hover:opacity-100 transition-opacity group-hover:text-[#1B4332] dark:group-hover:text-[#3FA873]" />
+                <ArrowUpRight className="w-3.5 h-3.5 text-[#6B6858] dark:text-[#9C9A8C] opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-[#1B4332] dark:group-hover:text-[#3FA873]" />
               </div>
 
               <div className="mt-3">

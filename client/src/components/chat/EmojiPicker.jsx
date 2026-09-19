@@ -98,7 +98,7 @@ export default function EmojiPicker({ onSelectEmoji, onClose }) {
   return (
     <div
       ref={containerRef}
-      className="absolute right-0 bottom-full mb-2 z-40 w-[min(320px,calc(100vw-24px))] bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl shadow-xl p-2 sm:p-2.5 animate-in fade-in zoom-in-95 duration-150 flex flex-col max-h-[260px] overflow-hidden"
+      className="absolute right-0 bottom-full mb-2 z-40 w-[min(320px,calc(100vw-24px))] bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl shadow-xl p-2 sm:p-2.5 animate-dropdown-enter flex flex-col max-h-[260px] overflow-hidden"
     >
       {/* Category Tabs Header */}
       <div className="flex items-center justify-between border-b border-[#E6E3DA] dark:border-[#2A2E29] pb-1.5 mb-1.5 shrink-0 gap-1 overflow-x-auto scrollbar-none">

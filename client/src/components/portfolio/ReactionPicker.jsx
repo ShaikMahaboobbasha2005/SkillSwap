@@ -199,7 +199,7 @@ export default function ReactionPicker({
             title={`Reacted with ${currentConfig?.label}. Click to change or remove.`}
             aria-label={`Reacted with ${currentConfig?.label}. Click to change or remove.`}
           >
-            <span className="text-sm leading-none animate-bounce-short">{currentConfig?.emoji}</span>
+            <span className="text-sm leading-none inline-block transition-transform duration-200 group-hover:scale-110">{currentConfig?.emoji}</span>
             <span>{currentConfig?.label}</span>
           </button>
         )}

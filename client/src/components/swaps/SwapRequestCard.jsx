@@ -209,7 +209,7 @@ export default function SwapRequestCard({
     <article
       id={`swap-card-${swapId}`}
       data-swap-id={swapId}
-      className={`rounded-2xl p-5 shadow-xs transition-all duration-500 flex flex-col justify-between space-y-4 group border ${
+      className={`rounded-2xl p-5 shadow-xs transition-all duration-500 motion-card-interactive flex flex-col justify-between space-y-4 group border ${
         isHighlighted
           ? "bg-[#E4EEE8]/40 dark:bg-[#1C2E24]/50 border-[#1B4332] dark:border-[#3FA873] ring-2 ring-[#1B4332]/30 dark:ring-[#3FA873]/40 shadow-md scale-[1.01]"
           : "bg-white dark:bg-[#181B18] border-[#E6E3DA] dark:border-[#2A2E29] hover:border-[#1B4332]/30 dark:hover:border-[#3FA873]/40"
@@ -457,7 +457,7 @@ export default function SwapRequestCard({
                       type="button"
                       onClick={() => onCancelCompletion(swap)}
                       disabled={isProcessing}
-                      className="h-8 px-3 text-xs font-semibold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-950/60 border border-amber-300 dark:border-amber-800/50 rounded-xl transition-all disabled:opacity-50 cursor-pointer inline-flex items-center gap-1"
+                      className="h-8 px-3 text-xs font-semibold text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-950/60 border border-amber-300 dark:border-amber-800/50 rounded-xl transition-all disabled:opacity-50 cursor-pointer inline-flex items-center gap-1 motion-btn-interactive"
                     >
                       <XIcon className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
                       <span>Cancel Request</span>
@@ -471,7 +471,7 @@ export default function SwapRequestCard({
                       type="button"
                       onClick={() => onComplete(swap)}
                       disabled={isProcessing}
-                      className="h-8 px-3 text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800/50 rounded-xl transition-all disabled:opacity-50 cursor-pointer inline-flex items-center gap-1"
+                      className="h-8 px-3 text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800/50 rounded-xl transition-all disabled:opacity-50 cursor-pointer inline-flex items-center gap-1 motion-btn-interactive"
                     >
                       <Check className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
                       <span>Mark Completed</span>
@@ -483,7 +483,7 @@ export default function SwapRequestCard({
                       type="button"
                       onClick={() => onLeave(swap)}
                       disabled={isProcessing}
-                      className="h-8 px-3 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-[#202520] hover:bg-zinc-200 dark:hover:bg-[#283028] border border-zinc-300 dark:border-[#2A2E29] rounded-xl transition-all disabled:opacity-50 cursor-pointer inline-flex items-center gap-1"
+                      className="h-8 px-3 text-xs font-semibold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-[#202520] hover:bg-zinc-200 dark:hover:bg-[#283028] border border-zinc-300 dark:border-[#2A2E29] rounded-xl transition-all disabled:opacity-50 cursor-pointer inline-flex items-center gap-1 motion-btn-interactive"
                     >
                       <Ban className="w-3.5 h-3.5 text-zinc-600 dark:text-[#767468]" />
                       <span>Leave Swap</span>
@@ -494,7 +494,7 @@ export default function SwapRequestCard({
 
               <Link
                 to={counterpartId ? `/chats/${counterpartId}` : "/chats"}
-                className="h-8 px-4 text-xs font-semibold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#338d60] rounded-xl transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                className="h-8 px-4 text-xs font-semibold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#338d60] rounded-xl transition-all motion-btn-interactive cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
                 <span>Open Chat</span>
@@ -516,7 +516,7 @@ export default function SwapRequestCard({
                       type="button"
                       onClick={() => onRatePartner(swap, () => setHasRated(true))}
                       disabled={isProcessing || loadingRatingStatus}
-                      className="h-8 px-3.5 text-xs font-bold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#338d60] rounded-xl transition-all inline-flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-[0.98] disabled:opacity-50"
+                      className="h-8 px-3.5 text-xs font-bold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#338d60] rounded-xl transition-all inline-flex items-center gap-1.5 shadow-2xs cursor-pointer motion-btn-interactive disabled:opacity-50"
                     >
                       <Star className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
                       <span>Rate Partner</span>
@@ -527,7 +527,7 @@ export default function SwapRequestCard({
 
               <Link
                 to={`/swaps/${swapId}/chat`}
-                className="h-8 px-3.5 text-xs font-semibold text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] hover:bg-[#d5e5db] dark:hover:bg-[#243d30] border border-[#1B4332]/20 dark:border-[#3FA873]/30 rounded-xl transition-all active:scale-[0.98] cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                className="h-8 px-3.5 text-xs font-semibold text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] hover:bg-[#d5e5db] dark:hover:bg-[#243d30] border border-[#1B4332]/20 dark:border-[#3FA873]/30 rounded-xl transition-all motion-btn-interactive cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
               >
                 <MessageSquare className="w-3.5 h-3.5 text-[#1B4332] dark:text-[#3FA873]" />
                 <span>View Chat</span>
@@ -544,7 +544,7 @@ export default function SwapRequestCard({
                     type="button"
                     onClick={onReject ? () => onReject(swap) : undefined}
                     disabled={isProcessing}
-                    className="h-8 px-3.5 text-xs font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-950/60 border border-red-200 dark:border-red-800/40 rounded-xl transition-all disabled:opacity-50 cursor-pointer inline-flex items-center gap-1"
+                    className="h-8 px-3.5 text-xs font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-950/60 border border-red-200 dark:border-red-800/40 rounded-xl transition-all disabled:opacity-50 cursor-pointer inline-flex items-center gap-1 motion-btn-interactive"
                   >
                     <XIcon className="w-3.5 h-3.5" />
                     <span>Reject</span>
@@ -554,7 +554,7 @@ export default function SwapRequestCard({
                     type="button"
                     onClick={onAccept ? () => onAccept(swap) : undefined}
                     disabled={isProcessing}
-                    className="h-8 px-4 text-xs font-semibold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#338d60] rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
+                    className="h-8 px-4 text-xs font-semibold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#338d60] rounded-xl transition-all motion-btn-interactive disabled:opacity-50 cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
                   >
                     <Check className="w-3.5 h-3.5" />
                     <span>Accept Swap</span>
@@ -565,7 +565,7 @@ export default function SwapRequestCard({
                   type="button"
                   onClick={onCancel ? () => onCancel(swap) : undefined}
                   disabled={isProcessing}
-                  className="h-8 px-3.5 text-xs font-semibold text-[#6B6858] dark:text-[#9C9A8C] hover:text-red-700 dark:hover:text-red-400 bg-[#F7F6F2] dark:bg-[#202520] hover:bg-red-50 dark:hover:bg-red-950/40 border border-[#E6E3DA] dark:border-[#2A2E29] hover:border-red-200 dark:hover:border-red-800/40 rounded-xl transition-all disabled:opacity-50 cursor-pointer inline-flex items-center gap-1"
+                  className="h-8 px-3.5 text-xs font-semibold text-[#6B6858] dark:text-[#9C9A8C] hover:text-red-700 dark:hover:text-red-400 bg-[#F7F6F2] dark:bg-[#202520] hover:bg-red-50 dark:hover:bg-red-950/40 border border-[#E6E3DA] dark:border-[#2A2E29] hover:border-red-200 dark:hover:border-red-800/40 rounded-xl transition-all disabled:opacity-50 cursor-pointer inline-flex items-center gap-1 motion-btn-interactive"
                 >
                   <Ban className="w-3.5 h-3.5" />
                   <span>Cancel Request</span>

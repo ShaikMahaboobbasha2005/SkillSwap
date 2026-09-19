@@ -10,6 +10,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Home from "./pages/Home";
+import LandingPage from "./pages/LandingPage";
 import DiscoverPage from "./pages/DiscoverPage";
 import OwnProfile from "./pages/OwnProfile";
 import PublicProfile from "./pages/PublicProfile";
@@ -20,6 +21,35 @@ import ChatPage from "./pages/ChatPage";
 import RecommendationsPage from "./pages/RecommendationsPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import SettingsPage from "./pages/SettingsPage";
+import useAuth from "./hooks/useAuth";
+
+/**
+ * RootRoute — Pre-login / Post-login Intelligent Dispatcher
+ * Unauthenticated visitors view the 3D Scroll Landing Page.
+ * Authenticated users view their interactive Home Dashboard.
+ */
+function RootRoute() {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F7F6F2] dark:bg-[#0F1210] text-[#16160F] dark:text-[#F2F1EC] transition-colors duration-150">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="w-10 h-10 border-4 border-[#1B4332] dark:border-[#3FA873] border-t-transparent dark:border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#6B6858] dark:text-[#F2F1EC]">
+            Verifying authentication...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Home />;
+  }
+
+  return <LandingPage />;
+}
 
 function App() {
   return (
@@ -37,6 +67,9 @@ function App() {
 
                 {/* Main Application Shell with Shared Mobile Navigation & Safe-Area Clearance */}
                 <Route element={<AppLayout />}>
+                  {/* Intelligent Root: LandingPage (guest) or Home (authenticated) */}
+                  <Route path="/" element={<RootRoute />} />
+
                   {/* Public User & Portfolio Routes */}
                   <Route path="/users/:id" element={<PublicProfile />} />
                   <Route path="/profile/:id" element={<PublicProfile />} />
@@ -45,7 +78,6 @@ function App() {
 
                   {/* Protected Routes */}
                   <Route element={<ProtectedRoute />}>
-                    <Route path="/" element={<Home />} />
                     <Route path="/discover" element={<DiscoverPage />} />
                     <Route path="/recommendations" element={<RecommendationsPage />} />
                     <Route path="/matches" element={<RecommendationsPage />} />

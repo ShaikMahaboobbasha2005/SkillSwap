@@ -128,7 +128,7 @@ export default function PublicProfile() {
       <Navbar />
 
       {/* Main Content */}
-      <main className="max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 space-y-6">
+      <main key={id} className="max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 space-y-6 animate-page-enter">
         
         {/* PROFILE HEADER CARD */}
         <div className="bg-white dark:bg-[#181B18] rounded-2xl border border-[#E6E3DA] dark:border-[#2A2E29] overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
@@ -168,19 +168,21 @@ export default function PublicProfile() {
 
                 {/* Contextual Dropdown Menu for Avatar */}
                 {avatarMenuOpen && (
-                  <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl shadow-xl py-1.5 z-40 animate-fadeIn">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAvatarMenuOpen(false);
-                        console.log("[PublicProfile] Opening AvatarLightboxModal with imageSrc:", currentPicture);
-                        setShowAvatarLightbox(true);
-                      }}
-                      className="w-full px-3.5 py-2 text-xs font-semibold text-[#16160F] dark:text-[#F2F1EC] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] hover:text-[#1B4332] dark:hover:text-[#3FA873] transition-colors flex items-center gap-2 cursor-pointer text-left"
-                    >
-                      <Eye className="w-3.5 h-3.5 text-[#1B4332] dark:text-[#3FA873]" />
-                      <span>View Profile Picture</span>
-                    </button>
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-40">
+                    <div className="w-48 bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl shadow-xl py-1.5 animate-dropdown-enter origin-top">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAvatarMenuOpen(false);
+                          console.log("[PublicProfile] Opening AvatarLightboxModal with imageSrc:", currentPicture);
+                          setShowAvatarLightbox(true);
+                        }}
+                        className="w-full px-3.5 py-2 text-xs font-semibold text-[#16160F] dark:text-[#F2F1EC] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] hover:text-[#1B4332] dark:hover:text-[#3FA873] transition-colors flex items-center gap-2 cursor-pointer text-left"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-[#1B4332] dark:text-[#3FA873]" />
+                        <span>View Profile Picture</span>
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import useNotifications from "../hooks/useNotifications";
 import Navbar from "../components/Navbar";
 import NotificationItem from "../components/notifications/NotificationItem";
@@ -43,11 +44,13 @@ export default function NotificationsPage() {
       ? notifications.filter((n) => !n.read)
       : notifications;
 
+  const location = useLocation();
+
   return (
     <div className="min-h-screen bg-[#F7F6F2] dark:bg-[#0F1210] flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-8">
+      <main key={location.pathname} className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-8 animate-page-enter">
         {/* Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#E6E3DA] dark:border-[#2A2E29]">
           <div>

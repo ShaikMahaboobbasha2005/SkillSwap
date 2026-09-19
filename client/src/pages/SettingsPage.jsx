@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import useTheme from "../hooks/useTheme";
 import Navbar from "../components/Navbar";
@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 
 export default function SettingsPage() {
+  const location = useLocation();
   const { user, logout } = useAuth();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const navigate = useNavigate();
@@ -90,9 +91,9 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-[var(--bg)] text-[var(--ink)] flex flex-col font-sans transition-colors duration-150">
       <Navbar />
 
-      <main className="flex-1 max-w-2xl w-full mx-auto px-3.5 sm:px-6 py-5 sm:py-7 space-y-5 sm:space-y-6">
+      <main key={location.pathname} className="flex-1 max-w-2xl w-full mx-auto px-3.5 sm:px-6 py-5 sm:py-7 space-y-5 sm:space-y-6 animate-page-enter">
         {/* Page Header */}
-        <div className="border-b border-[var(--border)] pb-3.5">
+        <div className="border-b border-[var(--border)] pb-3.5 animate-section-enter">
           <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[var(--ink-muted)] mb-1">
             <Link to="/" className="hover:text-[var(--accent)] transition-colors">
               Home
@@ -111,7 +112,7 @@ export default function SettingsPage() {
         {/* ====================================================== */}
         {/* 1. ACCOUNT SECTION */}
         {/* ====================================================== */}
-        <section aria-labelledby="account-heading" className="space-y-2.5">
+        <section aria-labelledby="account-heading" className="space-y-2.5 animate-section-enter stagger-1">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center shrink-0">
               <User className="w-3.5 h-3.5" />
@@ -233,7 +234,7 @@ export default function SettingsPage() {
                     <button
                       type="button"
                       onClick={handleCopyUserId}
-                      className="p-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--ink-muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                      className="p-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--ink-muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors shrink-0 cursor-pointer motion-btn-interactive focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                       aria-label="Copy User ID to clipboard"
                       title="Copy User ID"
                     >
@@ -304,7 +305,7 @@ export default function SettingsPage() {
         {/* ====================================================== */}
         {/* 2. PREFERENCES (APPEARANCE & NOTIFICATIONS) */}
         {/* ====================================================== */}
-        <section aria-labelledby="preferences-heading" className="space-y-2.5">
+        <section aria-labelledby="preferences-heading" className="space-y-2.5 animate-section-enter stagger-2">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center shrink-0">
               <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -351,7 +352,7 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={() => setTheme("system")}
-                  className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between min-h-[96px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+                  className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between min-h-[96px] cursor-pointer motion-card-interactive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
                     theme === "system"
                       ? "border-2 border-[var(--accent)] bg-[var(--accent-soft)]/40 shadow-xs"
                       : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--accent)]/40 hover:bg-[var(--bg)]/50"
@@ -396,7 +397,7 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={() => setTheme("light")}
-                  className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between min-h-[96px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+                  className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between min-h-[96px] cursor-pointer motion-card-interactive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
                     theme === "light"
                       ? "border-2 border-[var(--accent)] bg-[var(--accent-soft)]/40 shadow-xs"
                       : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--accent)]/40 hover:bg-[var(--bg)]/50"
@@ -439,7 +440,7 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={() => setTheme("dark")}
-                  className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between min-h-[96px] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+                  className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between min-h-[96px] cursor-pointer motion-card-interactive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
                     theme === "dark"
                       ? "border-2 border-[var(--accent)] bg-[var(--accent-soft)]/40 shadow-xs"
                       : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--accent)]/40 hover:bg-[var(--bg)]/50"
@@ -473,7 +474,7 @@ export default function SettingsPage() {
                       Dark
                     </p>
                     <p className="text-[10px] text-[var(--ink-muted)] mt-0.5">
-                      Deep charcoal theme
+                      Sleek dark theme
                     </p>
                   </div>
                 </button>
@@ -493,14 +494,14 @@ export default function SettingsPage() {
                 <div>
                   <h3 className="text-xs font-bold text-[var(--ink)] flex items-center gap-1.5">
                     <Bell className="w-3.5 h-3.5 text-[var(--accent)]" />
-                    <span>In-app notifications</span>
+                    <span>In-App Notifications</span>
                   </h3>
                   <p className="text-[11px] text-[var(--ink-muted)] mt-0.5">
-                    Swap requests, swap updates, meetings and reviews appear in the notification center.
+                    Live events and activity updates sent to your notification bell.
                   </p>
                 </div>
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-[var(--accent-soft)] text-[var(--accent)] shrink-0">
-                  Active
+                <span className="text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                  Always Active
                 </span>
               </div>
 
@@ -586,7 +587,7 @@ export default function SettingsPage() {
         {/* ====================================================== */}
         {/* 3. PRIVACY SECTION */}
         {/* ====================================================== */}
-        <section aria-labelledby="privacy-heading" className="space-y-2.5">
+        <section aria-labelledby="privacy-heading" className="space-y-2.5 animate-section-enter stagger-3">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)] flex items-center justify-center shrink-0">
               <Shield className="w-3.5 h-3.5" />
@@ -630,7 +631,7 @@ export default function SettingsPage() {
         {/* ====================================================== */}
         {/* 4. ACCOUNT ACTIONS (LOGOUT) */}
         {/* ====================================================== */}
-        <section aria-labelledby="actions-heading" className="space-y-2.5">
+        <section aria-labelledby="actions-heading" className="space-y-2.5 animate-section-enter stagger-4">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
               <LogOut className="w-3.5 h-3.5" />
@@ -660,7 +661,7 @@ export default function SettingsPage() {
                 <button
                   type="button"
                   onClick={() => setShowLogoutConfirm(true)}
-                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-500/10 hover:bg-red-500/15 border border-red-500/20 rounded-xl transition-colors shrink-0 cursor-pointer self-start sm:self-center focus-visible:ring-2 focus-visible:ring-red-500"
+                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-500/10 hover:bg-red-500/15 border border-red-500/20 rounded-xl transition-colors shrink-0 cursor-pointer motion-btn-interactive self-start sm:self-center focus-visible:ring-2 focus-visible:ring-red-500"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Log Out</span>
@@ -672,7 +673,7 @@ export default function SettingsPage() {
             {showLogoutConfirm && (
               <div
                 role="alert"
-                className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 space-y-2 animate-fadeIn"
+                className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 space-y-2 animate-dropdown-enter"
               >
                 <div className="flex items-center gap-1.5 text-red-700 dark:text-red-300">
                   <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-red-600 dark:text-red-400" />
@@ -689,7 +690,7 @@ export default function SettingsPage() {
                     type="button"
                     disabled={isLoggingOut}
                     onClick={handleConfirmLogout}
-                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-xs cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-red-600"
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-xs cursor-pointer motion-btn-interactive disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-red-600"
                   >
                     <LogOut className="w-3 h-3" />
                     <span>{isLoggingOut ? "Logging out..." : "Log out"}</span>
@@ -699,7 +700,7 @@ export default function SettingsPage() {
                     type="button"
                     disabled={isLoggingOut}
                     onClick={() => setShowLogoutConfirm(false)}
-                    className="px-3 py-1.5 text-xs font-semibold text-[var(--ink)] bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--bg)] rounded-lg transition-colors cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                    className="px-3 py-1.5 text-xs font-semibold text-[var(--ink)] bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--bg)] rounded-lg transition-colors cursor-pointer motion-btn-interactive disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
                   >
                     Cancel
                   </button>

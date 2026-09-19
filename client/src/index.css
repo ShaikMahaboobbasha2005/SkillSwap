@@ -66,6 +66,229 @@ body {
   font-family: Georgia, Cambria, "Times New Roman", Times, serif;
 }
 
+/* Phase 13.2 — SkillSwap Motion Foundation & Keyframes */
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sectionEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dropdownEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes tabFade {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes subtlePulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.65;
+  }
+}
+
+.animate-page-enter {
+  animation: pageEnter 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-section-enter {
+  animation: sectionEnter 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-dropdown-enter {
+  animation: dropdownEnter 190ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: top right;
+}
+
+.animate-tab-fade {
+  animation: tabFade 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-subtle-pulse {
+  animation: subtlePulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Phase 13.3 — SkillSwap Animated Hero Tokens */
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroSlideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes heroSlideRight {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes heroExchangeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes heroExchangePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.88;
+  }
+}
+
+.animate-hero-fade-up {
+  animation: heroFadeUp 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-hero-slide-left {
+  animation: heroSlideLeft 440ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-hero-slide-right {
+  animation: heroSlideRight 440ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-hero-exchange-in {
+  animation: heroExchangeIn 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-hero-pulse {
+  animation: heroExchangePulse 4s ease-in-out infinite;
+}
+
+.hero-delay-0 {
+  animation-delay: 0ms;
+  animation-fill-mode: both;
+}
+
+.hero-delay-1 {
+  animation-delay: 60ms;
+  animation-fill-mode: both;
+}
+
+.hero-delay-2 {
+  animation-delay: 120ms;
+  animation-fill-mode: both;
+}
+
+.hero-delay-3 {
+  animation-delay: 180ms;
+  animation-fill-mode: both;
+}
+
+.hero-delay-4 {
+  animation-delay: 240ms;
+  animation-fill-mode: both;
+}
+
+.hero-delay-5 {
+  animation-delay: 300ms;
+  animation-fill-mode: both;
+}
+
+/* Progressive Stagger Utilities */
+.stagger-1 {
+  animation-delay: 60ms;
+  animation-fill-mode: both;
+}
+
+.stagger-2 {
+  animation-delay: 120ms;
+  animation-fill-mode: both;
+}
+
+.stagger-3 {
+  animation-delay: 180ms;
+  animation-fill-mode: both;
+}
+
+.stagger-4 {
+  animation-delay: 240ms;
+  animation-fill-mode: both;
+}
+
+/* Micro-Interaction Tokens */
+.motion-card-interactive {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.motion-card-interactive:hover {
+  transform: translateY(-2px);
+}
+
+.motion-card-interactive:active {
+  transform: scale(0.99);
+}
+
+.motion-btn-interactive {
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s ease-out, border-color 0.15s ease-out, color 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+
+.motion-btn-interactive:active {
+  transform: scale(0.98);
+}
+
 /* Custom Micro-Animations */
 @keyframes fadeIn {
   from {
@@ -169,11 +392,6 @@ textarea:focus-visible {
   100% { transform: scale(1) rotate(0); }
 }
 
-@keyframes bounceShort {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
-}
-
 @keyframes toastCountdown {
   from {
     width: 100%;
@@ -187,16 +405,14 @@ textarea:focus-visible {
   animation: reactionPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.animate-bounce-short {
-  animation: bounceShort 0.8s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -103,7 +103,7 @@ export default function ActiveSwapsSection({ swaps = [], loading = false, curren
                 return (
                   <div
                     key={swapId}
-                    className="p-3.5 sm:p-4 rounded-xl border border-[#E6E3DA] dark:border-[#2A2E29] bg-white dark:bg-[#181B18] hover:border-[#1B4332] dark:hover:border-[#3FA873] transition-all duration-150 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
+                    className="motion-card-interactive p-3.5 sm:p-4 rounded-xl border border-[#E6E3DA] dark:border-[#2A2E29] bg-white dark:bg-[#181B18] hover:border-[#1B4332] dark:hover:border-[#3FA873] hover:shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
                   >
                     {/* Partner info + Skills */}
                     <div className="flex items-start sm:items-center gap-3 min-w-0">
@@ -112,10 +112,10 @@ export default function ActiveSwapsSection({ swaps = [], loading = false, curren
                           <img
                             src={partnerAvatar}
                             alt={partnerName}
-                            className="w-10 h-10 rounded-full object-cover border border-[#E6E3DA] dark:border-[#2A2E29]"
+                            className="w-10 h-10 rounded-full object-cover border border-[#E6E3DA] dark:border-[#2A2E29] transition-transform duration-200 group-hover:scale-105"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] font-bold flex items-center justify-center text-sm border border-[#1B4332]/20 dark:border-[#3FA873]/30">
+                          <div className="w-10 h-10 rounded-full bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] font-bold flex items-center justify-center text-sm border border-[#1B4332]/20 dark:border-[#3FA873]/30 transition-transform duration-200 group-hover:scale-105">
                             {partnerName.charAt(0).toUpperCase()}
                           </div>
                         )}
@@ -140,7 +140,7 @@ export default function ActiveSwapsSection({ swaps = [], loading = false, curren
                             <OfferedSkillIcon className="w-3 h-3 shrink-0" />
                             <span className="truncate max-w-[120px]">{partnerSkillName}</span>
                           </span>
-                          <span className="text-[#6B6858] dark:text-[#9C9A8C]">↔</span>
+                          <span className="text-[#6B6858] dark:text-[#9C9A8C] transition-transform duration-200 group-hover:translate-x-0.5 inline-block">↔</span>
                           <span className="inline-flex items-center gap-1 font-semibold text-[#16160F] dark:text-[#F2F1EC] bg-[#F7F6F2] dark:bg-[#111412] border border-[#E6E3DA] dark:border-[#2A2E29] px-1.5 py-0.5 rounded text-[11px]">
                             <WantedSkillIcon className="w-3 h-3 shrink-0 text-amber-700 dark:text-amber-400" />
                             <span className="truncate max-w-[120px]">{mySkillName}</span>
@@ -153,7 +153,7 @@ export default function ActiveSwapsSection({ swaps = [], loading = false, curren
                     <div className="flex items-center justify-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#E6E3DA]/60 dark:border-[#2A2E29]/60">
                       <Link
                         to={`/swaps/${swapId}/chat`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] hover:bg-[#153427] dark:hover:bg-[#338d60] transition-colors shrink-0 shadow-2xs"
+                        className="motion-btn-interactive inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] hover:bg-[#153427] dark:hover:bg-[#338d60] shrink-0 shadow-2xs"
                       >
                         <MessageSquare className="w-3.5 h-3.5" />
                         <span>Open Chat →</span>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import { useSwap } from "../context/SwapContext";
 import useNotifications from "../hooks/useNotifications";
@@ -151,30 +152,36 @@ export default function Home() {
   const avgRating = !isNaN(numRating) && numRating >= 0 ? numRating : 0;
   const currentUserId = user?._id || user?.id;
 
+  const location = useLocation();
+
   return (
     <div className="min-h-screen bg-[#F7F6F2] dark:bg-[#0F1210] text-[#16160F] dark:text-[#F2F1EC] flex flex-col font-sans antialiased transition-colors duration-150">
       {/* Centralized Shared Navigation Bar */}
       <Navbar />
 
       {/* Main Dashboard Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+      <main key={location.pathname} className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 animate-page-enter">
         {/* 1. Hero / Welcome Section + Quick Actions */}
-        <DashboardHero user={user} />
+        <div className="animate-section-enter">
+          <DashboardHero user={user} skills={skillsList} loading={loading} />
+        </div>
 
         {/* 2. Account Snapshot Stats */}
-        <DashboardStats
-          skillsOffered={skillsOfferedCount}
-          skillsWanted={skillsWantedCount}
-          activeSwaps={activeSwapsCount}
-          completedSwaps={completedSwapsCount}
-          avgRating={avgRating}
-          loading={loading}
-        />
+        <div className="animate-section-enter stagger-1">
+          <DashboardStats
+            skillsOffered={skillsOfferedCount}
+            skillsWanted={skillsWantedCount}
+            activeSwaps={activeSwapsCount}
+            completedSwaps={completedSwapsCount}
+            avgRating={avgRating}
+            loading={loading}
+          />
+        </div>
 
         {/* 3. Primary Dashboard Grid (2-Column Desktop, 1-Column Mobile) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           {/* Left Column: Primary Operational Workflows (Active Swaps & Matches) - 7 cols on lg */}
-          <div className="lg:col-span-7 space-y-6 lg:space-y-8 h-fit self-start">
+          <div className="lg:col-span-7 space-y-6 lg:space-y-8 h-fit self-start animate-section-enter stagger-2">
             <ActiveSwapsSection
               swaps={safeActiveSwaps}
               loading={loading}
@@ -188,7 +195,7 @@ export default function Home() {
           </div>
 
           {/* Right Column: Pending Actions & Activity Feed - 5 cols on lg */}
-          <div className="lg:col-span-5 space-y-6 lg:space-y-8 h-fit self-start">
+          <div className="lg:col-span-5 space-y-6 lg:space-y-8 h-fit self-start animate-section-enter stagger-3">
             <PendingRequestsSection
               pendingSwaps={safePendingSwaps}
               loading={loading}

@@ -285,7 +285,7 @@
       - **Notifications:** `NotificationBadge.jsx`, `NotificationBell.jsx`, `NotificationItem.jsx`, `NotificationSkeleton.jsx`, `NotificationsPage.jsx`.
       - **Profile & Skills:** `OwnProfile.jsx`, `PublicProfile.jsx`, `AnimatedStatCard.jsx`, `ProfileCompletionCard.jsx`, `ProfileSkeleton.jsx`, `ProfileBanner.jsx`, `ImageCropModal.jsx`, `CompactProfileStats.jsx`, `SocialLinksRow.jsx`, `AvatarLightboxModal.jsx`, `ReviewCard.jsx`, `ReviewsSection.jsx`, `PortfolioSection.jsx`, `CategoryBadge.jsx`, `LevelBadge.jsx`, `DeleteSkillDialog.jsx`, `SkillCard.jsx`, `SkillModal.jsx`, `SkillsSection.jsx`.
       - **Portfolio Module:** `PortfolioPage.jsx`, `PortfolioCard.jsx`, `PortfolioUploadModal.jsx`, `PortfolioEditModal.jsx`, `PortfolioReactionsModal.jsx`, `PortfolioReportModal.jsx`, `PortfolioLightbox.jsx`, `ReactionPicker.jsx`.
-      - **Authentication Pages:** `Login.jsx`, `Signup.jsx`.
+      - **Authentication Pages & Gates:** `Login.jsx`, `Signup.jsx`, `ProtectedRoute.jsx` (theme-aware auth loading screen with zero FOUC).
     - **Architecture Decisions:** Purely client-side persistence (`localStorage`) with zero backend API or MongoDB schema changes. Star rating gold `#B8860B` strictly preserved across both themes. High-contrast, minimal palette: warm charcoal `#0F1210` background, `#181B18` card surfaces, `#2A2E29` crisp borders, `#F2F1EC` primary text, `#9C9A8C` muted text, and `#3FA873` Pine Green accent.
 - **Done =** SkillSwap features a complete, production-grade Dark Mode across all views, with instant theme switching in Settings, synchronous anti-FOUC protection, zero build errors, and full documentation synchronization.
   - **Phase 12.3 — Account & Profile Settings (Completed):**
@@ -303,6 +303,58 @@
     - **Responsive Layout & Navigation Integrity:** 100% responsive across 320px to 1024px+ viewports without horizontal overflow, respecting shared `AppLayout` mobile safe-area clearance, preserving top-right avatar menu routing (`/profile`, `/settings`, `Logout`), and maintaining the 5-item mobile bottom navigation (`Home`, `Matches`, `Discover`, `Swaps`, `Chats`) untouched.
 - **Done =** Settings page is fully functional, compact, responsive, and synchronized with existing backend capabilities, with zero fake controls, 0 lint errors, and 0 build errors.
 
+## Phase 13 — Polish, Motion & Micro-Interactions
+- **Goal:** Elevate the SkillSwap user experience with a polished, Linear-inspired motion design system, smooth page transitions, and delightful micro-interactions without compromising performance or accessibility.
+- **Sub-Phases:**
+  - **Phase 13.1 — Full UI Audit & Motion Design Baseline (Completed):**
+    - Completed exhaustive UI/UX and motion audit of the SkillSwap frontend across all 7 core pages, navigation, and shared components.
+    - Established the motion design baseline: calm, Linear-inspired transitions, compositor-safe properties only, elimination of continuous bouncing animations.
+  - **Phase 13.2 — SkillSwap Motion Foundation & Visibility Correction (Completed):**
+    - **Root Cause & Visibility Calibration:**
+      - Rectified initial imperceptible motion (8px distance, 300ms duration, and 40ms stagger were too subtle to register on desktop displays; animations were completing during skeleton loads).
+      - Calibrated Page Entrance: `opacity: 0 -> 1`, `translateY(14px) -> translateY(0)`, `420ms cubic-bezier(0.16, 1, 0.3, 1)` with `animation-fill-mode: both`.
+      - Calibrated Section Entrance: `opacity: 0 -> 1`, `translateY(12px) -> translateY(0)`, `380ms cubic-bezier(0.16, 1, 0.3, 1)` with `animation-fill-mode: both`.
+      - Calibrated Progressive Staggers: `.stagger-1` (60ms), `.stagger-2` (120ms), `.stagger-3` (180ms), `.stagger-4` (240ms) enforcing `animation-fill-mode: both` to retain final visible state and prevent content clipping.
+      - Calibrated Dropdown & Popovers: `scale(0.96) translateY(-6px) -> scale(1) translateY(0)`, `190ms cubic-bezier(0.16, 1, 0.3, 1)` with `transform-origin: top right`. Separated positioning wrappers on `OwnProfile` and `PublicProfile` to resolve transform matrix collisions with Tailwind's `-translate-x-1/2`.
+      - Calibrated Tab Panel Transitions: `translateY(3px) -> translateY(0)`, `200ms cubic-bezier(0.16, 1, 0.3, 1)` with scoped contextual keying (`key={`${activeTab}-${statusFilter}`}`) on `SwapRequestsPage`.
+    - **Navigation Lifecycle Synchronization:**
+      - Wired `useLocation` and `key={location.pathname}` across all main page views (`Home`, `DiscoverPage`, `RecommendationsPage`, `SwapRequestsPage`, `ChatsPage`, `OwnProfile`, `PublicProfile`, `PortfolioPage`, `NotificationsPage`, `SettingsPage`) ensuring entrance animations visibly trigger during in-app navigation (`Home` → `Discover` → `Matches` → `Swaps` → `Chats` → `Profile` → `Settings`).
+      - Connected `DiscoverGrid` and `RecommendationsPage` card containers to trigger entrance transitions once asynchronous data finishes loading.
+    - **Micro-Interactions & Reduced Motion:**
+      - Tactile button interaction (`.motion-btn-interactive`) and subtle card hover elevation (`.motion-card-interactive`) without layout shifts.
+      - Full accessibility support in `@media (prefers-reduced-motion: reduce)` zeroing durations (`0.01ms`), resetting delays (`animation-delay: 0s !important`), and enforcing `scroll-behavior: auto !important`.
+  - **Phase 13.3 — Cinematic 3D Landing Page & Animated Hero (Completed):**
+    - **Cinematic 3D WebGL Storytelling Engine (`Cinematic3DScene.jsx`):**
+      - Built using vanilla Three.js (`three@^0.174.0`) with ACES Filmic tone mapping, PCF soft shadows, and dynamic multi-point illumination.
+      - Single full-viewport canvas (`fixed inset-0`) driven continuously by scroll depth ($0.0 \to 1.0$) with adaptive smoothing and pointer parallax.
+      - **5 Continuous Cinematic Stages:**
+        - **0% (Discover):** Person A (emerald theme) and Person B (amber theme) flanked on outer edges ($x=\pm 2.8$) with stylized dual gimbal rings. 7 physical 3D skill objects (`React`, `JavaScript`, `TypeScript`, `Node.js`, `Python`, `UI/UX Design`, `Figma`) orbit with raycast hover glow. Upper spatial typography integrated into the 3D scene. Camera wide at `(0, 0.4, 5.6)`.
+        - **25% (Match):** Avatars converge to $x=\pm 1.2$; glowing 3D Bezier connection arc forms; central 3D gyroscope compatibility hub scales up with counter-rotating rings and "92% MATCH" emblem. Camera dollies in to `(0, 0.15, 3.6)`.
+        - **50% (Exchange):** Compatibility hub clears; `React` launches high across a 3D Catmull-Rom spline toward Person B with a luminous particle trail; `JavaScript` and `UI/UX Design` cross below toward Person A. Dynamic camera sweeps to 3/4 orbital perspective at `(1.3, 0.4, 3.4)` showcasing spatial depth.
+        - **75% (Learn):** Exchanged skills settle into orbit around their new partner; collaborative wireframe octahedron and harmonic resonance rings pulse with light between creators. Camera centers at `(0, 0.25, 4.0)`.
+        - **100% (Grow):** 24 Fibonacci community nodes expand radially into an expansive spherical constellation connected by glowing peer-to-peer network lines; cinematic camera pull-back to `(0, 3.0, 12.5)` reveals the decentralized ecosystem.
+    - **Non-Intrusive Spatial HUD Layer (`LandingSpatialHUD.jsx`):**
+      - Eliminates heavy opaque 2D HTML cards; replaces with floating spatial annotations keeping the 3D center stage open.
+      - Top pill scrubber with 5 stage jump buttons (`01 DISCOVER`, `02 MATCH`, `03 EXCHANGE`, `04 LEARN`, `05 GROW`), live hover indicator (`✦ React`), and depth counter (`25% DEPTH`).
+      - Lower-third contextual annotations at 25%, 50%, and 75%; terminal CTA at 100% framed by the 3D network above.
+    - **Public Landing Page Shell (`LandingPage.jsx`):**
+      - Full-viewport 550vh scroll depth container driving `Cinematic3DScene` and `LandingSpatialHUD` with frosted glassmorphic `LandingNavbar`.
+    - **Intelligent Pre/Post-Login Root Dispatcher (`App.jsx`):**
+      - Unauthenticated visitors accessing `/` view `<LandingPage />`.
+      - Authenticated users accessing `/` view `<Home />` (the authenticated personal dashboard with the Animated Hero, navbar, and mobile navigation).
+      - Unauthenticated access to protected routes (`/discover`, `/swaps`, `/chats`, etc.) is intercepted by `ProtectedRoute` to redirect to `/login`.
+    - **Authenticated Animated Hero System (`DashboardHero.jsx`):**
+      - Visual Hierarchy & Flow: Integrated directly into existing `DashboardHero.jsx` on Home dashboard: Identity Cue (0ms) → Headline (60ms) → Supporting Description (120ms) → Skill Exchange Visual (180ms) → Quick Actions (240ms–300ms). Total entrance duration under 650ms.
+      - Skill Exchange Visual (`LEARN ↔ SHARE`): Central dynamic visual displaying `[ Offered Skill ] ↔ [ Wanted Skill ]` using official `OfferedSkillIcon` and `WantedSkillIcon`.
+      - Dynamically queries and displays user's actual skills (`skillsList`) with graceful fallback prompts linking to `/profile` and `/discover`.
+      - Offered skill enters from left (`translateX(-14px)`), wanted skill enters from right (`translateX(14px)`), and center exchange badge scales in with subtle 4s ambient breathing (`.animate-hero-pulse`).
+    - **Theme & Responsiveness:**
+      - Verified against Light (`#F7F6F2` / `#FFFFFF` / `#1B4332`) and Dark (`#0F1210` / `#181B18` / `#3FA873`) themes.
+      - Tested zero horizontal overflow across 320px, 375px, 414px, and 1024px+ viewports with Chrome DevTools Protocol.
+    - **Reduced Motion & Performance:**
+      - Direct user scroll scrub drives 3D world transformations smoothly while eliminating unnecessary rapid ambient idle oscillations when reduced motion is preferred.
+- **Done =** SkillSwap features a cinematic, scroll-driven 3D pre-login Landing Page across 5 continuous stages (Discover → Match → Exchange → Learn → Grow) with physical 3D objects, spline flight, camera flight, and an animated Hero communicating "Learn ↔ Share" on the authenticated dashboard, with 0 lint errors, 0 build errors, 0 layout shifts, and full theme parity. Phase 13 is fully complete.
+
 ---
 
 ### Production Checklist
@@ -315,3 +367,4 @@
 - [ ] All frontend routes load correctly
 - [ ] No console errors on any page
 - [ ] Mobile layout verified on the deployed URL
+

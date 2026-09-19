@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import PortfolioCard from "../components/portfolio/PortfolioCard";
 import PortfolioLightbox from "../components/portfolio/PortfolioLightbox";
@@ -651,11 +651,13 @@ export default function PortfolioPage() {
   const targetLocation = profileData?.location || "";
   const backProfileUrl = isOwner ? "/profile" : `/users/${targetUserId}`;
 
+  const location = useLocation();
+
   return (
     <div className="min-h-screen bg-[#F7F6F2] dark:bg-[#0F1210] flex flex-col font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+      <main key={location.pathname} className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 animate-page-enter">
         <ToastNotification
           toast={toast}
           onClose={() => setToast((prev) => ({ ...prev, show: false }))}

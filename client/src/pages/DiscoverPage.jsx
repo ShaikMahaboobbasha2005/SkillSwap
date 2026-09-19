@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { ArrowLeftRight } from "lucide-react";
 import Navbar from "../components/Navbar";
 import SearchBar from "../components/discover/SearchBar";
@@ -16,6 +17,7 @@ import useAuth from "../hooks/useAuth";
 import useSocket from "../hooks/useSocket";
 
 export default function DiscoverPage() {
+  const location = useLocation();
   const { user } = useAuth();
   const { subscribeToDiscoverUpdates, unsubscribeFromDiscoverUpdates } = useSocket();
   const currentUserId = user?._id || user?.id;
@@ -109,9 +111,9 @@ export default function DiscoverPage() {
       <Navbar />
 
       {/* Main Page Container */}
-      <main className="max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 space-y-6">
+      <main key={location.pathname} className="max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 space-y-6 animate-page-enter">
         {/* Page Header */}
-        <header className="space-y-1.5" ref={resultsTopRef}>
+        <header className="space-y-1.5 animate-section-enter" ref={resultsTopRef}>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] text-[11px] font-semibold border border-[#1B4332]/10 dark:border-[#3FA873]/20 mb-0.5">
             <ArrowLeftRight className="w-3 h-3 text-[#1B4332] dark:text-[#3FA873]" />
             <span>Learn ↔ Share</span>
@@ -126,7 +128,7 @@ export default function DiscoverPage() {
 
         {/* Persistent Search & Filter Container (Airbnb-inspired Layout) */}
         <section
-          className="bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl p-4 sm:p-5 shadow-xs space-y-4"
+          className="bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl p-4 sm:p-5 shadow-xs space-y-4 animate-section-enter stagger-1"
           aria-label="Skill search and filter controls"
         >
           {/* Top Search Bar */}
@@ -188,7 +190,7 @@ export default function DiscoverPage() {
         />
 
         {/* Discovery Results Section */}
-        <section aria-label="Discovered community members list">
+        <section aria-label="Discovered community members list" className="animate-section-enter stagger-2">
           {loading ? (
             <LoadingSkeleton count={6} />
           ) : error ? (

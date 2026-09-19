@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext, useRef } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { getOwnProfile, updateOwnProfile, uploadProfilePicture } from "../services/profileService";
 import Navbar from "../components/Navbar";
@@ -19,6 +19,7 @@ import { Linkedin, Github, Instagram, Youtube, Globe } from "../components/profi
 import { Eye, Camera, Edit3, MapPin, Calendar, Trash2 } from "lucide-react";
 
 export default function OwnProfile() {
+  const location = useLocation();
   const { user: authUser, updateUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -530,7 +531,7 @@ export default function OwnProfile() {
       <Navbar />
 
       {/* Main Content Area */}
-      <main className="max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 space-y-6">
+      <main key={location.pathname} className="max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 space-y-6 animate-page-enter">
         
         {/* Error Alert Banner */}
         {error && (
@@ -546,7 +547,7 @@ export default function OwnProfile() {
         )}
 
         {/* PROFILE HEADER CARD WITH BANNER & HERO AVATAR */}
-        <div className="bg-white dark:bg-[#181B18] rounded-2xl border border-[#E6E3DA] dark:border-[#2A2E29] overflow-hidden shadow-xs hover:shadow-md transition-all duration-300">
+        <div className="bg-white dark:bg-[#181B18] rounded-2xl border border-[#E6E3DA] dark:border-[#2A2E29] overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 animate-section-enter">
           
           {/* Profile Banner */}
           <ProfileBanner
@@ -595,42 +596,44 @@ export default function OwnProfile() {
 
                 {/* Contextual Dropdown Menu for Avatar */}
                 {avatarMenuOpen && !uploadingAvatar && (
-                  <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-48 bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl shadow-xl py-1.5 z-40 animate-fadeIn space-y-0.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAvatarMenuOpen(false);
-                        console.log("[OwnProfile] Opening AvatarLightboxModal with imageSrc:", currentPicture);
-                        setShowAvatarLightbox(true);
-                      }}
-                      className="w-full px-3.5 py-2 text-xs font-semibold text-[#16160F] dark:text-[#F2F1EC] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] hover:text-[#1B4332] dark:hover:text-[#3FA873] transition-colors flex items-center gap-2 cursor-pointer text-left"
-                    >
-                      <Eye className="w-3.5 h-3.5 text-[#1B4332] dark:text-[#3FA873]" />
-                      <span>View Profile Picture</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAvatarMenuOpen(false);
-                        avatarFileInputRef.current?.click();
-                      }}
-                      className="w-full px-3.5 py-2 text-xs font-semibold text-[#16160F] dark:text-[#F2F1EC] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] hover:text-[#1B4332] dark:hover:text-[#3FA873] transition-colors flex items-center gap-2 cursor-pointer text-left"
-                    >
-                      <Camera className="w-3.5 h-3.5 text-[#1B4332] dark:text-[#3FA873]" />
-                      <span>Change Profile Picture</span>
-                    </button>
-
-                    {profile?.profilePicture && (
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-40">
+                    <div className="w-48 bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl shadow-xl py-1.5 animate-dropdown-enter origin-top space-y-0.5">
                       <button
                         type="button"
-                        onClick={handleRemoveAvatar}
-                        className="w-full px-3.5 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex items-center gap-2 cursor-pointer text-left border-t border-[#E6E3DA]/60 dark:border-[#2A2E29] mt-0.5 pt-2"
+                        onClick={() => {
+                          setAvatarMenuOpen(false);
+                          console.log("[OwnProfile] Opening AvatarLightboxModal with imageSrc:", currentPicture);
+                          setShowAvatarLightbox(true);
+                        }}
+                        className="w-full px-3.5 py-2 text-xs font-semibold text-[#16160F] dark:text-[#F2F1EC] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] hover:text-[#1B4332] dark:hover:text-[#3FA873] transition-colors flex items-center gap-2 cursor-pointer text-left"
                       >
-                        <Trash2 className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
-                        <span>Remove Profile Picture</span>
+                        <Eye className="w-3.5 h-3.5 text-[#1B4332] dark:text-[#3FA873]" />
+                        <span>View Profile Picture</span>
                       </button>
-                    )}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAvatarMenuOpen(false);
+                          avatarFileInputRef.current?.click();
+                        }}
+                        className="w-full px-3.5 py-2 text-xs font-semibold text-[#16160F] dark:text-[#F2F1EC] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] hover:text-[#1B4332] dark:hover:text-[#3FA873] transition-colors flex items-center gap-2 cursor-pointer text-left"
+                      >
+                        <Camera className="w-3.5 h-3.5 text-[#1B4332] dark:text-[#3FA873]" />
+                        <span>Change Profile Picture</span>
+                      </button>
+
+                      {profile?.profilePicture && (
+                        <button
+                          type="button"
+                          onClick={handleRemoveAvatar}
+                          className="w-full px-3.5 py-2 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors flex items-center gap-2 cursor-pointer text-left border-t border-[#E6E3DA]/60 dark:border-[#2A2E29] mt-0.5 pt-2"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+                          <span>Remove Profile Picture</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1009,41 +1012,49 @@ export default function OwnProfile() {
         </div>
 
         {/* PROFILE COMPLETION CARD */}
-        <ProfileCompletionCard
-          profile={profile}
-          bio={formData.bio}
-          skillsCount={{ offered: skillsMeta.offered, wanted: skillsMeta.wanted }}
-        />
+        <div className="animate-section-enter stagger-1">
+          <ProfileCompletionCard
+            profile={profile}
+            bio={formData.bio}
+            skillsCount={{ offered: skillsMeta.offered, wanted: skillsMeta.wanted }}
+          />
+        </div>
 
         {/* PHASE 4: DEDICATED SKILLS MANAGEMENT SECTION */}
-        <SkillsSection
-          userId={profile?._id}
-          isOwner={true}
-          showToast={showToast}
-          onSkillsCountChanged={(countInfo) => {
-            if (typeof countInfo === "object" && countInfo !== null) {
-              setSkillsMeta(countInfo);
-            } else if (typeof countInfo === "number") {
-              setSkillsMeta((prev) => ({ ...prev, total: countInfo }));
-            }
-          }}
-        />
+        <div className="animate-section-enter stagger-2">
+          <SkillsSection
+            userId={profile?._id}
+            isOwner={true}
+            showToast={showToast}
+            onSkillsCountChanged={(countInfo) => {
+              if (typeof countInfo === "object" && countInfo !== null) {
+                setSkillsMeta(countInfo);
+              } else if (typeof countInfo === "number") {
+                setSkillsMeta((prev) => ({ ...prev, total: countInfo }));
+              }
+            }}
+          />
+        </div>
 
         {/* PORTFOLIO SECTION */}
-        <PortfolioSection
-          isOwner={true}
-          userId={profile?._id}
-          userName={profile?.name}
-        />
+        <div className="animate-section-enter stagger-3">
+          <PortfolioSection
+            isOwner={true}
+            userId={profile?._id}
+            userName={profile?.name}
+          />
+        </div>
 
         {/* REVIEWS & RATINGS SECTION */}
-        <ReviewsSection
-          userId={profile?._id}
-          avgRating={profile?.avgRating || 0}
-          highlightSwapId={highlightSwapParam}
-          highlightReviewId={highlightReviewParam}
-          isOwner={true}
-        />
+        <div className="animate-section-enter stagger-4">
+          <ReviewsSection
+            userId={profile?._id}
+            avgRating={profile?.avgRating || 0}
+            highlightSwapId={highlightSwapParam}
+            highlightReviewId={highlightReviewParam}
+            isOwner={true}
+          />
+        </div>
 
       </main>
 

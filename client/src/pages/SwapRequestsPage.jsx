@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import IncomingRequests from "../components/swaps/IncomingRequests";
 import OutgoingRequests from "../components/swaps/OutgoingRequests";
@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 
 export default function SwapRequestsPage() {
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const { stats, refreshStats } = useSwap();
@@ -399,9 +400,9 @@ export default function SwapRequestsPage() {
       <Navbar />
 
       {/* Main Page Layout Container */}
-      <main className="max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 space-y-6">
+      <main key={location.pathname} className="max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 space-y-6 animate-page-enter">
         {/* Page Header */}
-        <header className="space-y-1">
+        <header className="space-y-1 animate-section-enter">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#16160F] dark:text-[#F2F1EC]">
             Swap Requests
           </h1>
@@ -413,7 +414,7 @@ export default function SwapRequestsPage() {
         {/* 4 Tab-Contextual Statistics Overview Cards */}
         <section
           aria-label="Swap request statistics overview"
-          className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 animate-section-enter stagger-1"
         >
           {/* Card 1: Pending / Completed */}
           <div className="bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl p-4 shadow-xs flex items-center gap-3">
@@ -499,7 +500,7 @@ export default function SwapRequestsPage() {
         {/* Primary Tabs & Status Filter Controls */}
         <section
           aria-label="Filter and tab controls"
-          className="bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl p-4 sm:p-5 shadow-xs space-y-4"
+          className="bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl p-4 sm:p-5 shadow-xs space-y-4 animate-section-enter stagger-2"
         >
           {/* Main 3 Tabs: Incoming / Outgoing / Swap History */}
           <div className="flex items-center justify-between border-b border-[#E6E3DA]/80 dark:border-[#2A2E29] pb-3 gap-2 overflow-x-auto">
@@ -586,7 +587,7 @@ export default function SwapRequestsPage() {
         </section>
 
         {/* Requests / History List Section */}
-        <section aria-label="Swap requests list">
+        <section aria-label="Swap requests list" key={`${activeTab}-${statusFilter}`} className="animate-tab-fade">
           {activeTab === "incoming" ? (
             <IncomingRequests
               requests={incomingRequests}

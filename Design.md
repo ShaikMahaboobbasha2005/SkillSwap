@@ -177,3 +177,89 @@ Dark mode preserves SkillSwap's classy, minimal, and premium aesthetic through c
    Replaced "Coming soon" tiles with real interactive buttons for `System`, `Light`, and `Dark`. Displays active selection indicators, live preview feedback, and persists selection instantly to `localStorage`.
 5. **Portalled Modals & Overlays**:
    All modals (`Modal.jsx`, `ConfirmModal.jsx`, `ImageCropModal.jsx`, `AvatarLightboxModal.jsx`, `SkillModal.jsx`, `DeleteSkillDialog.jsx`, `SwapRequestModal.jsx`, `RatingModal.jsx`, `MeetingOptionsModal.jsx`, `ScheduleMeetingModal.jsx`, `JitsiMeetingModal.jsx`, `PortfolioUploadModal.jsx`, `PortfolioEditModal.jsx`, `PortfolioReactionsModal.jsx`, `PortfolioReportModal.jsx`) inherit `.dark` from `document.documentElement`, ensuring zero theme mismatches.
+6. **Authentication & Loading Gates**:
+   Protected route verification screen (`ProtectedRoute.jsx`) is fully theme-aware, utilizing `ThemeContext` and Tailwind dark mode tokens (`dark:bg-[#0F1210]`, `dark:border-[#3FA873]`, `dark:text-[#F2F1EC]`). Paired with the synchronous `<head>` script in `index.html`, this eliminates white flashing during initial auth verification and page reloads.
+
+## 11. Motion Foundation & Micro-Interactions (Phase 13.2)
+
+### 11.1 Motion Principles
+- **Restrained & Intentional**: Motion exists strictly to orient users, communicate state transitions, and provide tactile interactive feedback. No continuous decorative bouncing or distracting loops.
+- **Compositor-Only Properties**: Animations animate only `opacity`, `transform` (`translateY`, `scale`), `box-shadow`, and `border-color`. Never animate layout triggers (`width`, `height`, `margin`, `padding`, `top`, `left`, grid dimensions) to guarantee 60fps across desktop and mobile.
+- **Linear-Inspired Easing**: Smooth decelerated ease-out curves (`cubic-bezier(0.16, 1, 0.3, 1)`) with calibrated movement distances (14px page, 12px section, 3px tab).
+- **Navigation Lifecycle Synchronization**: Page entrance animations are triggered reliably across client-side router navigation (`Home` → `Discover` → `Matches` → `Swaps` → `Chats` → `Profile` → `Settings`) using React route keys (`key={location.pathname}`).
+
+### 11.2 Keyframe & Utility Tokens (`index.css`)
+- **Page Entrance (`.animate-page-enter`)**: `opacity: 0 -> 1`, `translateY: 14px -> 0`, `420ms cubic-bezier(0.16, 1, 0.3, 1)` with `animation-fill-mode: both`. Applied to top-level `<main>` page containers.
+- **Section Entrance (`.animate-section-enter`)**: `opacity: 0 -> 1`, `translateY: 12px -> 0`, `380ms cubic-bezier(0.16, 1, 0.3, 1)` with `animation-fill-mode: both`. Applied to primary cards and layout sections.
+- **Progressive Staggers**:
+  - `.stagger-1`: `animation-delay: 60ms`
+  - `.stagger-2`: `animation-delay: 120ms`
+  - `.stagger-3`: `animation-delay: 180ms`
+  - `.stagger-4`: `animation-delay: 240ms`
+  - All stagger classes enforce `animation-fill-mode: both` to prevent initial content popping and retain the 100% visible completion state.
+- **Dropdown & Popover Entrance (`.animate-dropdown-enter`)**: `opacity: 0 -> 1`, `scale: 0.96 -> 1`, `translateY: -6px -> 0`, `190ms cubic-bezier(0.16, 1, 0.3, 1)` with `animation-fill-mode: both; transform-origin: top right`. Applied to navbar user dropdown, notification bell popover, avatar contextual menus, and emoji pickers without transform matrix conflicts.
+- **Tab Panel Transition (`.animate-tab-fade`)**: `opacity: 0 -> 1`, `translateY: 3px -> 0`, `200ms cubic-bezier(0.16, 1, 0.3, 1)` with `animation-fill-mode: both`. Applied to tab content sections with contextual keys to transition tab content without full-page re-renders.
+- **Subtle Pulse (`.animate-subtle-pulse`)**: Gentle breathing animation (`opacity: 1 -> 0.65 -> 1`) across 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite.
+
+### 11.3 Interaction Tokens
+- **Interactive Card Lift (`.motion-card-interactive`)**: `transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s, border-color 0.2s`, `hover:-translate-y-0.5 hover:shadow-md`, `active:scale-[0.99]`. Applied to dashboard widgets, quick actions, discover cards, recommendation cards, and swap cards.
+- **Tactile Button Click (`.motion-btn-interactive`)**: `transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s`, `active:scale-[0.98]`. Standard tactile micro-feedback on primary actions and icon buttons.
+
+### 11.4 Reduced Motion Compliance
+All motion utilities respect user accessibility settings via `@media (prefers-reduced-motion: reduce)`. Durations and delays automatically collapse to `0.01ms` with `animation-delay: 0s !important` and `scroll-behavior: auto !important`, ensuring an accessible, motion-free experience for users with vestibular sensitivities.
+
+### 11.5 Animated Hero System (Phase 13.3)
+- **Concept & Purpose**: The SkillSwap Animated Hero visually communicates the platform's core exchange mechanic: `LEARN ↔ SHARE`. Embedded seamlessly into `DashboardHero.jsx` on the Home dashboard without disrupting existing user identity or quick actions.
+- **Hierarchy & Staggered Timing (<650ms total entrance)**:
+  - `Identity Cue`: 0ms (`.animate-hero-fade-up`, `.hero-delay-0`, translateY 10px -> 0)
+  - `Headline`: 60ms (`.animate-hero-fade-up`, `.hero-delay-1`, translateY 10px -> 0)
+  - `Description`: 120ms (`.animate-hero-fade-up`, `.hero-delay-2`, translateY 10px -> 0)
+  - `Skill Exchange Visual`: 180ms
+    - Offered Skill Card (`.animate-hero-slide-left`, `.hero-delay-3`, translateX -14px -> 0)
+    - Center Exchange Arrow (`.animate-hero-exchange-in`, `.hero-delay-3`, scale 0.92 -> 1, with calm 4s ambient breathing `.animate-hero-pulse`)
+    - Wanted Skill Card (`.animate-hero-slide-right`, `.hero-delay-3`, translateX 14px -> 0)
+  - `Quick Actions Grid`: 240ms–300ms (`.hero-delay-4`, `.hero-delay-5`, staggered micro-entrances)
+- **Dynamic Content & Iconography**: Integrates real user skills dynamically from `skillsList` and renders official `OfferedSkillIcon` and `WantedSkillIcon` with graceful fallback links to `/profile` and `/discover`.
+- **Restrained Ambient Idle**: Single calm 4s breathing cycle (`.animate-hero-pulse`) on the central swap badge. Zero bouncing, spinning, or continuous distracting scaling.
+- **Theme & Responsiveness**: Fully integrated with Light (`#F7F6F2` / `#FFFFFF` / `#1B4332`) and Dark (`#0F1210` / `#181B18` / `#3FA873`) themes. Verified zero horizontal overflow across 320px, 375px, 414px, 768px, and 1024px+ viewports.
+
+## 12. Cinematic 3D Landing Page Architecture (Phase 13.3)
+
+### 12.1 Philosophy & Film Direction
+The public landing page (`LandingPage.jsx`) serves as the pre-login entry point at `/`. Instead of conventional flat rectangular cards floating over a background, the entire page operates as a unified, full-viewport 3D interactive film driven by continuous scroll scrubbing ($0.0 \to 1.0$). Every key element possesses physical spatial depth, camera flight, dynamic illumination, and interactive responsiveness across:
+`Discover (0%) → Match (25%) → Exchange (50%) → Learn (75%) → Grow (100%)`.
+
+### 12.2 Three.js Cinematic Engine (`Cinematic3DScene.jsx`)
+- **Persistent WebGL Canvas**: Single full-viewport canvas (`fixed inset-0`) rendered using Three.js with ACES Filmic tone mapping, PCF soft shadows, and dynamic multi-point illumination.
+- **Physical 3D Stylized Avatars**:
+  - Person A (Emerald theme) and Person B (Amber theme) constructed from high-specular metallic core spheres ($r=0.48$), dual counter-rotating wireframe gimbal rings, and pulsing inner core lights.
+  - Person A flanks at $x=-2.8$, Person B flanks at $x=+2.8$ at 0%, converging to $x=\pm 1.2$ at 25% Match.
+- **Physical 3D Skill Objects & Spatial Text Sprites**:
+  - 7 physical geometries: `React` (cyan faceted icosahedron), `JavaScript` (gold cube), `TypeScript` (blue dodecahedron), `Node.js` (emerald octahedron), `Python` (amber torus), `UI/UX Design` (pink cylinder), `Figma` (purple cone).
+  - Attached 3D canvas sprites render sleek, proportional tags with subtle glassmorphic backdrop and dark/light color adaptation without dominating geometries.
+  - Interactive pointer raycasting: hovering over any 3D skill increases emissive glow to 1.3x and elevates scale to 1.2x with live HUD skill tag notification.
+- **Continuous 5-Stage Choreography**:
+  - **0% (Discover)**: Wide opening environment with Person A and Person B separated. Orbiting 3D skills, ambient idle sway, and upper spatial typography: *"Share What You Know. Master What You Don't."* Camera positioned at `(0, 0.4, 5.6)`.
+  - **25% (Match)**: Avatars converge to center. Luminous 3D Bezier connection arc illuminates between them. 3D compatibility gyroscope forms with counter-rotating nested torus rings and floating "92% MATCH" emblem. Camera dollies in to `(0, 0.15, 3.6)`.
+  - **50% (Exchange)**: Central match hub clears. `React` physically launches across a high 3D forward flight spline toward Person B with a streaming particle trail, while `JavaScript` and `UI/UX Design` cross below toward Person A. Camera executes a dynamic 3/4 orbital sweep to `(1.3, 0.4, 3.4)` capturing depth and parallax.
+  - **75% (Learn)**: Exchanged skills settle into orbit around their new partner. Collaborative geometric wireframe octahedron and harmonic resonance rings pulse with light between avatars. Camera centers at `(0, 0.25, 4.0)`.
+  - **100% (Grow)**: 24 Fibonacci community nodes expand into a surrounding spherical constellation connected by glowing peer-to-peer network line segments. Camera executes a dramatic pullback to `(0, 3.0, 12.5)` looking down with an expansive view of the ecosystem.
+- **Adaptive Camera & Progress Smoothing**:
+  - Smooth user scroll scrub with adaptive inertia: gentle for mouse wheeling, responsive on scrub jumps.
+  - Pointer parallax adds subtle perspective shift tracking mouse cursor.
+
+### 12.3 Non-Intrusive Spatial HUD Layer (`LandingSpatialHUD.jsx`)
+- **Zero Heavy Cards**: Replaced large obscuring HTML rectangles with floating spatial annotations that keep the 3D center stage open.
+- **Top Scrubber Timeline**: Floating pill scrubber with 5 stage buttons (`01 DISCOVER`, `02 MATCH`, `03 EXCHANGE`, `04 LEARN`, `05 GROW`), live hover indicator (`✦ React`), and depth counter (`25% DEPTH`).
+- **Lower-Third Annotations**: Minimalist narrative badges at 25%, 50%, and 75% anchored in the lower-left corner, providing concise context while leaving the 3D avatars and flight paths unobscured.
+- **Terminal CTA (100% Grow)**: Compact glassmorphic conversion card at the bottom of the screen (`"Ready to exchange your craft?"` with `[ Join Network Free ]` and `[ Sign In ]`), framed by the expansive 3D network above.
+
+### 12.4 Routing & Auth Separation (`App.jsx`)
+- `RootRoute` intelligently dispatches `/`:
+  - If `isAuthenticated`: Renders `<Home />` (authenticated dashboard with `Navbar`, `DashboardHero`, and `MobileBottomNav`).
+  - If `!isAuthenticated`: Renders `<LandingPage />` (cinematic 3D interactive film).
+  - If `loading`: Renders theme-aware verification spinner with zero FOUC.
+- All protected routes (`/discover`, `/swaps`, `/chats`, etc.) remain guarded by `ProtectedRoute`.
+
+
+

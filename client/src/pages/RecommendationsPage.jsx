@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import RecommendationCard from "../components/recommendations/RecommendationCard";
 import RecommendationSkeleton from "../components/recommendations/RecommendationSkeleton";
@@ -10,6 +11,7 @@ import { Sparkles, ArrowDown, RefreshCw, Users, Info, ArrowLeft } from "lucide-r
 import MatchesIcon from "../components/icons/MatchesIcon";
 
 export default function RecommendationsPage() {
+  const location = useLocation();
   const [isAiMode, setIsAiMode] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -120,9 +122,9 @@ export default function RecommendationsPage() {
     <div className="min-h-screen bg-[#F7F6F2] dark:bg-[#0F1210] flex flex-col">
       <Navbar />
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-5 sm:py-6">
+      <main key={location.pathname} className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-5 sm:py-6 animate-page-enter">
         {/* Header Section */}
-        <div className="mb-4 sm:mb-5 flex flex-col md:flex-row md:items-end justify-between gap-3">
+        <div className="mb-4 sm:mb-5 flex flex-col md:flex-row md:items-end justify-between gap-3 animate-section-enter">
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-[#E4EEE8] dark:bg-[#1C2E24] text-[#1B4332] dark:text-[#3FA873] text-[11px] font-bold mb-1.5 border border-[#1B4332]/15 dark:border-[#3FA873]/20">
               <MatchesIcon className="w-3 h-3" />
@@ -144,7 +146,7 @@ export default function RecommendationsPage() {
               type="button"
               onClick={() => fetchRecommendations(1, false, isAiMode)}
               disabled={loading || loadingMore}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] text-[#16160F] dark:text-[#F2F1EC] transition-colors cursor-pointer shadow-xs disabled:opacity-50 text-xs"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] text-[#16160F] dark:text-[#F2F1EC] transition-colors cursor-pointer shadow-xs disabled:opacity-50 text-xs motion-btn-interactive"
               aria-label="Refresh recommendations"
             >
               <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin text-[#1B4332] dark:text-[#3FA873]" : ""}`} />
@@ -154,7 +156,7 @@ export default function RecommendationsPage() {
         </div>
 
         {/* User-Triggered Mode Switcher */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4 animate-section-enter stagger-1">
           <div className="inline-flex p-0.5 bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-xl shadow-xs">
             <button
               type="button"
@@ -275,7 +277,7 @@ export default function RecommendationsPage() {
             <RecommendationEmptyState />
           )
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-section-enter">
             {/* Recommendations Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
               {recommendations.map((rec) => (
@@ -294,7 +296,7 @@ export default function RecommendationsPage() {
                   type="button"
                   onClick={handleLoadMore}
                   disabled={loadingMore}
-                  className="inline-flex items-center gap-1.5 px-5 py-2 bg-white dark:bg-[#181B18] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] text-[#16160F] dark:text-[#F2F1EC] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-lg text-xs font-bold transition-all shadow-xs hover:border-[#1B4332]/40 dark:hover:border-[#3FA873]/40 disabled:opacity-50 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-5 py-2 bg-white dark:bg-[#181B18] hover:bg-[#F7F6F2] dark:hover:bg-[#202520] text-[#16160F] dark:text-[#F2F1EC] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-lg text-xs font-bold transition-all shadow-xs hover:border-[#1B4332]/40 dark:hover:border-[#3FA873]/40 disabled:opacity-50 cursor-pointer motion-btn-interactive"
                 >
                   {loadingMore ? (
                     <>

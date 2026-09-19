@@ -159,7 +159,7 @@ export default function Navbar() {
 
             {/* Account Menu Dropdown Panel (Used on Mobile & Desktop) */}
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl shadow-xl py-2 z-50 animate-fadeIn space-y-1">
+              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl shadow-xl py-2 z-50 animate-dropdown-enter space-y-1">
                 <div className="px-4 py-2 border-b border-[#E6E3DA] dark:border-[#2A2E29]">
                   <p className="text-xs font-bold text-[#16160F] dark:text-[#F2F1EC] truncate">
                     {user?.name || "User"}

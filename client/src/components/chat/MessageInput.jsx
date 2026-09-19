@@ -197,7 +197,7 @@ export default function MessageInput({
               setShowEmojiPicker((prev) => !prev);
             }}
             disabled={!isConnected || isSending}
-            className="h-10 w-10 rounded-2xl bg-[#F7F6F2] dark:bg-[#202520] hover:bg-zinc-200 dark:hover:bg-[#2A2E29] border border-[#E6E3DA] dark:border-[#2A2E29] text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#1B4332] dark:hover:text-[#3FA873] font-bold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shrink-0 shadow-2xs"
+            className="h-10 w-10 rounded-2xl bg-[#F7F6F2] dark:bg-[#202520] hover:bg-zinc-200 dark:hover:bg-[#2A2E29] border border-[#E6E3DA] dark:border-[#2A2E29] text-[#6B6858] dark:text-[#9C9A8C] hover:text-[#1B4332] dark:hover:text-[#3FA873] font-bold transition-all motion-btn-interactive disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shrink-0 shadow-2xs"
             aria-label="Choose emoji"
           >
             <Smile className="w-5 h-5" />
@@ -216,7 +216,7 @@ export default function MessageInput({
         <button
           type="submit"
           disabled={!canSend}
-          className="h-10 px-4 sm:px-5 rounded-2xl bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#339162] text-white dark:text-[#0F1210] font-bold text-xs sm:text-sm transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shrink-0 shadow-2xs gap-2"
+          className="h-10 px-4 sm:px-5 rounded-2xl bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#339162] text-white dark:text-[#0F1210] font-bold text-xs sm:text-sm transition-all motion-btn-interactive disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shrink-0 shadow-2xs gap-2"
           aria-label="Send message"
         >
           {isSending ? (

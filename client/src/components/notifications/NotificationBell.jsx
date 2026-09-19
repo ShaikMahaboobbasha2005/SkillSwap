@@ -49,7 +49,7 @@ export default function NotificationBell() {
       >
         <Bell className="w-4 h-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] text-[10px] font-bold flex items-center justify-center border-2 border-white dark:border-[#181B18] shadow-sm animate-pulse">
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#1B4332] dark:bg-[#3FA873] text-white dark:text-[#0F1210] text-[10px] font-bold flex items-center justify-center border-2 border-white dark:border-[#181B18] shadow-sm animate-subtle-pulse">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
@@ -57,7 +57,7 @@ export default function NotificationBell() {
 
       {/* Popover Dropdown Panel */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl shadow-xl z-50 animate-fadeIn overflow-hidden">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl shadow-xl z-50 animate-dropdown-enter overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-[#E6E3DA] dark:border-[#2A2E29] bg-[#F7F6F2]/50 dark:bg-[#202520]/50">
             <div className="flex items-center gap-2">

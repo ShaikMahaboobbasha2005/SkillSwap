@@ -209,7 +209,7 @@ export default function ChatsPage() {
       <Navbar />
 
       {/* Main Two-Panel Chat Workspace (Full Viewport Height & Width Layout) */}
-      <div className="flex-1 flex min-h-0 w-full bg-white dark:bg-[#181B18] overflow-hidden">
+      <div className="flex-1 flex min-h-0 w-full bg-white dark:bg-[#181B18] overflow-hidden animate-page-enter">
         {/* Left Sidebar: Conversation List (Fixed 300px width on desktop) */}
         <aside
           className={`w-full md:w-[300px] md:min-w-[300px] md:max-w-[300px] border-r border-[#E6E3DA] dark:border-[#2A2E29] flex flex-col bg-white dark:bg-[#181B18] shrink-0 overflow-hidden ${

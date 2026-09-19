@@ -25,7 +25,7 @@ export default function NotificationBadge({
   if (variant === "floating") {
     return (
       <span
-        className={`absolute -top-1 -right-1 min-w-4.5 h-4.5 px-1 text-[10px] font-black rounded-full bg-amber-400 text-amber-950 flex items-center justify-center border-2 border-white dark:border-[#181B18] shadow-xs leading-none z-10 animate-bounce ${className}`}
+        className={`absolute -top-1 -right-1 min-w-4.5 h-4.5 px-1 text-[10px] font-black rounded-full bg-amber-400 dark:bg-amber-500 text-amber-950 flex items-center justify-center border-2 border-white dark:border-[#181B18] shadow-xs leading-none z-10 transition-transform duration-150 animate-fadeIn ${className}`}
         aria-label={`${displayCount} pending items`}
       >
         {displayCount}
@@ -35,7 +35,7 @@ export default function NotificationBadge({
 
   return (
     <span
-      className={`px-1.5 py-0.5 text-[10px] font-extrabold rounded-full bg-amber-400 text-amber-950 leading-none inline-flex items-center justify-center ${className}`}
+      className={`px-1.5 py-0.5 text-[10px] font-extrabold rounded-full bg-amber-400 dark:bg-amber-500 text-amber-950 leading-none inline-flex items-center justify-center transition-colors ${className}`}
       aria-label={`${displayCount} pending items`}
     >
       {displayCount}

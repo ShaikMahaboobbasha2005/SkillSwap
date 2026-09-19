@@ -111,7 +111,7 @@ export default function DiscoverCard({ user, onRequestSwap }) {
 
   return (
     <article
-      className="bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl overflow-hidden shadow-xs hover:border-[#1B4332]/40 dark:hover:border-[#3FA873]/50 transition-all duration-300 flex flex-col justify-between group"
+      className="bg-white dark:bg-[#181B18] border border-[#E6E3DA] dark:border-[#2A2E29] rounded-2xl overflow-hidden shadow-xs hover:border-[#1B4332]/40 dark:hover:border-[#3FA873]/50 motion-card-interactive flex flex-col justify-between group"
       aria-label={`Profile card for ${name}`}
     >
       <div>
@@ -288,8 +288,8 @@ export default function DiscoverCard({ user, onRequestSwap }) {
       <div className="px-5 pb-5 pt-0">
         <div className="flex items-center gap-2 pt-3 border-t border-[#E6E3DA]/60 dark:border-[#2A2E29]">
           <Link
-            to={`/users/${userId}`}
-            className="flex-1 h-9 text-xs font-semibold text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] hover:bg-[#1B4332] dark:hover:bg-[#3FA873] hover:text-white dark:hover:text-[#0F1210] border border-[#1B4332]/20 dark:border-[#3FA873]/30 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-[0.98]"
+            to={`/users/${targetId}`}
+            className="flex-1 h-9 text-xs font-semibold text-[#1B4332] dark:text-[#3FA873] bg-[#E4EEE8] dark:bg-[#1C2E24] hover:bg-[#1B4332] dark:hover:bg-[#3FA873] hover:text-white dark:hover:text-[#0F1210] border border-[#1B4332]/20 dark:border-[#3FA873]/30 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer motion-btn-interactive"
           >
             <UserCheck className="w-3.5 h-3.5" />
             <span>View Profile</span>
@@ -299,7 +299,7 @@ export default function DiscoverCard({ user, onRequestSwap }) {
             type="button"
             onClick={onRequestSwap && !isSelfCard ? () => onRequestSwap(user) : undefined}
             disabled={!onRequestSwap || isSelfCard}
-            className="h-9 px-3.5 text-xs font-semibold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#338d60] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.98] shadow-2xs shrink-0"
+            className="h-9 px-3.5 text-xs font-semibold text-white dark:text-[#0F1210] bg-[#1B4332] dark:bg-[#3FA873] hover:bg-[#143326] dark:hover:bg-[#338d60] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer motion-btn-interactive shadow-2xs shrink-0"
             title={
               isSelfCard
                 ? "You cannot request a swap with yourself"
