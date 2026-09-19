@@ -288,6 +288,20 @@
       - **Authentication Pages:** `Login.jsx`, `Signup.jsx`.
     - **Architecture Decisions:** Purely client-side persistence (`localStorage`) with zero backend API or MongoDB schema changes. Star rating gold `#B8860B` strictly preserved across both themes. High-contrast, minimal palette: warm charcoal `#0F1210` background, `#181B18` card surfaces, `#2A2E29` crisp borders, `#F2F1EC` primary text, `#9C9A8C` muted text, and `#3FA873` Pine Green accent.
 - **Done =** SkillSwap features a complete, production-grade Dark Mode across all views, with instant theme switching in Settings, synchronous anti-FOUC protection, zero build errors, and full documentation synchronization.
+  - **Phase 12.3 — Account & Profile Settings (Completed):**
+    - **Refined Settings Architecture (`SettingsPage.jsx`):** Compact, Linear-inspired hierarchy (`Account`, `Preferences`, `Privacy`, `Account Actions`) using CSS theme tokens (`var(--bg)`, `var(--surface)`, `var(--border)`, `var(--ink)`, `var(--ink-muted)`, `var(--accent)`, `var(--accent-soft)`) without hardcoded or duplicate color systems.
+    - **Account Section:**
+      - **My Profile Shortcut:** Displays avatar (with letter fallback), name, role badge, location with `MapPin`, bio (line-clamped if available), and direct `"View Profile →"` shortcut link navigating to `/profile` without duplicating profile editing.
+      - **Read-Only Email:** Displays authenticated email in a read-only input with lock icon, read-only pill, and helper text (`"Email changes aren't currently supported."`).
+      - **Account Information:** 4-card metadata grid showing User ID with accessible one-click copy button (displaying `"Copied"` confirmation state for 2 seconds), role, formatted Member Since date, and active account status with emerald indicator.
+    - **Preferences Section:**
+      - **Appearance & Dark Mode:** Preserved full `System`, `Light`, and `Dark` theme switching with `ThemeContext`, active mode indicators, and anti-FOUC persistence.
+      - **In-App Notifications:** Informational overview of the 4 active platform channels (Swap Requests, Swap Updates, Meeting Reminders, Reviews & Ratings) delivered via Socket.IO and the Notification Center.
+      - **Email Notifications:** Marked clearly as `"Coming soon"` with clean non-interactive indicator and zero fake switches.
+    - **Privacy Controls:** Informational `"Coming soon"` status explaining current platform visibility (skills and portfolio visible to authenticated members to facilitate exchanges) with zero fake toggles.
+    - **Account Actions & Logout:** Inline confirmation prompt (`"Are you sure you want to log out?"` with `[ Log out ]` and `[ Cancel ]` buttons) invoking the existing `useAuth().logout()` method and redirecting to `/login`.
+    - **Responsive Layout & Navigation Integrity:** 100% responsive across 320px to 1024px+ viewports without horizontal overflow, respecting shared `AppLayout` mobile safe-area clearance, preserving top-right avatar menu routing (`/profile`, `/settings`, `Logout`), and maintaining the 5-item mobile bottom navigation (`Home`, `Matches`, `Discover`, `Swaps`, `Chats`) untouched.
+- **Done =** Settings page is fully functional, compact, responsive, and synchronized with existing backend capabilities, with zero fake controls, 0 lint errors, and 0 build errors.
 
 ---
 
