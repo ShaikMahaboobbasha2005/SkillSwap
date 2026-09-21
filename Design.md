@@ -223,41 +223,69 @@ All motion utilities respect user accessibility settings via `@media (prefers-re
 - **Restrained Ambient Idle**: Single calm 4s breathing cycle (`.animate-hero-pulse`) on the central swap badge. Zero bouncing, spinning, or continuous distracting scaling.
 - **Theme & Responsiveness**: Fully integrated with Light (`#F7F6F2` / `#FFFFFF` / `#1B4332`) and Dark (`#0F1210` / `#181B18` / `#3FA873`) themes. Verified zero horizontal overflow across 320px, 375px, 414px, 768px, and 1024px+ viewports.
 
-## 12. Cinematic 3D Landing Page Architecture (Phase 13.3)
+## 12. Premium 3D Landing Page Architecture (Phase 13.3 Redesign)
 
-### 12.1 Philosophy & Film Direction
-The public landing page (`LandingPage.jsx`) serves as the pre-login entry point at `/`. Instead of conventional flat rectangular cards floating over a background, the entire page operates as a unified, full-viewport 3D interactive film driven by continuous scroll scrubbing ($0.0 \to 1.0$). Every key element possesses physical spatial depth, camera flight, dynamic illumination, and interactive responsiveness across:
-`Discover (0%) → Match (25%) → Exchange (50%) → Learn (75%) → Grow (100%)`.
+### 12.1 Philosophy & Design Direction
+The public landing page (`LandingPage.jsx`) at `/` serves as the pre-login entry for unauthenticated visitors. Designed to feel like a premium SaaS product page (inspired by the visual restraint of Linear, Stripe, Apple, Vercel), not a Three.js demo. The 3D scene supports the product story rather than dominating it. Typography is dominant; 3D is atmospheric.
+
+**Visual identity**: Monochromatic palette (charcoal, matte white, warm off-white) with SkillSwap emerald as a restrained accent. No rainbow colors, no candy-colored primitives, no excessive glow.
 
 ### 12.2 Three.js Cinematic Engine (`Cinematic3DScene.jsx`)
-- **Persistent WebGL Canvas**: Single full-viewport canvas (`fixed inset-0`) rendered using Three.js with ACES Filmic tone mapping, PCF soft shadows, and dynamic multi-point illumination.
-- **Physical 3D Stylized Avatars**:
-  - Person A (Emerald theme) and Person B (Amber theme) constructed from high-specular metallic core spheres ($r=0.48$), dual counter-rotating wireframe gimbal rings, and pulsing inner core lights.
-  - Person A flanks at $x=-2.8$, Person B flanks at $x=+2.8$ at 0%, converging to $x=\pm 1.2$ at 25% Match.
-- **Physical 3D Skill Objects & Spatial Text Sprites**:
-  - 7 physical geometries: `React` (cyan faceted icosahedron), `JavaScript` (gold cube), `TypeScript` (blue dodecahedron), `Node.js` (emerald octahedron), `Python` (amber torus), `UI/UX Design` (pink cylinder), `Figma` (purple cone).
-  - Attached 3D canvas sprites render sleek, proportional tags with subtle glassmorphic backdrop and dark/light color adaptation without dominating geometries.
-  - Interactive pointer raycasting: hovering over any 3D skill increases emissive glow to 1.3x and elevates scale to 1.2x with live HUD skill tag notification.
-- **Continuous 5-Stage Choreography**:
-  - **0% (Discover)**: Wide opening environment with Person A and Person B separated. Orbiting 3D skills, ambient idle sway, and upper spatial typography: *"Share What You Know. Master What You Don't."* Camera positioned at `(0, 0.4, 5.6)`.
-  - **25% (Match)**: Avatars converge to center. Luminous 3D Bezier connection arc illuminates between them. 3D compatibility gyroscope forms with counter-rotating nested torus rings and floating "92% MATCH" emblem. Camera dollies in to `(0, 0.15, 3.6)`.
-  - **50% (Exchange)**: Central match hub clears. `React` physically launches across a high 3D forward flight spline toward Person B with a streaming particle trail, while `JavaScript` and `UI/UX Design` cross below toward Person A. Camera executes a dynamic 3/4 orbital sweep to `(1.3, 0.4, 3.4)` capturing depth and parallax.
-  - **75% (Learn)**: Exchanged skills settle into orbit around their new partner. Collaborative geometric wireframe octahedron and harmonic resonance rings pulse with light between avatars. Camera centers at `(0, 0.25, 4.0)`.
-  - **100% (Grow)**: 24 Fibonacci community nodes expand into a surrounding spherical constellation connected by glowing peer-to-peer network line segments. Camera executes a dramatic pullback to `(0, 3.0, 12.5)` looking down with an expansive view of the ecosystem.
-- **Adaptive Camera & Progress Smoothing**:
-  - Smooth user scroll scrub with adaptive inertia: gentle for mouse wheeling, responsive on scrub jumps.
-  - Pointer parallax adds subtle perspective shift tracking mouse cursor.
+- **Persistent WebGL Canvas**: Single full-viewport canvas (`fixed inset-0`) with ACES Filmic tone mapping, PCF soft shadows (desktop), fog (`FogExp2`), and cinematic studio multi-point lighting (warm key light, cool emerald fill, rim light, center accent glow).
+- **Minimal Abstract Cylindrical Avatars**:
+  - **Sculptural Geometry**: Two elegant, minimal 3D forms representing two people exchanging knowledge. Each avatar consists of a sleek rounded capsule body (`CapsuleGeometry`), a metallic separation accent ring (`CylinderGeometry`), a smooth upper head dome (`SphereGeometry`), an inner luminescent core sphere (`SphereGeometry`), and a soft base contact shadow disc.
+  - **Person A**: Sleek deep-slate/charcoal profile (`radius: 0.155, length: 0.52`, `roughness: 0.72, metalness: 0.12`), emerald separation accent ring (`metalness: 0.65, roughness: 0.35`), and an emerald inner luminous core (`emissive: 0x1a4030`).
+  - **Person B**: Warm graphite profile (`radius: 0.170, length: 0.46`, `roughness: 0.72, metalness: 0.12`), warm gold separation accent ring, and an amber-gold inner luminous core (`emissive: 0x5a4a08`).
+  - **PBR Studio Quality**: Pure architectural forms with zero literal anatomy, facial features, or clothing. Grounded on the shadow plane ($y = -0.65$) with soft contact shadows.
+  - **Subtle Motion**: Vertical harmonic floating oscillation (`Math.sin(time * 0.8) * 0.02`), subtle respiration breathing scale (`1 + Math.sin(time * 1.2) * 0.008`), gentle axial rotation, and inward tilt during Match/Exchange.
+- **Unified Skill Capsules** (6 skills desktop / 4 on mobile):
+  - All use the same beveled `BoxGeometry` capsule shape with `MeshPhysicalMaterial` (frosted, `clearcoat: 0.3`, `transmission`-enabled).
+  - Clean Inter font labels rendered via `CanvasTexture` sprites.
+  - Mobile: Python and JavaScript hidden to reduce visual clutter; exchanging skills (React, Figma) and representative skills (Node.js, UI/UX) preserved.
+  - Hover (desktop only): subtle scale 1.06x + faint emissive glow.
+- **Depth Layers** (foreground/midground/background):
+  - Background: 8 subtle distant spheres (4 on mobile) at z=-3 to -7, low opacity, for depth perception.
+  - Foreground (desktop): 5 tiny near-camera motes at z=2 to 4 for parallax depth.
+  - Midground: human characters and skill capsules at z=0.
+- **Continuous 5-Stage Scroll Choreography** ($0.0 \to 1.0$):
+  - **0% (Discover)**: Characters wide apart ($x=\pm 2.6$ desktop / $\pm 1.45$ mobile), skill capsules orbit slowly near their owners.
+  - **25% (Match)**: Characters smoothly rotate toward each other, thin luminous connection arc fades in, center glow intensifies.
+  - **50% (Exchange)**: React & Figma travel along smooth cubic Bezier curves with 8-particle emerald trails as characters observe trajectory.
+  - **75% (Learn)**: Exchanged skills settle near new owners, collaborative pulse ring activates.
+  - **100% (Grow)**: Camera pulls back; constellation of miniature stylized 3D human figures on pedestals appears with interconnected network lines.
+- **Mobile Responsive Composition** (< 768px):
+  - Wider FOV (50° vs 40° desktop) with dedicated camera waypoints closer to the scene.
+  - Characters brought closer together ($x=\pm 1.45$ wide → $\pm 0.45$ settle) and offset downward (`y-0.22`) to leave room for hero text.
+  - Shadows disabled, antialiasing disabled, pixel ratio capped at 1.5× for mobile GPU performance.
+  - Reduced particle counts (12 dust, 4 background nodes, 0 foreground motes, 6 community figures).
+  - Raycasting and pointer parallax disabled on touch devices.
+  - `touchAction: pan-y` on canvas for proper scroll passthrough.
+- **Tablet Composition** (768–1024px): Intermediate FOV (44°), halved parallax intensity.
+- **Performance & Polish**: Shadow map bias optimization, resource disposal, no GC pressure in loop, target smooth 60fps.
+- **Accessibility**: Full `prefers-reduced-motion` compliance — disables respiration, head drift, camera parallax, and continuous particle rotation.
 
-### 12.3 Non-Intrusive Spatial HUD Layer (`LandingSpatialHUD.jsx`)
-- **Zero Heavy Cards**: Replaced large obscuring HTML rectangles with floating spatial annotations that keep the 3D center stage open.
-- **Top Scrubber Timeline**: Floating pill scrubber with 5 stage buttons (`01 DISCOVER`, `02 MATCH`, `03 EXCHANGE`, `04 LEARN`, `05 GROW`), live hover indicator (`✦ React`), and depth counter (`25% DEPTH`).
-- **Lower-Third Annotations**: Minimalist narrative badges at 25%, 50%, and 75% anchored in the lower-left corner, providing concise context while leaving the 3D avatars and flight paths unobscured.
-- **Terminal CTA (100% Grow)**: Compact glassmorphic conversion card at the bottom of the screen (`"Ready to exchange your craft?"` with `[ Join Network Free ]` and `[ Sign In ]`), framed by the expansive 3D network above.
+### 12.3 Product Storytelling Overlay (`LandingSpatialHUD.jsx`)
+- **Hero Section (0%–12%)**: Full-viewport centered typography with Inter font headline:
+  - Eyebrow: `THE PEER-TO-PEER SKILL NETWORK` (11px, tracking-wide, muted)
+  - Headline: `Share What You Know. / Master What You Do.` (4xl–7xl, bold, emerald accent on second line)
+  - Supporting copy: `Exchange skills with people who want to learn what you know — and teach you what you want to master.`
+  - Primary CTA: `Start Swapping Free →` (emerald button)
+  - Secondary CTA: `Explore How It Works` (ghost button with backdrop blur)
+  - Bottom cue: `Scroll to explore` (subtle, no bouncing animation)
+- **Scroll Annotations (12%–85%)**: Minimal lower-left floating text — tiny emerald dot + stage tag (`DISCOVER`, `MATCH`, `EXCHANGE`, `LEARN`, `GROW`) + one-line product copy. Match stage shows an integrated `92% / Skill Compatibility` badge. No stage navigation bar, no depth counter, no hover indicators.
+- **Terminal CTA (85%+)**: Glassmorphic conversion card with `Ready to exchange your craft?` headline, `Start Swapping Free →` + `Sign In` CTAs, framed by the community network above.
 
-### 12.4 Routing & Auth Separation (`App.jsx`)
+### 12.4 Landing Navbar (`LandingNavbar.jsx`)
+- Translucent (`bg/60`, `backdrop-blur-xl`), thin border (`border/30`), `h-14`.
+- Left: Logo + "SkillSwap" wordmark.
+- Center: `How it works` / `The Exchange` / `Community` (scroll-to-section buttons).
+- Right: Theme toggle, `Sign In` link, `Get Started` CTA button.
+- Mobile: Hamburger drawer with same links and auth CTAs.
+
+### 12.5 Routing & Auth Separation (`App.jsx`)
 - `RootRoute` intelligently dispatches `/`:
   - If `isAuthenticated`: Renders `<Home />` (authenticated dashboard with `Navbar`, `DashboardHero`, and `MobileBottomNav`).
-  - If `!isAuthenticated`: Renders `<LandingPage />` (cinematic 3D interactive film).
+  - If `!isAuthenticated`: Renders `<LandingPage />` (premium 3D product landing).
   - If `loading`: Renders theme-aware verification spinner with zero FOUC.
 - All protected routes (`/discover`, `/swaps`, `/chats`, etc.) remain guarded by `ProtectedRoute`.
 
