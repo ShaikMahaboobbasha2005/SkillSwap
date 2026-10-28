@@ -279,8 +279,17 @@ This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-## 👨‍💻 Author
+## 👥 Project Team (College Mini Project)
 
-**Shaikh Mahaboob Basha**  
-- **GitHub**: [@ShaikMahaboobbasha2005](https://github.com/ShaikMahaboobbasha2005)
-- **Repository**: [SkillSwap](https://github.com/ShaikMahaboobbasha2005/SkillSwap)
+This project was developed as a college mini project by:
+
+- **Shaikh Mahaboob Basha** (Lead Developer) — [@ShaikMahaboobbasha2005](https://github.com/ShaikMahaboobbasha2005)
+- **Shaik Mohammad Juber**
+- **Shaik DadaPeer**
+- **Shaik Thousif**
+
+---
+
+## 🔗 Project Links
+
+- **Repository**: [https://github.com/ShaikMahaboobbasha2005/SkillSwap](https://github.com/ShaikMahaboobbasha2005/SkillSwap)
