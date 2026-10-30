@@ -267,8 +267,9 @@ export const SocketProvider = ({ children }) => {
     if (messageListenerMap.current.has(callback)) return; // Prevent duplicate
 
     const wrapper = (payload) => {
-      if (payload && payload.success && payload.data) {
-        callback(payload.data);
+      const msgData = payload?.data || payload?.message || (payload?._id ? payload : null);
+      if (msgData) {
+        callback(msgData);
       }
     };
 

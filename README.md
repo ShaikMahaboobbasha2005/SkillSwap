@@ -273,6 +273,27 @@ npm run build
 
 ---
 
+## 📚 Project Documentation
+
+Comprehensive documentation for the BTech mini-project submission is located in the [`documentation/`](documentation/) folder:
+
+| # | Document | Description |
+| :-- | :-- | :-- |
+| 01 | [Project Overview](documentation/01_Project_Overview.md) | Abstract, problem statement, objectives, scope, use cases |
+| 02 | [SRS](documentation/02_SRS.md) | Functional & non-functional requirements, user roles, assumptions |
+| 03 | [System Design](documentation/03_System_Design.md) | Architecture, data flow, auth flow, Mermaid diagrams |
+| 04 | [Database Design](documentation/04_Database_Design.md) | All 9 MongoDB schemas, indexes, ER diagram |
+| 05 | [API Documentation](documentation/05_API_Documentation.md) | All REST endpoints, Socket.IO events, response shapes |
+| 06 | [Module Description](documentation/06_Module_Description.md) | Every feature module described in detail |
+| 07 | [Security & Configuration](documentation/07_Security_and_Configuration.md) | JWT, bcrypt, CORS, env vars, limitations |
+| 08 | [Setup & Deployment](documentation/08_Setup_and_Deployment.md) | Prerequisites, install, dev run, production build, Vercel + Render |
+| 09 | [Testing & Results](documentation/09_Testing_and_Results.md) | 53 automated tests, known bugs, coverage gaps |
+| 10 | [User Manual](documentation/10_User_Manual.md) | Step-by-step guide for evaluators and users |
+| 11 | [Future Enhancements](documentation/11_Future_Enhancements.md) | Limitations and planned improvements |
+| 12 | [Viva Q&A](documentation/12_Viva_Questions_and_Answers.md) | 35 viva questions with detailed technical answers |
+
+---
+
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).

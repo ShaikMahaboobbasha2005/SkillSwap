@@ -334,8 +334,13 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
     try {
       const res = await meetingService.createInstantMeeting(swapId);
       setMeetingOptionsOpen(false);
-      if (res?.data?.meeting) {
-        const joinRes = await meetingService.joinMeeting(res.data.meeting._id);
+      const newMsg = res?.data?.message || res?.message;
+      if (newMsg) {
+        setMessages((prev) => mergeMessages(prev, [newMsg]));
+      }
+      const meetingObj = res?.data?.meeting || res?.meeting;
+      if (meetingObj) {
+        const joinRes = await meetingService.joinMeeting(meetingObj._id);
         setActiveMeetingData(joinRes.data);
       }
     } catch (err) {
@@ -354,6 +359,10 @@ export default function ChatPage({ isEmbedded = false, swapId: propSwapId = null
       swapId,
       ...data,
     });
+    const newMsg = res?.data?.message || res?.message;
+    if (newMsg) {
+      setMessages((prev) => mergeMessages(prev, [newMsg]));
+    }
     setToast({
       show: true,
       message: "Video session scheduled successfully!",

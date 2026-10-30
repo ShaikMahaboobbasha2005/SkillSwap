@@ -125,6 +125,8 @@ const createInstantMeeting = async ({ swapId, userId, io = null }) => {
   // Real-time broadcast if socket.io is available
   if (io) {
     io.to(`swap:${swap._id}`).emit("new_message", {
+      success: true,
+      data: populatedMessage,
       message: populatedMessage,
       swapId: swap._id.toString(),
     });
@@ -239,8 +241,17 @@ const scheduleMeeting = async ({ swapId, scheduledAt, duration = 30, note = "", 
   // Real-time broadcast
   if (io) {
     io.to(`swap:${swap._id}`).emit("new_message", {
+      success: true,
+      data: populatedMessage,
       message: populatedMessage,
       swapId: swap._id.toString(),
+    });
+
+    io.to(`user:${partnerId}`).emit("meeting_created", {
+      type: "scheduled",
+      meeting,
+      swapId: swap._id.toString(),
+      senderName: creatorName,
     });
 
     io.to(`user:${partnerId}`).emit("notification", {
