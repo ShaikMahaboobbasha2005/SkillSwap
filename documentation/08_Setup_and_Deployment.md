@@ -62,6 +62,8 @@ JWT_EXPIRES_IN=7d
 
 # CORS — set to your frontend URL in production
 CLIENT_URL=http://localhost:5173
+# Optional: comma-separated additional allowed CORS origins
+# CORS_ORIGINS=https://skillswap.vercel.app,http://localhost:5173
 
 # Cloudinary
 CLOUDINARY_CLOUD_NAME=<your-cloud-name>
@@ -192,7 +194,8 @@ npm run preview
 5. Set the **Output Directory** to `dist`.
 6. Add the environment variable:
    - `VITE_API_URL` = `https://<your-render-backend-url>/api`
-7. Deploy.
+7. Ensure `client/vercel.json` is present to handle SPA client-side routing on page refreshes.
+8. Deploy.
 
 Vercel handles CDN, HTTPS, and auto-deploy on every `git push` to the main branch.
 

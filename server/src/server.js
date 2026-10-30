@@ -29,22 +29,75 @@ const server = http.createServer(app);
 connectDB();
 
 // CORS configuration
-const allowedOrigins = process.env.CLIENT_URL
-  ? [process.env.CLIENT_URL]
-  : ["http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:5173", "http://127.0.0.1:5174"];
+const defaultDevOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
+];
 
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+const parseAllowedOrigins = () => {
+  const origins = new Set();
+
+  // Separate CORS_ORIGINS environment variable for multiple allowed origins
+  if (process.env.CORS_ORIGINS) {
+    process.env.CORS_ORIGINS.split(",")
+      .map((url) => url.trim().replace(/\/+$/, ""))
+      .filter(Boolean)
+      .forEach((url) => origins.add(url));
+  }
+
+  // Canonical frontend URL
+  if (process.env.CLIENT_URL) {
+    process.env.CLIENT_URL.split(",")
+      .map((url) => url.trim().replace(/\/+$/, ""))
+      .filter(Boolean)
+      .forEach((url) => origins.add(url));
+  }
+
+  // Keep localhost development origins available in development or when unconfigured
+  if (process.env.NODE_ENV !== "production" || origins.size === 0) {
+    defaultDevOrigins.forEach((url) => origins.add(url));
+  }
+
+  return Array.from(origins);
+};
+
+const allowedOrigins = parseAllowedOrigins();
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow server-to-server requests, mobile clients, curl, or tools without Origin header
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    const normalizedOrigin = origin.trim().replace(/\/+$/, "");
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS policy: origin ${origin} not allowed`));
+  },
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
 
 // Socket.io setup attached to HTTP server
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin) {
+        return callback(null, true);
+      }
+      const normalizedOrigin = origin.trim().replace(/\/+$/, "");
+      if (allowedOrigins.includes(normalizedOrigin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`Socket.IO CORS policy: origin ${origin} not allowed`));
+    },
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
   },
